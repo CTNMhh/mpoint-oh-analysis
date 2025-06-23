@@ -1,0 +1,60 @@
+version: '3.8'
+services:
+  app:
+    image: node:18-alpine
+    container_name: mpoint-nextjs
+    working_dir: /app
+    volumes:
+      # HIER! Docker erstellt ./mpoint-app automatisch wenn er nicht existiert
+      # ./mpoint-app = Ordner auf deinem PC (wird erstellt)
+      # :/app = Ordner im Container
+      - ./mpoint-app:/app
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@db:5432/mpoint_db
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
+    command: >
+      sh -c "
+        if [ ! -f package.json ]; then
+          echo 'Initialisiere Projekt...' &&
+          npx create-next-app@latest . \
+            --typescript \
+            --tailwind \
+            --eslint \
+            --app \
+            --src-dir \
+            --no-turbopack \
+            --import-alias '@/*' \
+            --no-git &&
+          npm install pg @types/pg
+        fi &&
+        echo 'Starte Next.js...' &&
+        npm run dev
+      "
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15-alpine
+    container_name: mpoint-postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=mpoint_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  adminer:
+    image: adminer:latest
+    container_name: mpoint-adminer
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
