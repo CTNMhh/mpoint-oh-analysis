@@ -31,6 +31,7 @@ services:
           npm install pg @types/pg
         fi &&
         echo 'Starte Next.js...' &&
+        npm install &&
         npm run dev
       "
     depends_on:
