@@ -1,16 +1,45 @@
-import Image from "next/image";
+'use client'
+
+import React from "react";
+import HeroSection from "./components/home/HeroSection";
+import StatsSection from "./components/home/StatsSection";
+import FeaturesSection from "./components/home/FeaturesSection";
+import HowItWorksSection from "./components/home/HowItWorksSection";
+import TestimonialsSection from "./components/home/TestimonialsSection";
+import CtaSection from "./components/home/CtaSection";
 
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <h1 className="text-3xl sm:text-5xl font-semibold tracking-tight text-center sm:text-left">
-          Welcome to{" "}
-          <span className="text-foreground/80 dark:text-foreground/80">
-            mpoint
-          </span>
-        </h1>
-      </main>
-    </div>
+    <main className="min-h-screen flex flex-col">
+      {/* Hero Section */}
+        <HeroSection />
+
+      {/* Stats Section */}
+        <StatsSection/>
+
+      {/* Features Section */}
+        <FeaturesSection />
+
+      {/* How it works Section */}
+        <HowItWorksSection />
+
+      {/* Testimonials Section */}
+        <TestimonialsSection />
+
+      {/* CTA Section */}
+         <CtaSection />
+      {/* Floating animation keyframes */}
+      <style>
+        {`
+          @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+          }
+          .animate-float {
+            animation: float 6s ease-in-out infinite;
+          }
+        `}
+      </style>
+    </main>
   );
 }
