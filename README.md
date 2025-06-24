@@ -6,6 +6,10 @@
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) installiert und gestartet
 - Git (optional für Versionskontrolle)
 - Windows, macOS oder Linux
+ - VSC Plugin: 
+  - Docker (von Ms)
+  - Dev Containers
+  - Git Graph
 
 ## 🛠️ Tech Stack
 
