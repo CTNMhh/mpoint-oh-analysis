@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Menu, X, ChevronDown, Bell, User, Search } from 'lucide-react'
+import { useAuth } from "../../context/AuthContext";
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -11,6 +12,9 @@ const Header = () => {
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
   const profileRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
+
+  const { user, setUser } = useAuth();
+  console.log("User in Header:", user);
 
   // Scroll-Effekt für Header
   useEffect(() => {
@@ -36,6 +40,13 @@ const Header = () => {
     }
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [isProfileDropdownOpen])
+
+  // Abmelden-Handler
+  function handleLogout() {
+    setUser(null);
+    // Optional: Weiterleitung zur Startseite
+    router.push("/login");
+  }
 
   return (
     <header
@@ -122,8 +133,12 @@ const Header = () => {
               {isProfileDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl">
                   <div className="p-4 border-b">
-                    <p className="font-semibold text-gray-900">Max Mustermann</p>
-                    <p className="text-sm text-gray-600">max@unternehmen.de</p>
+                    <p className="font-semibold text-gray-900">
+                      {user ? `${user.firstName} ${user.lastName}` : "Anmelden"}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {user ? user.email : ""}
+                    </p>
                   </div>
                   <div className="py-2">
                     <Link href="/profile" className="block px-4 py-2 hover:bg-[rgb(228,25,31,0.07)] transition-colors">
@@ -136,20 +151,41 @@ const Header = () => {
                       Einstellungen
                     </Link>
                     <hr className="my-2" />
-                    <button className="block w-full text-left px-4 py-2 hover:bg-[rgb(228,25,31,0.07)] transition-colors text-[rgb(228,25,31)]">
+                    <button
+                      onClick={handleLogout}
+                      className="block w-full text-left px-4 py-2 hover:bg-[rgb(228,25,31,0.07)] transition-colors text-[rgb(228,25,31)]"
+                    >
                       Abmelden
                     </button>
                   </div>
                 </div>
               )}
             </div>
-            {/* CTA Button */}
-            <Link
-              href="/register"
-              className="bg-[rgb(228,25,31)] hover:bg-[rgb(180,30,40)] text-white px-6 py-2.5 rounded-lg font-medium hover:shadow-lg transition-all duration-300 hover:scale-105"
-            >
-              Jetzt starten
-            </Link>
+            {/* CTA Button: Dropdown für Login/Registrierung, nur wenn NICHT eingeloggt */}
+            {!user && (
+              <div className="relative group">
+                <button
+                  className="bg-[rgb(228,25,31)] hover:bg-[rgb(180,30,40)] text-white px-6 py-2.5 rounded-lg font-medium hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center gap-2"
+                >
+                  Jetzt starten
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                  <Link
+                    href="/login"
+                    className="block px-4 py-3 hover:bg-[rgb(228,25,31,0.07)] transition-colors text-gray-800"
+                  >
+                    Anmelden
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="block px-4 py-3 hover:bg-[rgb(228,25,31,0.07)] transition-colors text-gray-800"
+                  >
+                    Registrieren
+                  </Link>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Mobile Menu Button */}

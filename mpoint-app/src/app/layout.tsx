@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "./components/layout/Header"; // Header importieren
 import Footer from "./components/layout/Footer";
+import { AuthProvider } from "./context/AuthContext";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -28,9 +30,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+      <AuthProvider>
+        {/* AuthProvider um die gesamte App wickeln */}
         <Header /> {/* Header hier einfügen */}
         {children}
         <Footer />
+      </AuthProvider>
       </body>
     </html>
   );
