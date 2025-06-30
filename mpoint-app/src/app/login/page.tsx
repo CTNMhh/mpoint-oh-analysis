@@ -1,13 +1,12 @@
 'use client';
 
 import React, { useState } from "react";
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { ChevronRight } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { setUser } = useAuth();
   const [form, setForm] = useState({
     identifier: "", // E-Mail oder Benutzername
     password: "",
@@ -28,32 +27,18 @@ export default function LoginPage() {
     setError(null);
     setLoading(true);
 
-    try {
-      const res = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
+    const result = await signIn("credentials", {
+      identifier: form.identifier,
+      password: form.password,
+      redirect: false,
+    });
 
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Login fehlgeschlagen.");
-        setLoading(false);
-        return;
-      }
-      if (data.user) {
-        setUser({
-          firstName: data.user.firstName,
-          lastName: data.user.lastName,
-          email: data.user.email,
-        });
-      }
+    if (result?.error) {
+      setError("Login fehlgeschlagen. Prüfen Sie Ihre Angaben.");
+    } else {
       router.push("/");
-    } catch (err) {
-      setError("Serverfehler. Bitte versuche es später erneut.");
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   }
 
   return (

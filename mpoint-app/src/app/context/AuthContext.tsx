@@ -1,5 +1,6 @@
 "use client";
-import React, { createContext, useContext, useState } from "react";
+
+import { createContext, useContext, useState } from "react";
 
 type User = {
   firstName: string;
@@ -9,18 +10,22 @@ type User = {
 
 type AuthContextType = {
   user: User | null;
-  setUser: (user: User | null) => void;
+  setUser: (user: User | null) => void; // Hinzugefügt
+  loading: boolean;
 };
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
-  setUser: () => {},
+  setUser: () => {}, // Default-Implementierung
+  loading: true,
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
   return (
-    <AuthContext.Provider value={{ user, setUser }}>
+    <AuthContext.Provider value={{ user, setUser, loading }}>
       {children}
     </AuthContext.Provider>
   );

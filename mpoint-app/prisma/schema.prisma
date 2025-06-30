@@ -10,7 +10,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Beispiel Models
+// ========== USER MODELS ==========
 model User {
   id           String    @id @default(uuid())
   username     String    @unique
@@ -23,35 +23,459 @@ model User {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
-  profile      Profile?
-  posts        Post[]
+  // Relations
+  company      Company?
+  matchingPreferences MatchingPreferences?
+  sentMatches     Match[] @relation("MatchSender")
+  receivedMatches Match[] @relation("MatchReceiver")
+  activities      Activity[]
+  interactions    Interaction[]
 }
 
-model Profile {
-  id     Int    @id @default(autoincrement())
-  bio    String?
+// ========== COMPANY MODELS ==========
+// ========== COMPANY MODELS ==========
+model Company {
+  id           String    @id @default(uuid())
+  userId       String    @unique
+  
+  // Basis-Informationen
+  name         String
+  legalForm    String?
+  foundedYear  Int
+  registrationNumber String?
+  
+  // Größenklasse
+  employeeCount    Int       @default(1)
+  employeeRange    EmployeeRange @default(SOLO)
+  annualRevenue    Float     @default(0)
+  revenueRange     RevenueRange @default(MICRO)
+  
+  // Lokation (Hamburg-spezifisch)
+  street       String?
+  zipCode      String?
+  district     HamburgDistrict?
+    primaryNaceCode   String? // <--- HINZUFÜGEN!
+
+  // Geschäftsmodell
+  customerType    CustomerType @default(B2B)
+  customerCount   CustomerCountRange @default(VERY_SMALL)
+  exportQuota     Int       @default(0)
+  marketReach     MarketReach @default(LOCAL)
+  seasonality     Seasonality @default(NONE)
+  
+  // Führung & Entscheidung
+  leadershipStructure LeadershipStructure @default(OWNER_LED)
+  decisionSpeed       DecisionSpeed @default(MODERATE)
+  decisionMakers      Int @default(1)
+  
+  // Wachstum & Strategie
+  growthPhase         GrowthPhase @default(ESTABLISHED)
+  growthRate          Float @default(0)
+  sustainabilityFocus Int @default(5)
+  
+  // Beschreibungen
+  branchDescription   String?
+  companyDescription  String?
+  
+  // Timestamps
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  
+  // Matching Score (berechnet)
+  matchingScore Float @default(0)
+  profileCompleteness Float @default(0)
+  lastMatchingUpdate DateTime @default(now())
+  
+  // Relations
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Arrays als separate Models für bessere Queries
+  locationAdvantages  LocationAdvantage[]
+  industryTags       IndustryTag[]
+  secondaryNaceCodes SecondaryNaceCode[]
+  expansionPlans     ExpansionPlan[]
+  certifications     Certification[]
+  complianceNeeds    ComplianceNeed[]
+  qualityStandards   QualityStandard[]
+  painPoints         PainPoint[]
+  searchingFor       SearchingFor[]
+  offeringTo         OfferingTo[]
+  
+  // Matching Relations
+  sentMatches        Match[] @relation("CompanySender")
+  receivedMatches    Match[] @relation("CompanyReceiver")
+  
+  // Analytics
+  activities         Activity[]
+  interactions       Interaction[]
+  
+  @@index([district])
+  @@index([employeeRange])
+  @@index([revenueRange])
+  @@index([customerType])
+  @@index([marketReach])
+  @@index([growthPhase])
+  @@index([matchingScore])
+  @@index([profileCompleteness])
+}
+
+// ========== COMPANY DETAIL MODELS ==========
+model LocationAdvantage {
+  id        String  @id @default(uuid())
+  companyId String
+  value     String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  @@index([companyId])
+}
+
+model IndustryTag {
+  id        String  @id @default(uuid())
+  companyId String
+  value     String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  @@index([companyId])
+  @@index([value])
+}
+
+model SecondaryNaceCode {
+  id        String  @id @default(uuid())
+  companyId String
+  code      String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  @@index([companyId])
+  @@index([code])
+}
+
+model ExpansionPlan {
+  id        String     @id @default(uuid())
+  companyId String
+  type      ExpansionType
+  company   Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  @@index([companyId])
+  @@index([type])
+}
+
+model Certification {
+  id        String  @id @default(uuid())
+  companyId String
+  name      String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  @@index([companyId])
+  @@index([name])
+}
+
+model ComplianceNeed {
+  id        String  @id @default(uuid())
+  companyId String
+  type      String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  @@index([companyId])
+}
+
+model QualityStandard {
+  id        String  @id @default(uuid())
+  companyId String
+  standard  String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  @@index([companyId])
+}
+
+// ========== MATCHING MODELS ==========
+model PainPoint {
+  id        String  @id @default(uuid())
+  companyId String
+  point     String
+  priority  Int     @default(5) // 1-10 Wichtigkeit
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  @@index([companyId])
+  @@index([point])
+}
+
+model SearchingFor {
+  id        String  @id @default(uuid())
+  companyId String
+  category  String
+  details   String?
+  priority  Int     @default(5)
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  @@index([companyId])
+  @@index([category])
+}
+
+model OfferingTo {
+  id        String  @id @default(uuid())
+  companyId String
+  category  String
+  details   String?
+  priority  Int     @default(5)
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  @@index([companyId])
+  @@index([category])
+}
+
+// ========== MATCHING SYSTEM ==========
+model MatchingPreferences {
+  id     String @id @default(uuid())
   userId String @unique
-  user   User   @relation(fields: [userId], references: [id])
-}
-
-model Post {
-  id        Int      @id @default(autoincrement())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String
-  author    User     @relation(fields: [authorId], references: [id])
+  
+  // Geografische Präferenzen
+  maxDistance      Int @default(50) // km
+  preferredDistricts HamburgDistrict[]
+  
+  // Unternehmensgröße Präferenzen
+  minEmployees     Int?
+  maxEmployees     Int?
+  preferredSizes   EmployeeRange[]
+  
+  // Geschäftsmodell Präferenzen
+  preferredCustomerTypes CustomerType[]
+  preferredMarketReach   MarketReach[]
+  
+  // Wachstum & Innovation
+  minGrowthRate    Float?
+  preferredGrowthPhases GrowthPhase[]
+  minSustainabilityFocus Int @default(1)
+  
+  // Matching Einstellungen
+  autoMatch        Boolean @default(true)
+  weeklyMatches    Int @default(5)
+  matchingActive   Boolean @default(true)
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model Product {
-  id          Int      @id @default(autoincrement())
-  name        String
-  nametest    String
+model Match {
+  id            String      @id @default(uuid())
+  
+  // Match Partner
+  senderUserId    String
+  receiverUserId  String
+  senderCompanyId String
+  receiverCompanyId String
+  
+  // Match Details
+  matchScore      Float       // 0-100
+  matchType       MatchType
+  status          MatchStatus @default(PENDING)
+  
+  // Matching Gründe (JSON)
+  matchReasons    Json        // Warum diese Unternehmen matchen
+  commonInterests Json        // Gemeinsame Interessen
+  potentialSynergies Json     // Potentielle Synergien
+  
+  // Kommunikation
+  message         String?
+  response        String?
+  
+  // Zeitstempel
+  matchedAt       DateTime    @default(now())
+  respondedAt     DateTime?
+  expiresAt       DateTime?   // Auto-expire nach X Tagen
+  
+  // Relations
+  senderUser      User        @relation("MatchSender", fields: [senderUserId], references: [id])
+  receiverUser    User        @relation("MatchReceiver", fields: [receiverUserId], references: [id])
+  senderCompany   Company     @relation("CompanySender", fields: [senderCompanyId], references: [id])
+  receiverCompany Company     @relation("CompanyReceiver", fields: [receiverCompanyId], references: [id])
+  
+  interactions    Interaction[]
+  
+  @@unique([senderUserId, receiverUserId])
+  @@index([status])
+  @@index([matchScore])
+  @@index([matchedAt])
+  @@index([expiresAt])
+}
+
+// ========== INTERACTION TRACKING ==========
+model Interaction {
+  id        String          @id @default(uuid())
+  userId    String
+  companyId String
+  matchId   String?
+  
+  type      InteractionType
+  details   Json?           // Zusätzliche Details
+  metadata  Json?           // Tracking Daten
+  
+  createdAt DateTime        @default(now())
+  
+  user      User            @relation(fields: [userId], references: [id])
+  company   Company         @relation(fields: [companyId], references: [id])
+  match     Match?          @relation(fields: [matchId], references: [id])
+  
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model Activity {
+  id        String       @id @default(uuid())
+  userId    String
+  companyId String
+  
+  type      ActivityType
+  title     String
   description String?
-  price       Decimal  @db.Decimal(10, 2)
-  stock       Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  data      Json?        // Flexible Datenstruktur
+  
+  createdAt DateTime     @default(now())
+  
+  user      User         @relation(fields: [userId], references: [id])
+  company   Company      @relation(fields: [companyId], references: [id])
+  
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+// ========== ENUMS ==========
+enum EmployeeRange {
+  SOLO              // 1
+  MICRO             // 2-9
+  SMALL             // 10-49
+  MEDIUM            // 50-249
+  LARGE             // 250+
+}
+
+enum RevenueRange {
+  MICRO             // < 100k
+  SMALL             // 100k - 1M
+  MEDIUM            // 1M - 10M
+  LARGE             // 10M - 50M
+  ENTERPRISE        // > 50M
+}
+
+enum HamburgDistrict {
+  MITTE
+  ALTONA
+  EIMSBUETTEL
+  NORD
+  WANDSBEK
+  BERGEDORF
+  HARBURG
+  HAFENCITY
+  SPEICHERSTADT
+  UMLAND_NORD
+  UMLAND_SUED
+}
+
+enum CustomerType {
+  B2B
+  B2C
+  B2B2C
+  B2G
+}
+
+enum CustomerCountRange {
+  VERY_SMALL        // < 10
+  SMALL             // 10-100
+  MEDIUM            // 100-1000
+  LARGE             // 1000-10000
+  ENTERPRISE        // > 10000
+}
+
+enum MarketReach {
+  LOCAL             // Hamburg
+  REGIONAL          // Norddeutschland
+  NATIONAL          // Deutschland
+  EU                // Europa
+  GLOBAL            // Weltweit
+}
+
+enum Seasonality {
+  NONE
+  LOW
+  MEDIUM
+  HIGH
+  EXTREME
+}
+
+enum LeadershipStructure {
+  OWNER_LED
+  FAMILY_BUSINESS
+  PROFESSIONAL_MANAGEMENT
+  PARTNERSHIP
+  COOPERATIVE
+}
+
+enum DecisionSpeed {
+  VERY_FAST         // 1-3 Tage
+  FAST              // 4-7 Tage
+  MODERATE          // 1-2 Wochen
+  SLOW              // 3-4 Wochen
+  VERY_SLOW         // > 4 Wochen
+}
+
+enum GrowthPhase {
+  STARTUP           // < 2 Jahre
+  GROWTH            // 2-5 Jahre
+  SCALING           // 5-10 Jahre
+  ESTABLISHED       // 10-20 Jahre
+  MATURE            // > 20 Jahre
+  TRANSFORMATION    // Umbruch
+}
+
+enum ExpansionType {
+  NEW_LOCATIONS
+  NEW_PRODUCTS
+  NEW_MARKETS
+  DIGITALIZATION
+  ACQUISITIONS
+  INTERNATIONAL
+}
+
+enum MatchType {
+  SUPPLIER_CUSTOMER     // Lieferant-Kunde
+  PARTNERSHIP          // Kooperation
+  SERVICE_PROVIDER     // Dienstleister
+  COLLABORATION        // Zusammenarbeit
+  NETWORKING          // Networking
+  KNOWLEDGE_EXCHANGE  // Wissensaustausch
+}
+
+enum MatchStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  EXPIRED
+  CONNECTED
+  ARCHIVED
+}
+
+enum InteractionType {
+  PROFILE_VIEW
+  MATCH_SENT
+  MATCH_RECEIVED
+  MATCH_ACCEPTED
+  MATCH_DECLINED
+  MESSAGE_SENT
+  MESSAGE_READ
+  CONTACT_SHARED
+  MEETING_SCHEDULED
+  BUSINESS_CARD_EXCHANGED
+}
+
+enum ActivityType {
+  PROFILE_UPDATED
+  MATCH_CREATED
+  MATCH_SUCCESSFUL
+  NEW_CONNECTION
+  PROFILE_COMPLETED
+  INDUSTRY_UPDATED
+  LOCATION_CHANGED
+  GROWTH_MILESTONE
 }
