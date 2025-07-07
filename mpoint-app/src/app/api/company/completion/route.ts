@@ -177,6 +177,9 @@ export async function GET(request: NextRequest) {
       company.branchDescription,
       company.matchingScore,
       company.companyDescription,
+      company.digitalizationLevel,
+      company.itBudgetPercent,
+
       // ...weitere wichtige Felder...
     ];
     const filledFields = fields.filter(f => f && f !== "" && f !== 0).length;

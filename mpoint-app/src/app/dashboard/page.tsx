@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import ProgressBar from "../company/ProgressBar"; // Assuming ProgressBar is in the same directory
 import Link from "next/link";
 import { 
   User, 
@@ -173,21 +174,14 @@ export default function DashboardPage() {
                   <Plus className="w-5 h-5" />
                   <span>Neues Event erstellen</span>
                 </Link>
+
                 
                 <Link
-                  href="/profile"
-                  className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  <User className="w-5 h-5 text-gray-600" />
-                  <span>Profil bearbeiten</span>
-                </Link>
-                
-                <Link
-                  href="/network"
+                  href="/company"
                   className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   <Users className="w-5 h-5 text-gray-600" />
-                  <span>Netzwerk erweitern</span>
+                  <span>Unternehmensprofil</span>
                 </Link>
               </div>
             </div>
@@ -209,22 +203,16 @@ export default function DashboardPage() {
 
             {/* Profile Completion */}
             <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Profil vervollständigen
-              </h3>
-              <p className="text-sm text-gray-600 mb-4">
-                Vervollständigen Sie Ihr Profil, um bessere Matches zu erhalten.
-              </p>
-              <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
-                <div className="bg-[rgb(228,25,31)] h-2 rounded-full" style={{ width: '75%' }}></div>
-              </div>
-              <p className="text-xs text-gray-500 mb-3">75% vervollständigt</p>
               <Link
-                href="/profile"
-                className="text-[rgb(228,25,31)] hover:text-red-700 text-sm font-medium"
+                href="/company"
+                className="text-lg font-semibold text-[rgb(228,25,31)] mb-2 hover:underline flex items-center gap-2"
               >
-                Profil vervollständigen →
+                Profil vervollständigen
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
               </Link>
+              <ProgressBar bgClassName="bg-white" showSuggestions={false} />
             </div>
           </div>
         </div>

@@ -75,7 +75,7 @@ export default function RegisterPage() {
           email: data.user.email,
         });
       }
-      router.push("/");
+      router.push("/login");
     } catch (err) {
       setError("Serverfehler. Bitte versuche es später erneut.");
     } finally {

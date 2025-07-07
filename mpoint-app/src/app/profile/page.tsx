@@ -222,16 +222,6 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Vollständiger Name Preview */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="text-sm font-medium text-gray-700 mb-2">Vollständiger Name:</h3>
-            <p className="text-lg font-semibold text-gray-900">
-              {user.anrede && user.firstName && user.lastName
-                ? `${user.anrede} ${user.titel ? user.titel + ' ' : ''}${user.firstName} ${user.lastName}`
-                : "Bitte füllen Sie alle Pflichtfelder aus"}
-            </p>
-          </div>
-
           {/* Passwort */}
           <div>
             <label className="block text-sm font-medium mb-1">Neues Passwort</label>

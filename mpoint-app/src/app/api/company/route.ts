@@ -119,6 +119,9 @@ export async function GET(request: NextRequest) {
       growthRate: company.growthRate,
       expansionPlans: company.expansionPlans.map(ep => ep.type),
       sustainabilityFocus: company.sustainabilityFocus,
+      // NEU:
+      digitalizationLevel: company.digitalizationLevel,
+      itBudgetPercent: company.itBudgetPercent,
       
       // Compliance
       certifications: company.certifications.map(c => c.name),
@@ -264,6 +267,9 @@ export async function POST(request: NextRequest) {
           growthPhase: body.growthPhase as any,
           growthRate: body.growthRate || 0,
           sustainabilityFocus: body.sustainabilityFocus || 5,
+          // NEU:
+          digitalizationLevel: body.digitalizationLevel ?? 1,
+          itBudgetPercent: body.itBudgetPercent ?? null,
           
           // Beschreibungen
           branchDescription: body.branchDescription || null,
@@ -350,6 +356,9 @@ export async function POST(request: NextRequest) {
           growthPhase: body.growthPhase as any,
           growthRate: body.growthRate || 0,
           sustainabilityFocus: body.sustainabilityFocus || 5,
+          // NEU:
+          digitalizationLevel: body.digitalizationLevel ?? 1,
+          itBudgetPercent: body.itBudgetPercent ?? null,
           
           // Beschreibungen
           branchDescription: body.branchDescription || null,

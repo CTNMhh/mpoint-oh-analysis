@@ -44,6 +44,8 @@ model Company {
   foundedYear  Int
   registrationNumber String?
   
+  digitalizationLevel Int    @default(1) // 1-10, Digitalisierungsgrad
+  itBudgetPercent     Float?  
   // Größenklasse
   employeeCount    Int       @default(1)
   employeeRange    EmployeeRange @default(SOLO)
@@ -54,7 +56,7 @@ model Company {
   street       String?
   zipCode      String?
   district     HamburgDistrict?
-    primaryNaceCode   String? // <--- HINZUFÜGEN!
+  primaryNaceCode   String? // <--- HINZUFÜGEN!
 
   // Geschäftsmodell
   customerType    CustomerType @default(B2B)
