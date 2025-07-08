@@ -145,10 +145,8 @@ export default function CompanyProfilePage() {
     searchingFor: [],
     offeringTo: []
   });
-  const [completion, setCompletion] = useState<number | null>(null);
-  const [suggestions, setSuggestions] = useState<any[]>([]);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
-
+  const [progressBarKey, setProgressBarKey] = useState(0);
   // Redirect wenn nicht eingeloggt
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -241,6 +239,7 @@ export default function CompanyProfilePage() {
 
       if (res.ok) {
         setMessage({ type: "success", text: "Unternehmensprofil erfolgreich gespeichert!" });
+        setProgressBarKey(prev => prev + 1);
       } else {
         const err = await res.json();
         throw new Error(err?.error || "Fehler beim Speichern");
@@ -291,7 +290,7 @@ export default function CompanyProfilePage() {
               </p>
             </div>
           </div>
-          <ProgressBar />
+          <ProgressBar key={progressBarKey} />
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
