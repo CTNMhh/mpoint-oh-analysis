@@ -144,19 +144,19 @@ const Header = () => {
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-8">
             <Link
-              href="/discover"
+              href="/"
               className="text-gray-700 hover:text-[rgb(228,25,31)] font-medium transition-colors"
             >
               Entdecken
             </Link>
             <Link
-              href="/events"
+              href="/"
               className="text-gray-700 hover:text-[rgb(228,25,31)] font-medium transition-colors"
             >
               Events
             </Link>
             <Link
-              href="/matches"
+              href="/"
               className="text-gray-700 hover:text-[rgb(228,25,31)] font-medium transition-colors"
             >
               Matches
