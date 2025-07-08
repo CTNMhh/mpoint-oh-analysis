@@ -17,6 +17,7 @@ import {
   Building2,
   Target
 } from "lucide-react";
+import MatchingList from "./MatchingList";
 
 type UserType = {
   anrede: string;
@@ -76,6 +77,9 @@ export default function DashboardPage() {
   if (status === "unauthenticated") {
     return null; // Redirect läuft bereits
   }
+
+  // companyId z.B. aus User-Session oder Profil holen
+  const companyId = "281e0553-8eda-4fb9-8b16-8231ca062e89";
 
   return (
     <main className="min-h-screen bg-gray-50 pt-20">
@@ -217,30 +221,9 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Recent Connections */}
-        <div className="mt-8">
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">Neue Verbindungen</h2>
-              <button className="text-[rgb(228,25,31)] hover:text-red-700 text-sm font-medium">
-                Alle anzeigen
-              </button>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {[1, 2, 3, 4].map((connection) => (
-                <div key={connection} className="text-center p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
-                  <div className="w-16 h-16 bg-gradient-to-br from-indigo-400 to-purple-400 rounded-full mx-auto mb-3"></div>
-                  <h3 className="font-medium text-gray-900">Max Mustermann</h3>
-                  <p className="text-sm text-gray-500">CEO, Beispiel GmbH</p>
-                  <button className="mt-2 text-[rgb(228,25,31)] hover:text-red-700 text-sm font-medium">
-                    Vernetzen
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+    
+
+        <MatchingList companyId={companyId} />
       </div>
     </main>
   );
