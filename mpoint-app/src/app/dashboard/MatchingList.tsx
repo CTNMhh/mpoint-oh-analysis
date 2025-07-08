@@ -79,20 +79,42 @@ const growthPhaseLabels = {
   TRANSFORMATION: "Transformation",
 };
 
-export default function MatchingList({ companyId }: { companyId: string }) {
+export default function MatchingList({ companyId: propCompanyId }: { companyId?: string }) {
   const [matches, setMatches] = useState<MatchingData[]>([]);
   const [meta, setMeta] = useState<Meta | null>(null);
   const [loading, setLoading] = useState(true);
   const [expandedMatch, setExpandedMatch] = useState<string | null>(null);
   const [filter, setFilter] = useState<string>("all");
+  const [companyId, setCompanyId] = useState<string | undefined>(propCompanyId);
+
+
+  useEffect(() => {
+    if (!propCompanyId) {
+      async function fetchCompany() {
+        try {
+          const res = await fetch("/api/company");
+          if (res.ok) {
+            const data = await res.json();
+            console.log("Company datayyy:", data);
+            if (data?.id) setCompanyId(data.id);
+          }
+        } catch (e) {
+          console.error("Fehler beim Laden der companyId:", e);
+        }
+      }
+      fetchCompany();
+    }
+  }, [propCompanyId]);
+
 
   useEffect(() => {
     async function fetchMatches() {
+      if (!companyId) return;
       setLoading(true);
       try {
         const res = await fetch(`/api/matching?companyId=${companyId}&limit=15&excludeExisting=true`);
         const data = await res.json();
-        
+
         if (data.success) {
           setMatches(data.matches || []);
           setMeta(data.meta || null);
@@ -102,12 +124,13 @@ export default function MatchingList({ companyId }: { companyId: string }) {
       }
       setLoading(false);
     }
-    
+
     if (companyId) fetchMatches();
   }, [companyId]);
 
-  const filteredMatches = filter === "all" 
-    ? matches 
+
+  const filteredMatches = filter === "all"
+    ? matches
     : matches.filter(m => m.matching.type === filter);
 
   const getScoreColor = (score: number) => {
@@ -146,7 +169,7 @@ export default function MatchingList({ companyId }: { companyId: string }) {
   }
 
   return (
-    <div className="space-y-6 mt-10">
+    <div className="space-y-6 mt-0">
       {/* Header mit Statistiken */}
       <div className="bg-gradient-to-r from-[rgb(228,25,31)] to-red-700 text-white p-6 rounded-lg shadow-lg">
         <h2 className="text-2xl font-bold mb-2">Ihre Top-Matches</h2>
@@ -168,11 +191,10 @@ export default function MatchingList({ companyId }: { companyId: string }) {
       <div className="flex flex-wrap gap-2 mb-6">
         <button
           onClick={() => setFilter("all")}
-          className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-            filter === "all" 
-              ? "bg-[rgb(228,25,31)] text-white" 
+          className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${filter === "all"
+              ? "bg-[rgb(228,25,31)] text-white"
               : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-          }`}
+            }`}
         >
           Alle ({matches.length})
         </button>
@@ -183,11 +205,10 @@ export default function MatchingList({ companyId }: { companyId: string }) {
             <button
               key={key}
               onClick={() => setFilter(key)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                filter === key 
-                  ? "bg-[rgb(228,25,31)] text-white" 
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${filter === key
+                  ? "bg-[rgb(228,25,31)] text-white"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
+                }`}
             >
               {label} ({count})
             </button>
@@ -233,13 +254,13 @@ export default function MatchingList({ companyId }: { companyId: string }) {
                         {match.company.employeeRange && (
                           <div className="flex items-center gap-1">
                             <Users className="w-3 h-3" />
-                            <span>{employeeRangeLabels[match.company.employeeRange]}</span>
+                            <span>{employeeRangeLabels[match.company.employeeRange as keyof typeof employeeRangeLabels]}</span>
                           </div>
                         )}
                         {match.company.growthPhase && (
                           <div className="flex items-center gap-1">
                             <TrendingUp className="w-3 h-3" />
-                            <span>{growthPhaseLabels[match.company.growthPhase]}</span>
+                            <span>{growthPhaseLabels[match.company.growthPhase as keyof typeof growthPhaseLabels]}</span>
                           </div>
                         )}
                       </div>
@@ -266,9 +287,9 @@ export default function MatchingList({ companyId }: { companyId: string }) {
                       {/* Match Informationen */}
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
-                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${matchTypeColors[match.matching.type] || matchTypeColors.NETWORKING}`}>
+                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${matchTypeColors[match.matching.type as keyof typeof matchTypeColors] || matchTypeColors.NETWORKING}`}>
                             <Handshake className="w-3 h-3 mr-1" />
-                            {matchTypeLabels[match.matching.type] || match.matching.type}
+                            {matchTypeLabels[match.matching.type as keyof typeof matchTypeLabels] || match.matching.type}
                           </span>
                           <span className={`text-2xl font-bold ${getScoreColor(match.matching.score)}`}>
                             {match.matching.percentage}%
@@ -406,8 +427,8 @@ export default function MatchingList({ companyId }: { companyId: string }) {
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
                     <span>
-                      {match.matching.lastActivedays === 0 
-                        ? "Heute aktiv" 
+                      {match.matching.lastActivedays === 0
+                        ? "Heute aktiv"
                         : `Vor ${match.matching.lastActivedays} Tag${match.matching.lastActivedays === 1 ? "" : "en"} aktiv`}
                     </span>
                   </div>

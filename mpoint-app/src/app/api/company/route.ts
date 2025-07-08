@@ -80,6 +80,7 @@ export async function GET(request: NextRequest) {
     // Company-Daten formatieren
     const companyData = {
       // Basis-Informationen
+      id: company.id,
       name: company.name,
       legalForm: company.legalForm || "",
       foundedYear: company.foundedYear,
