@@ -145,7 +145,7 @@ const Header = () => {
           <div className="hidden lg:flex items-center space-x-8">
   
             <Link
-              href="/"
+              href="/events"
               className="text-gray-700 hover:text-[rgb(228,25,31)] font-medium transition-colors"
             >
               Events
