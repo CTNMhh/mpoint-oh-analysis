@@ -138,7 +138,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Recent Activities */}
           <div className="lg:col-span-2">
-            <MatchingList />
+            <MatchingList limit={5} />
 
           </div>
 

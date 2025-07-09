@@ -10,16 +10,10 @@ import MatchingTab from "./MatchingTab";
 import {
   Building2,
   Users,
-  MapPin,
-  Globe,
   TrendingUp,
   Target,
-  Award,
   Save,
   ArrowLeft,
-  ChevronDown,
-  Plus,
-  X
 } from "lucide-react";
 import ProgressBar from "./ProgressBar";
 

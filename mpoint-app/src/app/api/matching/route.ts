@@ -104,6 +104,9 @@ user: { is: { id: { not: undefined } } }
 
     // 6. Erweiterte Score-Berechnung
     function calculateMatchScore(candidate: any) {
+      if (!myCompany) {
+        throw new Error("myCompany is null");
+      }
       let score = 0;
       let matchReasons: string[] = [];
       let potentialSynergies: string[] = [];

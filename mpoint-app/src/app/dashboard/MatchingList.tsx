@@ -79,7 +79,7 @@ const growthPhaseLabels = {
   TRANSFORMATION: "Transformation",
 };
 
-export default function MatchingList({ companyId: propCompanyId }: { companyId?: string }) {
+export default function MatchingList({ companyId: propCompanyId, limit = 15 }: { companyId?: string; limit?: number }) {
   const [matches, setMatches] = useState<MatchingData[]>([]);
   const [meta, setMeta] = useState<Meta | null>(null);
   const [loading, setLoading] = useState(true);
@@ -112,7 +112,7 @@ export default function MatchingList({ companyId: propCompanyId }: { companyId?:
       if (!companyId) return;
       setLoading(true);
       try {
-        const res = await fetch(`/api/matching?companyId=${companyId}&limit=15&excludeExisting=true`);
+        const res = await fetch(`/api/matching?companyId=${companyId}&limit=${limit}&excludeExisting=true`);
         const data = await res.json();
 
         if (data.success) {
@@ -126,7 +126,7 @@ export default function MatchingList({ companyId: propCompanyId }: { companyId?:
     }
 
     if (companyId) fetchMatches();
-  }, [companyId]);
+  }, [companyId, limit]);
 
 
   const filteredMatches = filter === "all"

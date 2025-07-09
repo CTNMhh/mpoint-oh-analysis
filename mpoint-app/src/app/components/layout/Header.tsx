@@ -143,12 +143,7 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-8">
-            <Link
-              href="/"
-              className="text-gray-700 hover:text-[rgb(228,25,31)] font-medium transition-colors"
-            >
-              Entdecken
-            </Link>
+  
             <Link
               href="/"
               className="text-gray-700 hover:text-[rgb(228,25,31)] font-medium transition-colors"
@@ -156,10 +151,17 @@ const Header = () => {
               Events
             </Link>
             <Link
-              href="/"
+              href="/Matches"
               className="text-gray-700 hover:text-[rgb(228,25,31)] font-medium transition-colors"
             >
               Matches
+            </Link>
+
+            <Link
+              href="/pricing"
+              className="text-gray-700 hover:text-[rgb(228,25,31)] font-medium transition-colors"
+            >
+              Preise
             </Link>
             <div className="relative group">
               <button className="text-gray-700 hover:text-[rgb(228,25,31)] font-medium transition-colors flex items-center gap-1">
@@ -171,12 +173,6 @@ const Header = () => {
                   className="block px-4 py-3 hover:bg-[rgb(228,25,31,0.07)] transition-colors"
                 >
                   Über uns
-                </Link>
-                <Link
-                  href="/pricing"
-                  className="block px-4 py-3 hover:bg-[rgb(228,25,31,0.07)] transition-colors"
-                >
-                  Preise
                 </Link>
                 <Link
                   href="/support"
@@ -321,13 +317,7 @@ const Header = () => {
             <div className="px-4 py-6 space-y-4">
               {/* Navigation Links */}
               <div className="space-y-2">
-                <Link
-                  href="/discover"
-                  onClick={closeMobileMenu}
-                  className="block px-4 py-3 text-gray-700 hover:text-[rgb(228,25,31)] hover:bg-[rgb(228,25,31,0.07)] rounded-lg transition-colors"
-                >
-                  Entdecken
-                </Link>
+
                 <Link
                   href="/events"
                   onClick={closeMobileMenu}
