@@ -11,28 +11,37 @@ export const config = {
 };
 
 export async function POST(request: NextRequest) {
-  const formData = await request.formData();
-  const file = formData.get("file") as File;
-  if (!file) {
-    return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
-  }
+  try {
+    const formData = await request.formData();
+    const file = formData.get("file") as File;
+    if (!file) {
+      return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
+    }
 
-  // Nur Bilder und SVG erlauben
-  if (
-    !file.type.startsWith("image/") &&
-    file.type !== "image/svg+xml"
-  ) {
-    return NextResponse.json({ error: "Nur Bilddateien und SVG erlaubt." }, { status: 400 });
-  }
+    // Nur Bilder und SVG erlauben
+    if (
+      !file.type.startsWith("image/") &&
+      file.type !== "image/svg+xml"
+    ) {
+      return NextResponse.json({ error: "Nur Bilddateien und SVG erlaubt." }, { status: 400 });
+    }
 
-  const buffer = Buffer.from(await file.arrayBuffer());
-  const filename = `${uuidv4()}_${file.name}`;
-  const uploadDir = path.join(process.cwd(), "public", "uploads");
-  if (!existsSync(uploadDir)) {
-    mkdirSync(uploadDir, { recursive: true });
-  }
-  await writeFile(path.join(uploadDir, filename), buffer);
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const filename = `${uuidv4()}_${file.name}`;
+    const uploadDir = path.join(process.cwd(), "public", "uploads");
 
-  const url = `/uploads/${filename}`;
-  return NextResponse.json({ url });
+    // Ordner anlegen, falls nicht vorhanden
+    if (!existsSync(uploadDir)) {
+      mkdirSync(uploadDir, { recursive: true });
+    }
+
+    // Datei speichern
+    await writeFile(path.join(uploadDir, filename), buffer);
+
+    // URL für das Bild zurückgeben
+    const url = `/uploads/${filename}`;
+    return NextResponse.json({ url });
+  } catch (error) {
+    return NextResponse.json({ error: "Upload fehlgeschlagen", details: String(error) }, { status: 500 });
+  }
 }
