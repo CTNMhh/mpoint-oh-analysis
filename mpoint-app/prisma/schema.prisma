@@ -30,6 +30,8 @@ model User {
   receivedMatches Match[] @relation("MatchReceiver")
   activities      Activity[]
   interactions    Interaction[]
+  bookings       Booking[] // <-- Opposite relation for Booking
+  events         Event[]   // <-- Opposite relation for Event
 }
 
 // ========== COMPANY MODELS ==========
@@ -302,6 +304,60 @@ model Match {
   @@index([expiresAt])
 }
 
+
+
+
+model Event {
+  id              String   @id @default(uuid())
+  title           String
+  description     String
+  imageUrl        String?
+  startDate       DateTime
+  endDate         DateTime?
+  startTime       String?
+  endTime         String?
+  location        String
+  ventType        String? // Veranstaltungstyp als Textfeld
+  price           Float   @default(0)
+  maxParticipants Int?
+  bookedCount     Int     @default(0)
+  organizer       String?
+  calendarLinks   Json?
+  categories      String[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relation zum User (Veranstalter)
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Relation zu Buchungen
+  bookings        Booking[]
+
+  @@index([userId])
+}
+
+model Booking {
+  id          String   @id @default(uuid())
+  eventId     String
+  userId      String?
+  name        String
+  email       String
+  spaces      Int      @default(1)
+  comment     String?
+  createdAt   DateTime @default(now())
+
+  // Relationen
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  User        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([eventId])
+  @@index([userId])
+}
+
+
+
+
 // ========== INTERACTION TRACKING ==========
 model Interaction {
   id        String          @id @default(uuid())
@@ -344,6 +400,8 @@ model Activity {
   @@index([createdAt])
 }
 
+
+
 // ========== ENUMS ==========
 enum EmployeeRange {
   SOLO              // 1
@@ -351,6 +409,15 @@ enum EmployeeRange {
   SMALL             // 10-49
   MEDIUM            // 50-249
   LARGE             // 250+
+}
+model Admin {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  firstName String
+  lastName  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum RevenueRange {

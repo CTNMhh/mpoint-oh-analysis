@@ -39,7 +39,7 @@ export default function MatchesPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-50 to-white py-12 px-4">
+    <main className="min-h-screen pt-30 bg-gradient-to-br from-gray-50 to-white py-12 px-4">
       <div className="max-w-5xl mx-auto">
         <h1 className="text-3xl font-extrabold text-gray-900 mb-6 text-center">
           Unternehmens-Matches

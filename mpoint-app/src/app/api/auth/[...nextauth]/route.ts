@@ -18,7 +18,7 @@ export const authOptions: AuthOptions = {
       async authorize(credentials) {
         if (!credentials?.identifier || !credentials?.password) return null;
 
-        // User aus der Datenbank abrufen
+        // Zuerst normalen User suchen
         const user = await prisma.user.findFirst({
           where: {
             OR: [
@@ -28,20 +28,45 @@ export const authOptions: AuthOptions = {
           },
         });
 
-        if (!user) return null;
+        if (user) {
+          const isValid = await bcrypt.compare(
+            credentials.password,
+            user.password
+          );
+          if (!isValid) return null;
+          return {
+            id: user.id,
+            email: user.email,
+            name: `${user.firstName} ${user.lastName}`,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            isAdmin: false,
+          };
+        }
 
-        // Passwort prüfen
-        const isValid = await bcrypt.compare(credentials.password, user.password);
-        if (!isValid) return null;
+        // Falls kein User: Admin suchen
+        const admin = await prisma.admin.findUnique({
+          where: { email: credentials.identifier },
+        });
 
-        // Rückgabe des User-Objekts
-        return {
-          id: user.id,
-          email: user.email,
-          name: `${user.firstName} ${user.lastName}`,
-          firstName: user.firstName,
-          lastName: user.lastName,
-        };
+        if (admin) {
+          const isValid = await bcrypt.compare(
+            credentials.password,
+            admin.password
+          );
+          if (!isValid) return null;
+          return {
+            id: admin.id,
+            email: admin.email,
+            name: `${admin.firstName} ${admin.lastName}`,
+            firstName: admin.firstName,
+            lastName: admin.lastName,
+            isAdmin: true,
+          };
+        }
+
+        // Weder User noch Admin gefunden
+        return null;
       },
     }),
   ],
@@ -56,6 +81,7 @@ export const authOptions: AuthOptions = {
         token.firstName = user.firstName;
         token.lastName = user.lastName;
         token.email = user.email;
+        token.isAdmin = user.isAdmin || false;
       }
       return token;
     },
@@ -66,6 +92,7 @@ export const authOptions: AuthOptions = {
           firstName: token.firstName as string,
           lastName: token.lastName as string,
           email: token.email as string,
+          isAdmin: token.isAdmin as boolean,
         };
       }
       return session;
