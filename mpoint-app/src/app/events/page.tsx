@@ -443,6 +443,13 @@ export default function EventsPage() {
                 <div className="text-gray-600 mb-2">
                   {new Date(event.startDate).toLocaleString()} – {event.location}
                 </div>
+                <div className="text-gray-700 font-medium mb-2">
+                  Preis:{" "}
+                  {event.price === 0
+                    ? <span className="text-green-700 font-semibold">Kostenlos</span>
+                    : <span className="font-semibold">{event.price} €</span>
+                  }
+                </div>
                 <div className="text-gray-500 text-sm mb-2">
                   Veranstalter: <span className="font-semibold">{event.ventType}</span>
                 </div>
