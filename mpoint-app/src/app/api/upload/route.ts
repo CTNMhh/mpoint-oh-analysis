@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     await writeFile(path.join(uploadDir, filename), buffer);
 
     // URL für das Bild zurückgeben
-    const url = `/uploads/${filename}`;
+const url = `/api/files/${filename}`;
     return NextResponse.json({ url });
   } catch (error) {
     return NextResponse.json({ error: "Upload fehlgeschlagen", details: String(error) }, { status: 500 });
