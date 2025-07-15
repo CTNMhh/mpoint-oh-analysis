@@ -35,7 +35,6 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
   const [error, setError] = useState<string | null>(null);
   const { data: session, status } = useSession();
 
-  console.log(session, "User ID from session");
   useEffect(() => {
     async function fetchEvent() {
       setLoading(true);
@@ -89,12 +88,25 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
   return (
     <main className="min-h-screen pt-30 bg-gradient-to-br from-gray-50 to-white py-12 px-4">
       <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-2xl p-8">
-        <Link
-          href="/events"
-          className="inline-flex items-center gap-2 mb-8 px-4 py-2 rounded-full bg-gray-100 text-gray-700 hover:bg-[rgb(228,25,31)] hover:text-white transition-colors font-semibold shadow"
-        >
-          <span className="text-xl">&larr;</span> Zurück zu Events
-        </Link>
+        <div className="flex gap-7 mb-8">
+          <div className="w-1/2 flex items-center">
+            <Link
+              href="/events"
+              className="inline-flex items-center px-3 py-1.5 rounded-full bg-gray-100 text-gray-700 hover:bg-[rgb(228,25,31)] hover:text-white transition-colors font-semibold shadow text-sm"
+            >
+              <span className="text-xl">&larr;</span> <span className="ml-1">Zurück zu Events</span>
+            </Link>
+          </div>
+          <div className="w-1/2 flex justify-end items-center">
+            <button
+              type="button"
+              onClick={() => exportEventAsCSV(event)}
+              className="bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg hover:bg-yellow-500 font-semibold shadow flex items-center justify-center text-sm"
+            >
+              Event exportieren
+            </button>
+          </div>
+        </div>
         <div className="flex flex-col md:flex-row items-center mb-8 gap-8">
           <h1 className="text-4xl font-extrabold mb-6 md:mb-0 md:w-1/2 text-[rgb(228,25,31)]">
             {event.title}
@@ -280,7 +292,39 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
             Jetzt anmelden (€{event.price})
           </button>
         )}
+
       </div>
     </main>
   );
+}
+
+function exportEventAsCSV(event: EventType) {
+  const csvRows = [
+    ["Titel", "Beschreibung", "Ort", "Start", "Ende", "Preis", "Veranstalter", "Kategorien"],
+    [
+      event.title,
+      event.description,
+      event.location,
+      event.startDate,
+      event.endDate || "",
+      event.price === 0 ? "Kostenlos" : `${event.price} €`,
+      `${event.user.firstName} ${event.user.lastName}`,
+      event.categories.join(", "),
+    ],
+  ];
+
+  const csvContent = csvRows.map(row =>
+    row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(",")
+  ).join("\r\n");
+
+  const blob = new Blob([csvContent], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${event.title}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
