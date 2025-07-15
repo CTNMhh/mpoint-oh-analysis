@@ -31,6 +31,17 @@ export default function DashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<UserType | null>(null);
   const [loading, setLoading] = useState(true);
+  type BookingType = {
+    id: string | number;
+    event: {
+      title: string;
+      startDate: string;
+      // add other event properties as needed
+    };
+    // add other booking properties as needed
+  };
+
+  const [bookedEvents, setBookedEvents] = useState<BookingType[]>([]);
 
   // Redirect wenn nicht eingeloggt
   useEffect(() => {
@@ -60,6 +71,17 @@ export default function DashboardPage() {
 
     fetchUser();
   }, [status]);
+
+  useEffect(() => {
+    async function fetchBookings() {
+      const res = await fetch("/api/my-bookings");
+      if (res.ok) {
+        const data = await res.json();
+        setBookedEvents(data);
+      }
+    }
+    fetchBookings();
+  }, []);
 
   // Loading state
   if (status === "loading" || loading) {
@@ -196,6 +218,25 @@ export default function DashboardPage() {
               <ProgressBar bgClassName="bg-white" showSuggestions={false} />
             </div>
 
+            {/* Meine gebuchten Events */}
+            <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Meine gebuchten Events</h2>
+              {bookedEvents.length === 0 ? (
+                <p className="text-gray-500">Keine Buchungen gefunden.</p>
+              ) : (
+                <ul className="space-y-2">
+                  {bookedEvents.map((booking) => (
+                    <li key={booking.id} className="border-l-4 border-green-500 pl-3">
+                      <span className="font-bold">{booking.event.title}</span>
+                      <span className="ml-2 text-gray-500">{new Date(booking.event.startDate).toLocaleString()}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+
+
             <div className="bg-white rounded-xl shadow-sm p-6">
 
 
@@ -220,6 +261,8 @@ export default function DashboardPage() {
 
               </div>
             </div>
+
+
           </div>
         </div>
 
