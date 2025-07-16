@@ -95,6 +95,7 @@ export default function EventsPage() {
                   <th className="py-3 px-4 text-left font-semibold text-gray-700">Preis</th>
                   <th className="py-3 px-4 text-left font-semibold text-gray-700">Plätze</th>
                   <th className="py-3 px-4 text-left font-semibold text-gray-700">Details</th>
+                  <th className="py-3 px-4 text-left font-semibold text-gray-700">Aktionen</th>
                 </tr>
               </thead>
               <tbody>
@@ -119,6 +120,22 @@ export default function EventsPage() {
                       >
                         Event ansehen
                       </Link>
+                    </td>
+                    <td className="py-2 px-4">
+                      <button
+                        onClick={async () => {
+                          await fetch(`/api/bookings/${booking.id}`, { method: "DELETE" });
+                          // Buchungen neu laden
+                          const res = await fetch("/api/my-bookings");
+                          if (res.ok) {
+                            const data = await res.json();
+                            setBookings(data);
+                          }
+                        }}
+                        className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-700"
+                      >
+                        Abmelden
+                      </button>
                     </td>
                   </tr>
                 ))}
