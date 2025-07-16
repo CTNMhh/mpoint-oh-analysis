@@ -6,7 +6,20 @@ const prisma = new PrismaClient();
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { eventId, name, email, spaces, comment, userId } = body;
+    const { eventId, userId } = body;
+
+    // Prüfen, ob schon eine Buchung existiert
+    const existing = await prisma.booking.findFirst({
+      where: { eventId, userId },
+    });
+    if (existing) {
+      return NextResponse.json(
+        { error: "Du bist für dieses Event bereits angemeldet." },
+        { status: 400 }
+      );
+    }
+
+    const { name, email, spaces, comment } = body;
 
     if (!eventId || !name || !email) {
       return NextResponse.json({ error: "Fehlende Felder" }, { status: 400 });
