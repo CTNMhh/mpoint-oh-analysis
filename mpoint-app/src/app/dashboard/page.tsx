@@ -233,7 +233,6 @@ export default function DashboardPage() {
                         <p className="text-gray-500 text-sm mb-1">
                           {new Date(event.startDate).toLocaleString()}
                         </p>
-                        <p className="text-gray-700 text-sm">{event.description}</p>
                         <Link
                           href={`/events/${event.id}`}
                           className="inline-block mt-3 px-4 py-2 bg-[rgb(228,25,31)] text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium text-center"
