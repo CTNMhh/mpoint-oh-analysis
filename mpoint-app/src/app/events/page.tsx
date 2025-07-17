@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import EventCreateForm from "./EventCreateForm";
 
 type EventType = {
   id: string;
@@ -32,6 +33,22 @@ export default function EventsPage() {
   const [events, setEvents] = useState<EventType[]>([]);
   const [bookings, setBookings] = useState<BookingType[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({
+    title: "",
+    imageUrl: "",
+    startDate: "",
+    endDate: "",
+    location: "",
+    ventType: "",
+    price: 0,
+    categories: "",
+    calendarGoogle: "",
+    calendarIcs: "",
+    description: "",
+  });
+  const [creating, setCreating] = useState(false);
+  const [error, setError] = useState("");
 
   // Lade alle Events
   useEffect(() => {
@@ -76,9 +93,77 @@ export default function EventsPage() {
     (event) => event.user.email === session?.user?.email
   );
 
+  function toLocalDateTimeInputValue(dateStr?: string) {
+    if (!dateStr) return "";
+    const date = new Date(dateStr);
+    date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+    return date.toISOString().slice(0, 16);
+  }
+
+  async function handleCreate(e: React.FormEvent) {
+    e.preventDefault();
+    setCreating(true);
+    setError("");
+    try {
+      const res = await fetch("/api/events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...form,
+          categories: form.categories.split(",").map((c) => c.trim()),
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.message || "Fehler beim Erstellen.");
+      } else {
+        setShowForm(false);
+        setForm({
+          title: "",
+          imageUrl: "",
+          startDate: "",
+          endDate: "",
+          location: "",
+          ventType: "",
+          price: 0,
+          categories: "",
+          calendarGoogle: "",
+          calendarIcs: "",
+          description: "",
+        });
+        // Events neu laden
+        const data = await res.json();
+        setEvents((prev) => [data, ...prev]);
+      }
+    } catch (err) {
+      setError("Fehler beim Erstellen.");
+    }
+    setCreating(false);
+  }
+
   return (
     <main className="min-h-screen bg-gradient-to-br pt-40 from-gray-50 to-white py-12 px-4">
       <div className="max-w-5xl mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-extrabold text-gray-900">Events</h1>
+          <button
+            className="bg-[rgb(228,25,31)] text-white px-4 py-2 rounded hover:bg-red-700 transition-colors font-semibold"
+            onClick={() => setShowForm((v) => !v)}
+          >
+            {showForm ? "Abbrechen" : "Event erstellen"}
+          </button>
+        </div>
+
+        {showForm && (
+          <EventCreateForm
+            onCreated={(event) => {
+              setShowForm(false);
+              setEvents((prev) => [event, ...prev]);
+            }}
+            onCancel={() => setShowForm(false)}
+          />
+        )}
+
         <h2 className="text-2xl font-bold mb-6 text-gray-900">
           Meine gebuchten Events
         </h2>

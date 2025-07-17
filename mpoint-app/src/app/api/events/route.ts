@@ -77,6 +77,9 @@ export async function POST(request: NextRequest) {
         calendarLinks: body.calendarLinks,
         categories: body.categories,
         userId: user.id
+      },
+      include: {
+        user: { select: { firstName: true, lastName: true, email: true } }
       }
     });
     return NextResponse.json(event, { status: 201 });

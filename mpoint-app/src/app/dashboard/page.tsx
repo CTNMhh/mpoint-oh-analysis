@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import ProgressBar from "../company/ProgressBar"; // Assuming ProgressBar is in the same directory
@@ -15,9 +15,15 @@ import {
   Plus,
   Users,
   Building2,
-  Target
+  Target,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import MatchingList from "./MatchingList";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
 
 type UserType = {
   anrede: string;
@@ -42,6 +48,10 @@ export default function DashboardPage() {
   };
 
   const [bookedEvents, setBookedEvents] = useState<BookingType[]>([]);
+  const [allEvents, setAllEvents] = useState<any[]>([]);
+
+  const prevRef = useRef<HTMLButtonElement>(null);
+  const nextRef = useRef<HTMLButtonElement>(null);
 
   // Redirect wenn nicht eingeloggt
   useEffect(() => {
@@ -81,6 +91,17 @@ export default function DashboardPage() {
       }
     }
     fetchBookings();
+  }, []);
+
+  useEffect(() => {
+    async function fetchEvents() {
+      const res = await fetch("/api/events");
+      if (res.ok) {
+        const data = await res.json();
+        setAllEvents(data);
+      }
+    }
+    fetchEvents();
   }, []);
 
   // Loading state
@@ -162,6 +183,69 @@ export default function DashboardPage() {
           <div className="lg:col-span-2">
             <MatchingList limit={5} />
 
+            {/* Alle Events als Slider */}
+            <div className="mt-8">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-semibold text-gray-900">Alle Events</h2>
+                <div className="flex gap-2">
+                  <button ref={prevRef} className="p-2 rounded-full bg-gray-100 hover:bg-gray-200">
+                    <ChevronLeft className="w-6 h-6" />
+                  </button>
+                  <button ref={nextRef} className="p-2 rounded-full bg-gray-100 hover:bg-gray-200">
+                    <ChevronRight className="w-6 h-6" />
+                  </button>
+                </div>
+              </div>
+              <Swiper
+                modules={[Navigation]}
+                navigation={{
+                  prevEl: prevRef.current,
+                  nextEl: nextRef.current,
+                }}
+                onInit={(swiper) => {
+                  // @ts-ignore
+                  swiper.params.navigation.prevEl = prevRef.current;
+                  // @ts-ignore
+                  swiper.params.navigation.nextEl = nextRef.current;
+                  swiper.navigation.init();
+                  swiper.navigation.update();
+                }}
+                spaceBetween={16}
+                slidesPerView={1}
+                breakpoints={{
+                  640: { slidesPerView: 2 },
+                  1024: { slidesPerView: 3 },
+                }}
+                style={{ minHeight: 320 }}
+              >
+                {allEvents.map((event) => (
+                  <SwiperSlide key={event.id}>
+                    <div className="bg-white rounded-xl shadow-sm p-4 flex flex-col items-center h-full">
+                      {event.imageUrl && (
+                        <img
+                          src={event.imageUrl}
+                          alt={event.title}
+                          className="w-full h-40 object-cover rounded-lg mb-3"
+                        />
+                      )}
+                      <div className="w-full">
+                        <h3 className="font-bold text-lg text-gray-900">{event.title}</h3>
+                        <p className="text-gray-500 text-sm mb-1">
+                          {new Date(event.startDate).toLocaleString()}
+                        </p>
+                        <p className="text-gray-700 text-sm">{event.description}</p>
+                        <Link
+                          href={`/events/${event.id}`}
+                          className="inline-block mt-3 px-4 py-2 bg-[rgb(228,25,31)] text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium text-center"
+                        >
+                          Details ansehen
+                        </Link>
+                      </div>
+                    </div>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+            </div>
           </div>
 
           {/* Quick Actions */}
@@ -234,7 +318,6 @@ export default function DashboardPage() {
                 </ul>
               )}
             </div>
-
 
 
             <div className="bg-white rounded-xl shadow-sm p-6">
