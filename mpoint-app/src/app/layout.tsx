@@ -4,8 +4,11 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
+import AdminHeader from "./components/layout/AdminHeader";
+import AdminFooter from "./components/layout/AdminFooter";
 import { AuthProvider } from "./context/AuthContext";
 import { SessionProvider } from "next-auth/react";
+import { usePathname } from "next/navigation";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,6 +25,9 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+  const isAdmin = pathname.startsWith("/admin");
+
   return (
     <html lang="en">
       <body
@@ -29,9 +35,9 @@ export default function RootLayout({
       >
         <SessionProvider>
           <AuthProvider>
-            <Header />
+            {isAdmin ? <AdminHeader /> : <Header />}
             {children}
-            <Footer />
+            {isAdmin ? <AdminFooter /> : <Footer />}
           </AuthProvider>
         </SessionProvider>
       </body>
