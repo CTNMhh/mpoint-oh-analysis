@@ -18,7 +18,8 @@ export default function AdminLoginPage() {
       credentials: "include", // wichtig für Cookies!
     });
     const data = await res.json();
-    if (res.ok) {
+    console.log(res.ok);
+    if (res.ok === true) {
       router.push("/admin");
     } else {
       setError(data.error || "Login fehlgeschlagen.");
