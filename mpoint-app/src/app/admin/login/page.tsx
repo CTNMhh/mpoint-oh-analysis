@@ -20,7 +20,7 @@ export default function AdminLoginPage() {
     const data = await res.json();
     console.log(res.ok);
     if (res.ok === true) {
-      router.push("/admin");
+      window.location.href = "/admin";
     } else {
       setError(data.error || "Login fehlgeschlagen.");
     }
