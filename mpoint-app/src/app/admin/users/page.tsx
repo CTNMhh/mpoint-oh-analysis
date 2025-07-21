@@ -126,19 +126,6 @@ export default function AdminUsersPage() {
           <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Aktiv heute</p>
-                <p className="text-2xl font-bold text-slate-900">{Math.floor(users.length * 0.7)}</p>
-              </div>
-              <div className="p-3 bg-emerald-100 rounded-lg">
-                <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
-            <div className="flex items-center justify-between">
-              <div>
                 <p className="text-sm text-slate-600">Neue diese Woche</p>
                 <p className="text-2xl font-bold text-slate-900">{Math.floor(users.length * 0.1)}</p>
               </div>
@@ -354,6 +341,9 @@ export default function AdminUsersPage() {
                   <th className="px-6 py-4 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
                     Letzte Änderung
                   </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                    Rolle
+                  </th>
                   <th className="px-6 py-4 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">
                     Aktionen
                   </th>
@@ -397,6 +387,11 @@ export default function AdminUsersPage() {
                             minute: '2-digit'
                           })
                         : "-"}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="inline-block px-3 py-1 rounded bg-slate-100 text-slate-700 text-xs font-semibold">
+                        {user.role}
+                      </span>
                     </td>
                     <td className="px-6 py-4 text-right text-sm font-medium">
                       <div className="flex justify-end gap-2">
@@ -446,7 +441,7 @@ export default function AdminUsersPage() {
               <div className="text-center">
                 <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
                   <svg className="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
                 <h3 className="text-lg font-semibold text-slate-900 mb-2">

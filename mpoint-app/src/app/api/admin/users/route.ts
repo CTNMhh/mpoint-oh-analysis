@@ -36,6 +36,7 @@ export async function GET(req: NextRequest) {
         email: true,
         firstName: true,
         lastName: true,
+        role: true, // <--- Rolle wird mitgegeben!
         username: true,
         anrede: true,
         titel: true,
@@ -57,6 +58,7 @@ export async function GET(req: NextRequest) {
       username: true,
       anrede: true,
       titel: true,
+      role: true, // <--- hinzufügen!
       updatedAt: true,
     },
     orderBy: { createdAt: "desc" },
@@ -142,6 +144,7 @@ export async function PUT(req: NextRequest) {
     username: body.username,
     anrede: body.anrede || "",
     titel: body.titel || "",
+    role: body.role, // <--- hinzufügen!
   };
   if (body.password && body.password.trim() !== "") {
     if (body.password.length < 6) {

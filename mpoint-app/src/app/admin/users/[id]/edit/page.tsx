@@ -15,6 +15,7 @@ export default function EditUserPage() {
     password: "",
     anrede: "",
     titel: "",
+    role: "FREE", // <--- hinzufügen!
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -34,6 +35,7 @@ export default function EditUserPage() {
           password: "",
           anrede: user.anrede || "",
           titel: user.titel || "",
+          role: user.role || "FREE", // <--- hinzufügen!
         });
       } else {
         setError("Benutzer nicht gefunden.");
@@ -174,6 +176,22 @@ export default function EditUserPage() {
                     <p className="text-xs text-slate-500 mt-1">
                       Nur ausfüllen, wenn Sie das Passwort ändern möchten
                     </p>
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <label className="block text-sm font-medium text-slate-700">
+                      Rolle <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      required
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 bg-slate-50 hover:bg-white appearance-none cursor-pointer"
+                      value={form.role}
+                      onChange={(e) => setForm({ ...form, role: e.target.value })}
+                    >
+                      <option value="FREE">FREE</option>
+                      <option value="BASIC">BASIC</option>
+                      <option value="PREMIUM">PREMIUM</option>
+                      <option value="ENTERPRISE">ENTERPRISE</option>
+                    </select>
                   </div>
                 </div>
               </div>

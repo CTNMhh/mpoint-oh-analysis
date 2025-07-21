@@ -44,4 +44,6 @@ Führe nach der Schemaänderung eine neue Migration in deinem Docker-Container a
 docker exec -it mpoint-nextjs npx prisma migrate dev --name add_orders
 ```
 
+npx prisma migrate deploy
+
 ✅ Danach ist deine Datenbank synchron mit dem aktualisierten Prisma-Schema.
