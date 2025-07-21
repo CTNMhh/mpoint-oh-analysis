@@ -20,6 +20,7 @@ model User {
   titel        String?
   firstName    String
   lastName     String
+  role         UserRole  @default(FREE)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
@@ -34,6 +35,12 @@ model User {
   events         Event[]   // <-- Opposite relation for Event
 }
 
+enum UserRole {
+  FREE
+  BASIC
+  PREMIUM
+  ENTERPRISE
+}
 // ========== COMPANY MODELS ==========
 // ========== COMPANY MODELS ==========
 model Company {
