@@ -694,7 +694,7 @@ function HistoricalValue({ label, value, status, neutral }: { label: string; val
 
 function IndicatorCard({ label, value, trend }: { label: string; value: string; trend: 'up' | 'down' }) {
   return (
-    <div className="bg-gray-50 rounded-lg p-3">
+    <div className="bg-gray-50 rounded-lg p-3 flex flex-col justify-between h-32">
       <div className="flex items-center justify-between mb-2">
         <span className="text-xs text-gray-600">{label}</span>
         {trend === 'up' ? (
@@ -703,8 +703,29 @@ function IndicatorCard({ label, value, trend }: { label: string; value: string; 
           <ArrowDownRight className="w-4 h-4 text-red-600" />
         )}
       </div>
-      <div className="font-bold text-gray-900">{value}</div>
-      <div className={`h-8 mt-2 rounded ${trend === 'up' ? 'bg-green-100' : 'bg-red-100'}`}></div>
+      <div className="font-bold text-gray-900 text-xl">{value}</div>
+      <div className="mt-2">
+        {/* Trendlinie */}
+        {trend === "up" ? (
+          <svg width="80" height="24" viewBox="0 0 80 24" fill="none">
+            <polyline
+              points="0,20 20,16 40,18 60,12 80,8"
+              stroke="green"
+              strokeWidth="2"
+              fill="none"
+            />
+          </svg>
+        ) : (
+          <svg width="80" height="24" viewBox="0 0 80 24" fill="none">
+            <polyline
+              points="0,8 20,12 40,16 60,18 80,20"
+              stroke="red"
+              strokeWidth="2"
+              fill="none"
+            />
+          </svg>
+        )}
+      </div>
     </div>
   );
 }
