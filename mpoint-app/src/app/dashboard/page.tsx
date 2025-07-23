@@ -55,6 +55,7 @@ export default function DashboardPage() {
 
   const [bookedEvents, setBookedEvents] = useState<BookingType[]>([]);
   const [allEvents, setAllEvents] = useState<any[]>([]);
+  const leadImageUrl = "/news-0.jpg";
 
   const prevRef = useRef<HTMLButtonElement>(null);
   const nextRef = useRef<HTMLButtonElement>(null);
@@ -178,12 +179,22 @@ export default function DashboardPage() {
           <div className="grid lg:grid-cols-3 gap-6">
             {/* Lead Article */}
             <article className="lg:col-span-2 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-pointer overflow-hidden group" onClick={() => alert('Leitartikel: Digitale Transformation im Mittelstand')}>
-              <div className="h-64 relative overflow-hidden"  style={{
-                    background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
-                  }}>
-                <div
-                  className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity"
-                ></div>
+              <div className="h-64 relative overflow-hidden">
+                {leadImageUrl ? (
+                  <img
+                    src={leadImageUrl}
+                    alt="Digitale Transformation"
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                ) : (
+                  <div
+                    className="absolute inset-0 w-full h-full"
+                    style={{
+                      background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
+                    }}
+                  ></div>
+                )}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity bg-black"></div>
               </div>
               <div className="p-6">
                 <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-[#e60000] transition-colors">
@@ -209,20 +220,24 @@ export default function DashboardPage() {
               <NewsItem 
                 date="23. Juli 2025" 
                 title="Neue Förderprogramme für KMU in NRW beschlossen" 
+                imageUrl="/news-1.jpg"
                 onClick={() => alert('News: Neue Förderprogramme 2025')}
               />
               <NewsItem 
-                date="22. Juli 2025" 
+                date="22. Juli 2025"
+                imageUrl="/news-2.jpg"
                 title="Erfolgreiches Business Networking Event mit 200 Teilnehmern" 
                 onClick={() => alert('News: Netzwerk-Event Erfolg')}
               />
               <NewsItem 
-                date="21. Juli 2025" 
+                date="21. Juli 2025"
+                imageUrl="/news-3.jpg"
                 title="Deutsche Exporte erreichen neues Allzeithoch" 
                 onClick={() => alert('News: Export-Boom')}
               />
               <NewsItem 
-                date="20. Juli 2025" 
+                date="20. Juli 2025"
+                imageUrl="/news-4.jpg"
                 title="NRW wird zum Startup-Hub: 15 neue Tech-Unternehmen gegründet" 
                 onClick={() => alert('News: Startup-Förderung')}
               />
@@ -606,25 +621,33 @@ export default function DashboardPage() {
       </div>
     </main>
   );
-function NewsItem({ date, title, onClick }: { date: string; title: string; onClick: () => void }) {
+function NewsItem({ date, title, imageUrl, onClick }: { date: string; title: string; imageUrl?: string; onClick: () => void }) {
   return (
     <article 
       onClick={onClick}
       className="bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition-all cursor-pointer group"
     >
       <div className="flex gap-4">
-      <div
-        className="w-20 h-20 rounded-lg flex-shrink-0"
-        style={{
-        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-        }}
-      ></div>
-      <div>
-        <div className="text-sm text-gray-500 mb-1">{date}</div>
-        <h4 className="font-semibold text-gray-900 group-hover:text-[#e60000] transition-colors line-clamp-2">
-        {title}
-        </h4>
-      </div>
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={title}
+            className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
+          />
+        ) : (
+          <div
+            className="w-20 h-20 rounded-lg flex-shrink-0"
+            style={{
+              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+            }}
+          ></div>
+        )}
+        <div>
+          <div className="text-sm text-gray-500 mb-1">{date}</div>
+          <h4 className="font-semibold text-gray-900 group-hover:text-[#e60000] transition-colors line-clamp-2">
+            {title}
+          </h4>
+        </div>
       </div>
     </article>
   );
