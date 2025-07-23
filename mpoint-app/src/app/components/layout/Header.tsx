@@ -163,6 +163,12 @@ const Header = () => {
             >
               Preise
             </Link>
+             <Link
+              href="/netzwerk"
+              className="text-gray-700 hover:text-[rgb(228,25,31)] font-medium transition-colors"
+            >
+              Netzwerk
+            </Link>
             <div className="relative group">
               <button className="text-gray-700 hover:text-[rgb(228,25,31)] font-medium transition-colors flex items-center gap-1">
                 Mehr <ChevronDown className="w-4 h-4" />
@@ -182,6 +188,7 @@ const Header = () => {
                 </Link>
               </div>
             </div>
+           
           </div>
 
           {/* Desktop Actions */}
@@ -317,42 +324,15 @@ const Header = () => {
             <div className="px-4 py-6 space-y-4">
               {/* Navigation Links */}
               <div className="space-y-2">
-
+                {/* ...existing Links... */}
                 <Link
-                  href="/events"
+                  href="/netzwerk"
                   onClick={closeMobileMenu}
                   className="block px-4 py-3 text-gray-700 hover:text-[rgb(228,25,31)] hover:bg-[rgb(228,25,31,0.07)] rounded-lg transition-colors"
                 >
-                  Events
+                  Netzwerk
                 </Link>
-                <Link
-                  href="/matches"
-                  onClick={closeMobileMenu}
-                  className="block px-4 py-3 text-gray-700 hover:text-[rgb(228,25,31)] hover:bg-[rgb(228,25,31,0.07)] rounded-lg transition-colors"
-                >
-                  Matches
-                </Link>
-                <Link
-                  href="/about"
-                  onClick={closeMobileMenu}
-                  className="block px-4 py-3 text-gray-700 hover:text-[rgb(228,25,31)] hover:bg-[rgb(228,25,31,0.07)] rounded-lg transition-colors"
-                >
-                  Über uns
-                </Link>
-                <Link
-                  href="/pricing"
-                  onClick={closeMobileMenu}
-                  className="block px-4 py-3 text-gray-700 hover:text-[rgb(228,25,31)] hover:bg-[rgb(228,25,31,0.07)] rounded-lg transition-colors"
-                >
-                  Preise
-                </Link>
-                <Link
-                  href="/support"
-                  onClick={closeMobileMenu}
-                  className="block px-4 py-3 text-gray-700 hover:text-[rgb(228,25,31)] hover:bg-[rgb(228,25,31,0.07)] rounded-lg transition-colors"
-                >
-                  Support
-                </Link>
+                {/* ...existing Links... */}
               </div>
 
               {/* User Section */}
