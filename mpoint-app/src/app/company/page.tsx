@@ -425,7 +425,7 @@ export default function CompanyProfilePage() {
                   })}
                 </div>
               </div>
-
+                <ProgressBar/>
               {/* Tab Content */}
               <div className="bg-white rounded-lg shadow-sm p-8">
                 {activeTab === "basic" && (
