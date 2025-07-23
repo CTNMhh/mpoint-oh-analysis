@@ -143,31 +143,32 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-8">
-  
             <Link
               href="/events"
               className="text-gray-700 hover:text-[rgb(228,25,31)] font-medium transition-colors"
             >
               Events
             </Link>
+
+        
             <Link
-              href="/Matches"
+              href="/Matches/search"
               className="text-gray-700 hover:text-[rgb(228,25,31)] font-medium transition-colors"
             >
               Matches
             </Link>
 
             <Link
-              href="/pricing"
-              className="text-gray-700 hover:text-[rgb(228,25,31)] font-medium transition-colors"
-            >
-              Preise
-            </Link>
-             <Link
               href="/netzwerk"
               className="text-gray-700 hover:text-[rgb(228,25,31)] font-medium transition-colors"
             >
               Netzwerk
+            </Link>
+                        <Link
+              href="/pricing"
+              className="text-gray-700 hover:text-[rgb(228,25,31)] font-medium transition-colors"
+            >
+              Preise
             </Link>
             <div className="relative group">
               <button className="text-gray-700 hover:text-[rgb(228,25,31)] font-medium transition-colors flex items-center gap-1">
@@ -188,7 +189,6 @@ const Header = () => {
                 </Link>
               </div>
             </div>
-           
           </div>
 
           {/* Desktop Actions */}
@@ -332,6 +332,13 @@ const Header = () => {
                 >
                   Netzwerk
                 </Link>
+                  <Link
+    href="/Matches/search"
+    onClick={closeMobileMenu}
+    className="block px-4 py-3 text-gray-700 hover:text-[rgb(228,25,31)] hover:bg-[rgb(228,25,31,0.07)] rounded-lg transition-colors"
+  >
+    Matches
+  </Link>
                 {/* ...existing Links... */}
               </div>
 
