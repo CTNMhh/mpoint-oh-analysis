@@ -263,14 +263,18 @@ export default function DashboardPage() {
             
             <div className="space-y-4">
               {(allEvents.slice(0, 4)).map(event => (
-                <EventItem
+                <Link
                   key={event.id}
-                  day={new Date(event.startDate).getDate().toString().padStart(2, "0")}
-                  month={new Date(event.startDate).toLocaleString("de-DE", { month: "short" }).toUpperCase()}
-                  title={event.title}
-                  location={event.location || ""}
-                  onClick={() => alert(`Event: ${event.title}`)}
-                />
+                  href={`/events/${event.id}`}
+                  className="block"
+                >
+                  <EventItem
+                    day={new Date(event.startDate).getDate().toString().padStart(2, "0")}
+                    month={new Date(event.startDate).toLocaleString("de-DE", { month: "short" }).toUpperCase()}
+                    title={event.title}
+                    location={event.location || ""}
+                  />
+                </Link>
               ))}
             </div>
 
@@ -654,10 +658,9 @@ function NewsItem({ date, title, imageUrl, onClick }: { date: string; title: str
 }
 
 
-function EventItem({ day, month, title, location, onClick }: { day: string; month: string; title: string; location: string; onClick: () => void }) {
+function EventItem({ day, month, title, location }: { day: string; month: string; title: string; location: string; }) {
   return (
     <div 
-      onClick={onClick}
       className="flex gap-4 p-4 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer group"
     >
       <div className="bg-[#e60000] text-white rounded-lg p-3 text-center flex-shrink-0">
