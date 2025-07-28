@@ -4,13 +4,13 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Menu, X, ChevronDown, Bell, User, Search } from "lucide-react";
-import { signOut, useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { User as UserType } from "../../../types/user";
 
 const Header = () => {
-  const { status } = useSession(); // Status der Session
-  const [user, setUser] = useState<UserType | null>(null); // Benutzerdaten aus der API
-  const [isUserLoading, setIsUserLoading] = useState(true); // Loading-Zustand für User-Daten
+  const { data: session, status } = useSession();
+  const user = session?.user; // NextAuth User-Objekt
+
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
@@ -39,62 +39,10 @@ const Header = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isProfileDropdownOpen]);
 
-  // Benutzerdaten abrufen (mit optionalem Force-Refresh)
-  const fetchUser = useCallback(async (forceRefresh = false) => {
-    if (!forceRefresh && user) {
-      // Wenn kein Force-Refresh und User bereits vorhanden
-      setIsUserLoading(false);
-      return;
-    }
-
-    setIsUserLoading(true);
-    try {
-      const res = await fetch("/api/user");
-      const data = await res.json();
-
-      if (res.ok) {
-        // Prüfe, ob sich die Daten geändert haben
-        const hasChanged = !user || 
-          JSON.stringify(user) !== JSON.stringify(data);
-
-        if (hasChanged || forceRefresh) {
-          setUser(data);
-          console.log("Benutzerdaten aktualisiert");
-        }
-      } else {
-        setUser(null);
-      }
-    } catch (error) {
-      console.error("Fehler beim Abrufen der Benutzerdaten:", error);
-      setUser(null);
-    } finally {
-      setIsUserLoading(false);
-    }
-  }, [user]);
-
-  // Refresh-Funktion für externe Aufrufe
-  const refreshUser = useCallback(() => {
-    fetchUser(true); // Force Refresh
-  }, [fetchUser]);
-
-  // Initiales Laden der Benutzerdaten
-  useEffect(() => {
-    if (status === "authenticated") {
-      fetchUser();
-    } else if (status === "unauthenticated") {
-      setUser(null);
-      setIsUserLoading(false);
-    }
-    // Wenn status "loading" ist, bleibt isUserLoading true
-  }, [status, fetchUser]);
-
-  // Globale Refresh-Funktion verfügbar machen
-  useEffect(() => {
-    window.refreshHeaderUser = refreshUser;
-    return () => {
-      delete window.refreshHeaderUser;
-    };
-  }, [refreshUser]);
+  // Bestimme, was angezeigt werden soll
+  const showLoginButton = status === "unauthenticated";
+  const showUserActions = status === "authenticated" && user;
+  const showPlaceholder = status === "loading";
 
   // Abmelden-Handler
   function handleLogout() {
@@ -106,11 +54,6 @@ const Header = () => {
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
   };
-
-  // Bestimme, was angezeigt werden soll
-  const showLoginButton = !isUserLoading && !user && status === "unauthenticated";
-  const showUserActions = !isUserLoading && user && status === "authenticated";
-  const showPlaceholder = isUserLoading || status === "loading";
 
   return (
     <header
