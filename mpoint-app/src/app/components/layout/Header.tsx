@@ -214,16 +214,10 @@ const Header = () => {
                           Dashboard
                         </Link>
                         <Link
-                          href="/profile"
-                          className="block px-4 py-2 hover:bg-[rgb(228,25,31,0.07)] transition-colors"
-                        >
-                          Mein Profil
-                        </Link>
-                        <Link
                           href="/company"
                           className="block px-4 py-2 hover:bg-[rgb(228,25,31,0.07)] transition-colors"
                         >
-                          Unternehmensprofil
+                          Mein Profil
                         </Link>
                         <Link
                           href="/settings"
@@ -319,19 +313,13 @@ const Header = () => {
                       Dashboard
                     </Link>
                     <Link
-                      href="/profile"
+                      href="/company"
                       onClick={closeMobileMenu}
                       className="block px-4 py-3 text-gray-700 hover:text-[rgb(228,25,31)] hover:bg-[rgb(228,25,31,0.07)] rounded-lg transition-colors"
                     >
                       Mein Profil
                     </Link>
-                    <Link
-                      href="/company"
-                      onClick={closeMobileMenu}
-                      className="block px-4 py-3 text-gray-700 hover:text-[rgb(228,25,31)] hover:bg-[rgb(228,25,31,0.07)] rounded-lg transition-colors"
-                    >
-                      Unternehmensprofil
-                    </Link>
+         
                     <Link
                       href="/settings"
                       onClick={closeMobileMenu}
