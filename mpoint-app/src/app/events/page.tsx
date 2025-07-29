@@ -130,14 +130,18 @@ export default function EventsPage() {
   };
 
   const getEventsForDate = (date: Date) => {
-    const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD Format
+    // 🔧 ROBUSTE LÖSUNG: Vergleiche nur Jahr, Monat und Tag
+    const targetYear = date.getFullYear();
+    const targetMonth = date.getMonth();
+    const targetDay = date.getDate();
+
     return events.filter(event => {
-      // 🔧 FIX: Timezone-korrektes Datum extrahieren
       const eventDate = new Date(event.startDate);
-      // Verwende lokale Timezone statt UTC
-      const localEventDateStr = new Date(eventDate.getTime() - eventDate.getTimezoneOffset() * 60000)
-        .toISOString().split('T')[0];
-      return localEventDateStr === dateStr;
+
+      // Vergleiche direkt die lokalen Datumswerte ohne Timezone-Konvertierung
+      return eventDate.getFullYear() === targetYear &&
+             eventDate.getMonth() === targetMonth &&
+             eventDate.getDate() === targetDay;
     });
   };
 
