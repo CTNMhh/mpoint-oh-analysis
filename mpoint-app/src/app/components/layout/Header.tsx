@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Menu, X, ChevronDown, Bell, User, Search } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
-import { User as UserType } from "../../../types/user";
 
 const Header = () => {
   const { data: session, status } = useSession();
@@ -87,27 +86,42 @@ const Header = () => {
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-8">
             <Link
+              href="/"
+              className="text-gray-700 hover:text-[rgb(228,25,31)] font-medium transition-colors"
+            >
+              Home
+            </Link>
+            <Link
+              href="/news"
+              className="text-gray-700 hover:text-[rgb(228,25,31)] font-medium transition-colors"
+            >
+              News
+            </Link>
+            <Link
+              href="/marketplace"
+              className="text-gray-700 hover:text-[rgb(228,25,31)] font-medium transition-colors"
+            >
+              Marktplatz
+            </Link>
+            <Link
               href="/events"
               className="text-gray-700 hover:text-[rgb(228,25,31)] font-medium transition-colors"
             >
               Events
             </Link>
-
-        
             <Link
               href="/Matches/search"
               className="text-gray-700 hover:text-[rgb(228,25,31)] font-medium transition-colors"
             >
-              Matches
+              Matching
             </Link>
-
             <Link
               href="/netzwerk"
               className="text-gray-700 hover:text-[rgb(228,25,31)] font-medium transition-colors"
             >
               Netzwerk
             </Link>
-                        <Link
+            <Link
               href="/pricing"
               className="text-gray-700 hover:text-[rgb(228,25,31)] font-medium transition-colors"
             >
@@ -261,7 +275,6 @@ const Header = () => {
             <div className="px-4 py-6 space-y-4">
               {/* Navigation Links */}
               <div className="space-y-2">
-                {/* ...existing Links... */}
                 <Link
                   href="/netzwerk"
                   onClick={closeMobileMenu}
@@ -269,14 +282,13 @@ const Header = () => {
                 >
                   Netzwerk
                 </Link>
-                  <Link
-    href="/Matches/search"
-    onClick={closeMobileMenu}
-    className="block px-4 py-3 text-gray-700 hover:text-[rgb(228,25,31)] hover:bg-[rgb(228,25,31,0.07)] rounded-lg transition-colors"
-  >
-    Matches
-  </Link>
-                {/* ...existing Links... */}
+                <Link
+                  href="/Matches/search"
+                  onClick={closeMobileMenu}
+                  className="block px-4 py-3 text-gray-700 hover:text-[rgb(228,25,31)] hover:bg-[rgb(228,25,31,0.07)] rounded-lg transition-colors"
+                >
+                  Matches
+                </Link>
               </div>
 
               {/* User Section */}
@@ -319,7 +331,6 @@ const Header = () => {
                     >
                       Mein Profil
                     </Link>
-         
                     <Link
                       href="/settings"
                       onClick={closeMobileMenu}
