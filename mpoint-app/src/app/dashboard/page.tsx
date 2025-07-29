@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import ProgressBar from "../company/ProgressBar"; // Assuming ProgressBar is in the same directory
 import Link from "next/link";
+import MarketplaceSection from "../components/marketplace/MarketplaceSection"; // Adjust the import path as necessary
 import {
   Activity,
   Calendar,
@@ -399,13 +400,6 @@ export default function DashboardPage() {
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Schnellaktionen</h2>
               <div className="space-y-3">
-                <Link
-                  href="/events/create"
-                  className="flex items-center space-x-3 p-3 bg-[rgb(228,25,31)] text-white rounded-lg hover:bg-red-700 transition-colors"
-                >
-                  <Plus className="w-5 h-5" />
-                  <span>Neues Event erstellen</span>
-                </Link>
 
 
                 <Link
@@ -468,30 +462,9 @@ export default function DashboardPage() {
             </div>
 
 
-            <div className="bg-white rounded-xl shadow-sm p-6">
 
 
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-gray-900">Letzte Aktivitäten</h2>
-                <button className="text-[rgb(228,25,31)] hover:text-red-700 text-sm font-medium">
-                  Alle anzeigen
-                </button>
-              </div>
-              <div className="space-y-4">
-                {[1, 2, 3, 4].map((item) => (
-                  <div key={item} className="flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
-                    <div className="w-2 h-2 bg-[rgb(228,25,31)] rounded-full mt-2"></div>
-                    <div className="flex-1">
-                      <p className="text-sm text-gray-900">
-                        Neues Event "Business Networking München" wurde erstellt
-                      </p>
-                      <p className="text-xs text-gray-500">vor 2 Stunden</p>
-                    </div>
-                  </div>
-                ))}
-
-              </div>
-            </div>
+              <MarketplaceSection />
 
 
           </div>

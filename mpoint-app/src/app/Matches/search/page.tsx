@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Search, Filter, Users, Briefcase, MessageSquare, Building2, MapPin, Clock, ArrowRight, Plus, CheckCircle, AlertCircle, TrendingUp, Star, Send, Package, FileText, Menu, X } from "lucide-react";
 import MatchingList from "../../dashboard/MatchingList";
-
+import MarketplaceSection from "../../components/marketplace/MarketplaceSection";
 export default function MatchingMarketplacePage() {
   const [activeTab, setActiveTab] = useState<"search" | "offer" | "mine">("search");
   const [filterOpen, setFilterOpen] = useState(false);
@@ -121,60 +121,7 @@ export default function MatchingMarketplacePage() {
             </section>
 
             {/* Marketplace */}
-            <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <Briefcase className="w-5 h-5 text-[#e60000]" />
-                Marktplatz
-              </h2>
-              
-              {/* Tab Navigation */}
-              <div className="flex gap-2 mb-4">
-                <TabButton 
-                  active={activeTab === "search"} 
-                  onClick={() => setActiveTab("search")}
-                >
-                  Projekte suchen
-                </TabButton>
-                <TabButton 
-                  active={activeTab === "offer"} 
-                  onClick={() => setActiveTab("offer")}
-                >
-                  Anbieten
-                </TabButton>
-                <TabButton 
-                  active={activeTab === "mine"} 
-                  onClick={() => setActiveTab("mine")}
-                >
-                  Meine
-                </TabButton>
-              </div>
-              
-              {/* Projects List */}
-              <div className="space-y-3 mb-4">
-                <ProjectCard 
-                  type="Dienstleistung"
-                  title="Website-Relaunch gesucht"
-                  description="Wir suchen ein Team für Webentwicklung & Design"
-                  urgent
-                />
-                <ProjectCard 
-                  type="Produkt"
-                  title="Büromöbel – Großabnahme"
-                  description="Preiswerte Büromöbel für Startups – jetzt anbieten"
-                />
-                <ProjectCard 
-                  type="Kooperation"
-                  title="Partner für KI-Projekt"
-                  description="Gemeinsame Entwicklung einer B2B-Lösung"
-                  isNew
-                />
-              </div>
-              
-              <button className="w-full bg-[#e60000] text-white py-3 rounded-xl font-semibold hover:bg-red-700 transition-colors shadow-sm hover:shadow-md flex items-center justify-center gap-2">
-                <Plus className="w-5 h-5" />
-                Eigenes Projekt einstellen
-              </button>
-            </section>
+           <MarketplaceSection />
 
             {/* Stats Widget */}
             <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
