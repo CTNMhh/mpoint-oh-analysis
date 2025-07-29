@@ -1,7 +1,8 @@
 export type News = {
   id: string;
   title: string;
-  content: string;
+  shortText: string;
+  longText: string;
   imageUrl?: string;
   date: Date;
   author?: string;

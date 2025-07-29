@@ -31,12 +31,13 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { title, content, imageUrl, author, category } = body;
+    const { title, shortText, longText, imageUrl, author, category, ...rest } = body;
 
     const news = await prisma.news.create({
       data: {
         title,
-        content,
+        shortText: shortText,
+        longText: longText,
         imageUrl,
         author,
         category,

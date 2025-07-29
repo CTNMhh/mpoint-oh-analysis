@@ -250,7 +250,7 @@ export default function DashboardPage() {
                         )}
                       </div>
                       <p className="text-gray-600 line-clamp-3">
-                        {allNews[0].content}
+                        {allNews[0].shortText}
                       </p>
                     </div>
                   </Link>

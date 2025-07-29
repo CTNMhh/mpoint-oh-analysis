@@ -414,7 +414,8 @@ model News {
   id          String    @id @default(uuid())
   title       String
   subtitle    String?
-  content     String    @db.Text
+  shortText   String    @db.Text
+  longText    String    @db.Text
   imageUrl    String?
   author      String?
   category    NewsCategory @default(ALLGEMEIN)
