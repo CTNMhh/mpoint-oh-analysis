@@ -130,10 +130,14 @@ export default function EventsPage() {
   };
 
   const getEventsForDate = (date: Date) => {
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD Format
     return events.filter(event => {
-      const eventDate = new Date(event.startDate).toISOString().split('T')[0];
-      return eventDate === dateStr;
+      // 🔧 FIX: Timezone-korrektes Datum extrahieren
+      const eventDate = new Date(event.startDate);
+      // Verwende lokale Timezone statt UTC
+      const localEventDateStr = new Date(eventDate.getTime() - eventDate.getTimezoneOffset() * 60000)
+        .toISOString().split('T')[0];
+      return localEventDateStr === dateStr;
     });
   };
 
