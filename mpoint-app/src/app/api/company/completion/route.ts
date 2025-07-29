@@ -9,7 +9,7 @@ const prisma = new PrismaClient();
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    
+
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -20,22 +20,20 @@ export async function GET(request: NextRequest) {
         company: {
           include: {
             locationAdvantages: true,
-            industryTags: true,
             painPoints: true,
             searchingFor: true,
             offeringTo: true,
             expansionPlans: true,
-            certifications: true,
           }
         }
       }
     });
 
-    if (!user?.company) {
+    if (!user?.company[0]) {
       return NextResponse.json({ error: "Company not found" }, { status: 404 });
     }
 
-    const company = user.company;
+    const company = user.company[0];
 
     // Verbesserungsvorschläge basierend auf fehlenden Daten
     const suggestions = [];
@@ -84,16 +82,6 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    if (company.industryTags.length < 2) {
-      suggestions.push({
-        category: "Grunddaten",
-        field: "industryTags",
-        title: "Branchen-Tags hinzufügen",
-        description: "Tags helfen bei der präzisen Kategorisierung Ihres Unternehmens",
-        impact: "medium",
-        points: 3
-      });
-    }
 
     if (company.locationAdvantages.length === 0) {
       suggestions.push({
@@ -117,27 +105,8 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    if (company.certifications.length === 0) {
-      suggestions.push({
-        category: "Qualität",
-        field: "certifications",
-        title: "Zertifizierungen hinzufügen",
-        description: "Zertifizierungen schaffen Vertrauen und können wichtige Matching-Kriterien sein",
-        impact: "low",
-        points: 2
-      });
-    }
 
-    if (company.expansionPlans.length === 0) {
-      suggestions.push({
-        category: "Wachstum",
-        field: "expansionPlans",
-        title: "Expansionspläne definieren",
-        description: "Expansionspläne zeigen Ihre Zukunftsperspektiven und Kooperationsmöglichkeiten",
-        impact: "medium",
-        points: 3
-      });
-    }
+
 
     if (!company.registrationNumber) {
       suggestions.push({
@@ -185,10 +154,18 @@ export async function GET(request: NextRequest) {
     const filledFields = fields.filter(f => f && f !== "" && f !== 0).length;
     const completeness = fields.length > 0 ? filledFields / fields.length : 0;
 
+    // Vollständigkeit final berechnen
+    let finalCompletion = Math.min(100, Math.max(0, Math.round(completeness * 100)));
+
+    // Wenn keine Vorschläge vorhanden sind, dann 100% setzen
+    if (suggestions.length === 0) {
+      finalCompletion = 100;
+    }
+
     return NextResponse.json({
-      currentCompletion: Math.max(0, Math.min(100, Math.round(completeness * 100))),
-      potentialCompletion: Math.min(100, Math.round(maxPossibleCompletion * 10) / 10),
-      improvementPotential: Math.round((maxPossibleCompletion - company.profileCompleteness) * 10) / 10,
+      currentCompletion: finalCompletion,
+      potentialCompletion: 100,
+      improvementPotential: Math.max(0, 100 - finalCompletion),
       suggestions,
       categorizedSuggestions: categories,
       summary: {
