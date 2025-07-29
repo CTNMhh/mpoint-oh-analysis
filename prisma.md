@@ -42,6 +42,7 @@ Führe nach der Schemaänderung eine neue Migration in deinem Docker-Container a
 ```bash
 # Terminal in VSCode
 docker exec -it mpoint-nextjs npx prisma migrate dev --name add_orders
+npx prisma migrate dev --name add_news1
 ```
 
 npx prisma migrate deploy

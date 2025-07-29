@@ -47,22 +47,22 @@ enum UserRole {
 // ========== COMPANY MODELS ==========
 model Company {
   id           String    @id @default(uuid())
-  userId       String    
+  userId       String
 
   // Basis-Informationen
   name         String
   legalForm    String?
   foundedYear  Int
   registrationNumber String?
-  
+
   digitalizationLevel Int    @default(1) // 1-10, Digitalisierungsgrad
-  itBudgetPercent     Float?  
+  itBudgetPercent     Float?
   // Größenklasse
   employeeCount    Int       @default(1)
   employeeRange    EmployeeRange @default(SOLO)
   annualRevenue    Float     @default(0)
   revenueRange     RevenueRange @default(MICRO)
-  
+
   // Lokation (Hamburg-spezifisch)
   street       String?
   zipCode      String?
@@ -75,33 +75,33 @@ model Company {
   exportQuota     Int       @default(0)
   marketReach     MarketReach @default(LOCAL)
   seasonality     Seasonality @default(NONE)
-  
+
   // Führung & Entscheidung
   leadershipStructure LeadershipStructure @default(OWNER_LED)
   decisionSpeed       DecisionSpeed @default(MODERATE)
   decisionMakers      Int @default(1)
-  
+
   // Wachstum & Strategie
   growthPhase         GrowthPhase @default(ESTABLISHED)
   growthRate          Float @default(0)
   sustainabilityFocus Int @default(5)
-  
+
   // Beschreibungen
   branchDescription   String?
   companyDescription  String?
-  
+
   // Timestamps
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
-  
+
   // Matching Score (berechnet)
   matchingScore Float @default(0)
   profileCompleteness Float @default(0)
   lastMatchingUpdate DateTime @default(now())
-  
+
   // Relations
   user      User     @relation(fields: [userId], references: [id])
-  
+
   // Arrays als separate Models für bessere Queries
   locationAdvantages  LocationAdvantage[]
   industryTags       IndustryTag[]
@@ -113,15 +113,15 @@ model Company {
   painPoints         PainPoint[]
   searchingFor       SearchingFor[]
   offeringTo         OfferingTo[]
-  
+
   // Matching Relations
   sentMatches        Match[] @relation("CompanySender")
   receivedMatches    Match[] @relation("CompanyReceiver")
-  
+
   // Analytics
   activities         Activity[]
   interactions       Interaction[]
-  
+
   @@index([district])
   @@index([employeeRange])
   @@index([revenueRange])
@@ -138,7 +138,7 @@ model LocationAdvantage {
   companyId String
   value     String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
+
   @@index([companyId])
 }
 
@@ -147,7 +147,7 @@ model IndustryTag {
   companyId String
   value     String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
+
   @@index([companyId])
   @@index([value])
 }
@@ -157,7 +157,7 @@ model SecondaryNaceCode {
   companyId String
   code      String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
+
   @@index([companyId])
   @@index([code])
 }
@@ -167,7 +167,7 @@ model ExpansionPlan {
   companyId String
   type      ExpansionType
   company   Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
+
   @@index([companyId])
   @@index([type])
 }
@@ -177,7 +177,7 @@ model Certification {
   companyId String
   name      String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
+
   @@index([companyId])
   @@index([name])
 }
@@ -187,7 +187,7 @@ model ComplianceNeed {
   companyId String
   type      String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
+
   @@index([companyId])
 }
 
@@ -196,7 +196,7 @@ model QualityStandard {
   companyId String
   standard  String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
+
   @@index([companyId])
 }
 
@@ -207,7 +207,7 @@ model PainPoint {
   point     String
   priority  Int     @default(5) // 1-10 Wichtigkeit
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
+
   @@index([companyId])
   @@index([point])
 }
@@ -219,7 +219,7 @@ model SearchingFor {
   details   String?
   priority  Int     @default(5)
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
+
   @@index([companyId])
   @@index([category])
 }
@@ -231,7 +231,7 @@ model OfferingTo {
   details   String?
   priority  Int     @default(5)
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
+
   @@index([companyId])
   @@index([category])
 }
@@ -240,72 +240,72 @@ model OfferingTo {
 model MatchingPreferences {
   id     String @id @default(uuid())
   userId String @unique
-  
+
   // Geografische Präferenzen
   maxDistance      Int @default(50) // km
   preferredDistricts HamburgDistrict[]
-  
+
   // Unternehmensgröße Präferenzen
   minEmployees     Int?
   maxEmployees     Int?
   preferredSizes   EmployeeRange[]
-  
+
   // Geschäftsmodell Präferenzen
   preferredCustomerTypes CustomerType[]
   preferredMarketReach   MarketReach[]
-  
+
   // Wachstum & Innovation
   minGrowthRate    Float?
   preferredGrowthPhases GrowthPhase[]
   minSustainabilityFocus Int @default(1)
-  
+
   // Matching Einstellungen
   autoMatch        Boolean @default(true)
   weeklyMatches    Int @default(5)
   matchingActive   Boolean @default(true)
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Match {
   id            String      @id @default(uuid())
-  
+
   // Match Partner
   senderUserId    String
   receiverUserId  String
   senderCompanyId String
   receiverCompanyId String
-  
+
   // Match Details
   matchScore      Float       // 0-100
   matchType       MatchType
   status          MatchStatus @default(PENDING)
-  
+
   // Matching Gründe (JSON)
   matchReasons    Json        // Warum diese Unternehmen matchen
   commonInterests Json        // Gemeinsame Interessen
   potentialSynergies Json     // Potentielle Synergien
-  
+
   // Kommunikation
   message         String?
   response        String?
-  
+
   // Zeitstempel
   matchedAt       DateTime    @default(now())
   respondedAt     DateTime?
   expiresAt       DateTime?   // Auto-expire nach X Tagen
-  
+
   // Relations
   senderUser      User        @relation("MatchSender", fields: [senderUserId], references: [id])
   receiverUser    User        @relation("MatchReceiver", fields: [receiverUserId], references: [id])
   senderCompany   Company     @relation("CompanySender", fields: [senderCompanyId], references: [id])
   receiverCompany Company     @relation("CompanyReceiver", fields: [receiverCompanyId], references: [id])
-  
+
   interactions    Interaction[]
-  
+
   @@unique([senderUserId, receiverUserId])
   @@index([status])
   @@index([matchScore])
@@ -373,17 +373,17 @@ model Interaction {
   userId    String
   companyId String
   matchId   String?
-  
+
   type      InteractionType
   details   Json?           // Zusätzliche Details
   metadata  Json?           // Tracking Daten
-  
+
   createdAt DateTime        @default(now())
-  
+
   user      User            @relation(fields: [userId], references: [id])
   company   Company         @relation(fields: [companyId], references: [id])
   match     Match?          @relation(fields: [matchId], references: [id])
-  
+
   @@index([userId])
   @@index([type])
   @@index([createdAt])
@@ -393,23 +393,43 @@ model Activity {
   id        String       @id @default(uuid())
   userId    String
   companyId String
-  
+
   type      ActivityType
   title     String
   description String?
   data      Json?        // Flexible Datenstruktur
-  
+
   createdAt DateTime     @default(now())
-  
+
   user      User         @relation(fields: [userId], references: [id])
   company   Company      @relation(fields: [companyId], references: [id])
-  
+
   @@index([userId])
   @@index([type])
   @@index([createdAt])
 }
 
+// ========== NEWS MODEL ==========
+model News {
+  id          String    @id @default(uuid())
+  title       String
+  subtitle    String?
+  content     String    @db.Text
+  imageUrl    String?
+  author      String?
+  category    NewsCategory @default(ALLGEMEIN)
+  tags        String[]
+  publishDate DateTime  @default(now())
+  isPublished Boolean   @default(false)
+  viewCount   Int      @default(0)
+  readTime    String?  // Lesedauer z.B. "5 Min."
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
+  @@index([category])
+  @@index([publishDate])
+  @@index([isPublished])
+}
 
 // ========== ENUMS ==========
 enum EmployeeRange {
@@ -556,4 +576,16 @@ enum ActivityType {
   INDUSTRY_UPDATED
   LOCATION_CHANGED
   GROWTH_MILESTONE
+}
+
+enum NewsCategory {
+  ALLGEMEIN
+  WIRTSCHAFT
+  TECHNOLOGIE
+  DIGITALISIERUNG
+  NACHHALTIGKEIT
+  EVENTS
+  NETZWERK
+  FOERDERUNG
+  POLITIK
 }
