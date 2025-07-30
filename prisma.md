@@ -44,6 +44,18 @@ Führe nach der Schemaänderung eine neue Migration in deinem Docker-Container a
 docker exec -it mpoint-nextjs npx prisma migrate dev --name add_orders
 ```
 
+## 3. Admin-User anlegen
+
+Führe im Terminal in VSCode folgenden Befehl aus, um einen Admin-User automatisch zu erstellen:
+
+```bash
+docker exec -it mpoint-nextjs npx ts-node scripts/create-admin.ts
+```
+
+Damit wird ein Admin-User mit den im Skript hinterlegten Zugangsdaten
+(`admin@ctnm.de` / `test1234`)
+in der Datenbank angelegt.
+
 npx prisma migrate deploy
 
 ✅ Danach ist deine Datenbank synchron mit dem aktualisierten Prisma-Schema.
