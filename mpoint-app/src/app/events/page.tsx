@@ -45,21 +45,6 @@ export default function EventsPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'calendar' | 'list'>('grid');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showYearPicker, setShowYearPicker] = useState(false);
-  const [form, setForm] = useState({
-    title: "",
-    imageUrl: "",
-    startDate: "",
-    endDate: "",
-    location: "",
-    ventType: "",
-    price: 0,
-    categories: "",
-    calendarGoogle: "",
-    calendarIcs: "",
-    description: "",
-  });
-  const [creating, setCreating] = useState(false);
-  const [error, setError] = useState("");
 
   // Lade alle Events
   useEffect(() => {
@@ -91,7 +76,7 @@ export default function EventsPage() {
     }
   }, [status]);
 
-  // 🆕 Click-Handler um Jahr-Picker zu schließen wenn außerhalb geklickt wird
+  // Click-Handler um Jahr-Picker zu schließen wenn außerhalb geklickt wird
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (showYearPicker) {
@@ -130,15 +115,12 @@ export default function EventsPage() {
   };
 
   const getEventsForDate = (date: Date) => {
-    // 🔧 ROBUSTE LÖSUNG: Vergleiche nur Jahr, Monat und Tag
     const targetYear = date.getFullYear();
     const targetMonth = date.getMonth();
     const targetDay = date.getDate();
 
     return events.filter(event => {
       const eventDate = new Date(event.startDate);
-
-      // Vergleiche direkt die lokalen Datumswerte ohne Timezone-Konvertierung
       return eventDate.getFullYear() === targetYear &&
              eventDate.getMonth() === targetMonth &&
              eventDate.getDate() === targetDay;
@@ -220,46 +202,16 @@ export default function EventsPage() {
     return days;
   };
 
-  async function handleCreate(e: React.FormEvent) {
-    e.preventDefault();
-    setCreating(true);
-    setError("");
-    try {
-      const res = await fetch("/api/events", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          categories: form.categories.split(",").map((c) => c.trim()),
-        }),
-      });
-      if (!res.ok) {
-        const data = await res.json();
-        setError(data.message || "Fehler beim Erstellen.");
-      } else {
-        setShowForm(false);
-        setForm({
-          title: "",
-          imageUrl: "",
-          startDate: "",
-          endDate: "",
-          location: "",
-          ventType: "",
-          price: 0,
-          categories: "",
-          calendarGoogle: "",
-          calendarIcs: "",
-          description: "",
-        });
-        // Events neu laden
-        const data = await res.json();
-        setEvents((prev) => [data, ...prev]);
-      }
-    } catch (err) {
-      setError("Fehler beim Erstellen.");
+  // Handler für das Löschen einer Buchung
+  const handleDeleteBooking = async (bookingId: string) => {
+    await fetch(`/api/bookings/${bookingId}`, { method: "DELETE" });
+    // Buchungen neu laden
+    const res = await fetch("/api/my-bookings");
+    if (res.ok) {
+      const data = await res.json();
+      setBookings(data);
     }
-    setCreating(false);
-  }
+  };
 
   return (
     <main className="min-h-screen bg-gradient-to-br pt-40 from-gray-50 to-white py-12 px-4">
@@ -479,15 +431,7 @@ export default function EventsPage() {
                     </td>
                     <td className="py-2 px-4">
                       <button
-                        onClick={async () => {
-                          await fetch(`/api/bookings/${booking.id}`, { method: "DELETE" });
-                          // Buchungen neu laden
-                          const res = await fetch("/api/my-bookings");
-                          if (res.ok) {
-                            const data = await res.json();
-                            setBookings(data);
-                          }
-                        }}
+                        onClick={() => handleDeleteBooking(booking.id)}
                         className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-700"
                       >
                         Abmelden
