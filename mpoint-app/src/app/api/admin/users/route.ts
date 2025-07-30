@@ -1,23 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import { verifyAdmin } from "../utils/verifyAdmin";
 
 const prisma = new PrismaClient();
-const JWT_SECRET = process.env.JWT_SECRET || "supersecret";
 
 // Admin-Auth prüfen
-function verifyAdmin(req: NextRequest) {
-  const token = req.cookies.get("admin_session")?.value;
-  if (!token) return null;
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
-    if (decoded.isAdmin) return decoded;
-    return null;
-  } catch {
-    return null;
-  }
-}
+
 
 // Alle User anzeigen
 export async function GET(req: NextRequest) {
