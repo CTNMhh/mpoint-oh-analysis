@@ -45,7 +45,7 @@ const Header = () => {
 
   // Abmelden-Handler
   function handleLogout() {
-    signOut({ callbackUrl: "/" });
+    signOut({ callbackUrl: "/login" }); // Leitet nach Logout auf /login weiter
     setIsMobileMenuOpen(false); // Mobile Menu schließen
   }
 
