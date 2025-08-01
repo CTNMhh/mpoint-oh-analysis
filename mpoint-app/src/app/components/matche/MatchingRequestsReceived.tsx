@@ -9,17 +9,22 @@ export default function IncomingRequests() {
 
   useEffect(() => {
     if (!session?.user?.id) return;
-    fetch(`/api/matching/requests/received?userId=${session.user.id}`)
-      .then(res => res.json())
-      .then(setRequests)
-      .finally(() => setLoading(false));
-      
+    const fetchRequests = () => {
+      setLoading(true);
+      fetch(`/api/matching/requests/received?userId=${session.user.id}`)
+        .then(res => res.json())
+        .then(setRequests)
+        .finally(() => setLoading(false));
+    };
+    fetchRequests();
+    window.addEventListener("matching-requests-updated", fetchRequests);
+    return () => window.removeEventListener("matching-requests-updated", fetchRequests);
   }, [session?.user?.id]);
 
   if (!session?.user?.id) return null;
   if (loading) return <div>Lade Anfragen...</div>;
   if (requests.length === 0) return <div className="text-gray-400 text-sm">Keine neuen Anfragen.</div>;
-console.log("Received requests:", requests);
+  console.log("Received requests:", requests);
   return (
     <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
       <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">

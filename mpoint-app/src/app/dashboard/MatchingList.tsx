@@ -478,7 +478,6 @@ function ConnectButton({
     setStatus("loading");
     try {
       let realMatchId = matchId;
-      // Wenn keine Match-ID vorhanden, erstelle einen neuen Match
       if (!realMatchId) {
         const res = await fetch("/api/matching/connect", {
           method: "POST",
@@ -494,14 +493,16 @@ function ConnectButton({
         if (!res.ok || !data.matchId) throw new Error();
         realMatchId = data.matchId;
       }
-      // Double-Opt-In
       const res2 = await fetch("/api/matching/accept", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ matchId: realMatchId, userId }),
       });
-      if (res2.ok) setStatus("success");
-      else setStatus("error");
+      if (res2.ok) {
+        setStatus("success");
+        // Event für alle Listener auslösen:
+        window.dispatchEvent(new Event("matching-requests-updated"));
+      } else setStatus("error");
     } catch {
       setStatus("error");
     }

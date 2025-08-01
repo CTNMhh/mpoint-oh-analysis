@@ -7,16 +7,30 @@ export default function OutgoingRequests() {
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!session?.user?.id) return;
+ useEffect(() => {
+  if (!session?.user?.id) return;
+  const fetchRequests = () => {
+    setLoading(true);
     fetch(`/api/matching/requests/sent?userId=${session.user.id}`)
       .then(res => res.json())
       .then(setRequests)
       .finally(() => setLoading(false));
-  }, [session?.user?.id]);
+  };
+  fetchRequests();
+  window.addEventListener("matching-requests-updated", fetchRequests);
+  return () => window.removeEventListener("matching-requests-updated", fetchRequests);
+}, [session?.user?.id]);
 
   if (!session?.user?.id) return null;
-  if (loading) return <div>Lade Anfragen...</div>;
+  if (loading) return (
+    <div className="flex items-center gap-2 text-gray-500">
+      <svg className="animate-spin h-5 w-5 text-[#e60000]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+      </svg>
+      Lade Anfragen...
+    </div>
+  );
   if (requests.length === 0) return <div className="text-gray-400 text-sm">Keine offenen Anfragen.</div>;
 
   return (
