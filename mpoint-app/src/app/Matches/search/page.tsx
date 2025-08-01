@@ -3,9 +3,11 @@ import React, { useState } from "react";
 import { Search, Filter, Users, Briefcase, MessageSquare, Building2, MapPin, Clock, ArrowRight, Plus, CheckCircle, AlertCircle, TrendingUp, Star, Send, Package, FileText, Menu, X } from "lucide-react";
 import MatchingList from "../../dashboard/MatchingList";
 import MarketplaceSection from "../../components/marketplace/MarketplaceSection";
+import OutgoingRequests from "../../components/matche/MatchingRequests";
+import IncomingRequests from "../../components/matche/MatchingRequestsReceived";
+
 export default function MatchingMarketplacePage() {
-  const [activeTab, setActiveTab] = useState<"search" | "offer" | "mine">("search");
-  const [filterOpen, setFilterOpen] = useState(false);
+ 
 
   return (
     <div className="bg-gray-50 mt-20 min-h-screen">
@@ -58,6 +60,8 @@ export default function MatchingMarketplacePage() {
                   size="11-20 Mitarbeiter"
                   matchPercentage={74}
                   tags={["Nachhaltigkeit", "Innovation"]}
+                  matchId="1"
+                  userId="currentUser"
                 />
                 <MemberCard 
                   category="Networking"
@@ -66,6 +70,8 @@ export default function MatchingMarketplacePage() {
                   size="21-50 Mitarbeiter"
                   matchPercentage={68}
                   tags={["Digitalisierung", "KI"]}
+                  matchId="2"
+                  userId="currentUser"
                 />
                 <MemberCard 
                   category="Produktion"
@@ -74,6 +80,8 @@ export default function MatchingMarketplacePage() {
                   size="50+ Mitarbeiter"
                   matchPercentage={65}
                   tags={["Industrie 4.0", "Export"]}
+                  matchId="3"
+                  userId="currentUser"
                 />
                 <MemberCard 
                   category="E-Commerce"
@@ -82,6 +90,8 @@ export default function MatchingMarketplacePage() {
                   size="10-20 Mitarbeiter"
                   matchPercentage={62}
                   tags={["Online-Handel", "B2C"]}
+                  matchId="4"
+                  userId="currentUser"
                 />
               </div>
             </section>
@@ -89,36 +99,10 @@ export default function MatchingMarketplacePage() {
 
           {/* Right Column - Communication & Marketplace */}
           <aside className="space-y-8">
-            {/* Active Communications */}
-            <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <MessageSquare className="w-5 h-5 text-[#e60000]" />
-                Aktuelle Kommunikationen
-              </h2>
-              
-              <div className="space-y-3">
-                <CommunicationItem 
-                  company="maxmuster GmbH"
-                  status="open"
-                  lastMessage="22.07.2025, 15:10"
-                  hasUnread
-                />
-                <CommunicationItem 
-                  company="frauenschmidt AG"
-                  status="active"
-                  lastMessage="22.07.2025, 13:32"
-                />
-                <CommunicationItem 
-                  company="schmidt-consulting"
-                  status="pending"
-                  lastMessage="21.07.2025, 09:45"
-                />
-              </div>
-              
-              <button className="w-full mt-4 text-[#e60000] text-sm font-medium hover:underline">
-                Alle Nachrichten anzeigen
-              </button>
-            </section>
+              <IncomingRequests />
+
+                 <OutgoingRequests />
+
 
             {/* Marketplace */}
            <MarketplaceSection />
@@ -236,14 +220,29 @@ function MatchCard({ category, company, location, size, matchPercentage, isPremi
   );
 }
 
-function MemberCard({ category, company, location, size, matchPercentage, tags }: {
+function MemberCard({ category, company, location, size, matchPercentage, tags, matchId, userId }: {
   category: string;
   company: string;
   location: string;
   size: string;
   matchPercentage: number;
   tags: string[];
+  matchId: string; // <- Match-ID aus den Daten
+  userId: string;  // <- Aktueller User
 }) {
+  const [status, setStatus] = React.useState<"idle"|"loading"|"success"|"error">("idle");
+
+  const handleConnect = async () => {
+    setStatus("loading");
+    const res = await fetch("/api/matching/accept", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ matchId, userId }),
+    });
+    if (res.ok) setStatus("success");
+    else setStatus("error");
+  };
+
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-all group">
       <div className="flex items-start justify-between mb-3">
@@ -270,8 +269,12 @@ function MemberCard({ category, company, location, size, matchPercentage, tags }
       
       <div className="flex items-center justify-between">
         <span className="text-[#e60000] font-bold">{matchPercentage}% Match</span>
-        <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium">
-          Match-Anfrage
+        <button
+          onClick={handleConnect}
+          disabled={status === "loading" || status === "success"}
+          className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
+        >
+          {status === "success" ? "Anfrage gesendet" : "Match-Anfrage"}
         </button>
       </div>
     </div>
@@ -333,72 +336,7 @@ function CommunicationItem({ company, status, lastMessage, hasUnread }: {
   );
 }
 
-function ProjectCard({ type, title, description, urgent, isNew }: {
-  type: string;
-  title: string;
-  description: string;
-  urgent?: boolean;
-  isNew?: boolean;
-}) {
-  const getTypeIcon = () => {
-    switch(type) {
-      case 'Dienstleistung': return <FileText className="w-4 h-4" />;
-      case 'Produkt': return <Package className="w-4 h-4" />;
-      case 'Kooperation': return <Users className="w-4 h-4" />;
-      default: return <Briefcase className="w-4 h-4" />;
-    }
-  };
 
-  return (
-    <div className="border border-gray-200 rounded-xl bg-gray-50 p-4 hover:shadow-md transition-all group cursor-pointer">
-      <div className="flex items-start justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <div className="text-gray-500">{getTypeIcon()}</div>
-          <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">{type}</span>
-        </div>
-        {urgent && (
-          <span className="bg-red-100 text-red-600 text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1">
-            <AlertCircle className="w-3 h-3" />
-            Dringend
-          </span>
-        )}
-        {isNew && (
-          <span className="bg-green-100 text-green-600 text-xs font-medium px-2 py-1 rounded-full">
-            Neu
-          </span>
-        )}
-      </div>
-      
-      <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-[#e60000] transition-colors">
-        {title}
-      </h3>
-      <p className="text-sm text-gray-600 mb-3">{description}</p>
-      
-      <button className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
-        Ansehen
-      </button>
-    </div>
-  );
-}
-
-function TabButton({ active, children, onClick }: {
-  active: boolean;
-  children: React.ReactNode;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-        active 
-          ? 'bg-[#e60000] text-white' 
-          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
 
 function StatItem({ icon, label, value, trend, subtext }: {
   icon: React.ReactNode;

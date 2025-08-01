@@ -540,11 +540,10 @@ enum MatchType {
 
 enum MatchStatus {
   PENDING
-  ACCEPTED
-  DECLINED
-  EXPIRED
+  ACCEPTED_BY_SENDER
+  ACCEPTED_BY_RECEIVER
   CONNECTED
-  ARCHIVED
+  REJECTED
 }
 
 enum InteractionType {

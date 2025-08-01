@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Users, MapPin, TrendingUp, Briefcase, Target, Handshake, Award, Calendar, ChevronRight, Star, Building2, Globe } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 type MatchingData = {
   company: {
@@ -21,6 +22,7 @@ type MatchingData = {
     certifications?: string[];
     painPoints?: string[];
     user?: {
+      id: string;
       firstName: string;
       lastName: string;
       titel?: string;
@@ -36,6 +38,7 @@ type MatchingData = {
     lastActivedays: number;
     isRecentlyActive: boolean;
   };
+  matchStatus?: "PENDING" | "CONNECTED" | "REJECTED"| "ACCEPTED_BY_SENDER";
 };
 
 type Meta = {
@@ -80,6 +83,9 @@ const growthPhaseLabels = {
 };
 
 export default function MatchingList({ companyId: propCompanyId, limit = 15 }: { companyId?: string; limit?: number }) {
+  const { data: session } = useSession();
+  const currentUserId = session?.user?.id || "";
+
   const [matches, setMatches] = useState<MatchingData[]>([]);
   const [meta, setMeta] = useState<Meta | null>(null);
   const [loading, setLoading] = useState(true);
@@ -146,7 +152,7 @@ export default function MatchingList({ companyId: propCompanyId, limit = 15 }: {
     if (score >= 40) return "✨";
     return "👍";
   };
-
+console.log("Matches:", matches);
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -192,8 +198,8 @@ export default function MatchingList({ companyId: propCompanyId, limit = 15 }: {
         <button
           onClick={() => setFilter("all")}
           className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${filter === "all"
-              ? "bg-[rgb(228,25,31)] text-white"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            ? "bg-[rgb(228,25,31)] text-white"
+            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
         >
           Alle ({matches.length})
@@ -206,8 +212,8 @@ export default function MatchingList({ companyId: propCompanyId, limit = 15 }: {
               key={key}
               onClick={() => setFilter(key)}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${filter === key
-                  ? "bg-[rgb(228,25,31)] text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                ? "bg-[rgb(228,25,31)] text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                 }`}
             >
               {label} ({count})
@@ -318,10 +324,21 @@ export default function MatchingList({ companyId: propCompanyId, limit = 15 }: {
 
                 {/* Action Buttons */}
                 <div className="flex flex-col gap-2 lg:ml-4">
-                  <button className="bg-[rgb(228,25,31)] text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors font-medium flex items-center gap-2">
-                    <Handshake className="w-4 h-4" />
-                    Vernetzen
-                  </button>
+                  {match.matchStatus === "ACCEPTED_BY_SENDER" ? (
+                    <button
+                      disabled
+                      className="bg-gray-200 text-gray-500 px-6 py-2 rounded-lg font-medium flex items-center gap-2 cursor-not-allowed"
+                    >
+                      Angefragt
+                    </button>
+                  ) : (
+                    <ConnectButton
+                      userId={currentUserId}
+                      companyId={companyId || ""} // <- deine eigene Firma (aus State)
+                      partnerCompanyId={match.company.id} // <- die andere Firma
+                      receiverUserId={match.company.user?.id} // <- der User der anderen Firma, falls vorhanden
+                    />
+                  )}
                   <button
                     onClick={() => setExpandedMatch(expandedMatch === match.company.id ? null : match.company.id)}
                     className="bg-gray-100 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-200 transition-colors font-medium flex items-center gap-2"
@@ -439,5 +456,69 @@ export default function MatchingList({ companyId: propCompanyId, limit = 15 }: {
         ))}
       </div>
     </div>
+  );
+}
+
+function ConnectButton({
+  matchId,
+  userId,
+  companyId,
+  partnerCompanyId,
+  receiverUserId,
+}: {
+  matchId?: string;
+  userId: string;
+  companyId: string;
+  partnerCompanyId: string;
+  receiverUserId?: string;
+}) {
+  const [status, setStatus] = React.useState<"idle" | "loading" | "success" | "error">("idle");
+
+  const handleConnect = async () => {
+    setStatus("loading");
+    try {
+      let realMatchId = matchId;
+      // Wenn keine Match-ID vorhanden, erstelle einen neuen Match
+      if (!realMatchId) {
+        const res = await fetch("/api/matching/connect", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId,
+            companyId,
+            partnerCompanyId,
+            receiverUserId,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.matchId) throw new Error();
+        realMatchId = data.matchId;
+      }
+      // Double-Opt-In
+      const res2 = await fetch("/api/matching/accept", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ matchId: realMatchId, userId }),
+      });
+      if (res2.ok) setStatus("success");
+      else setStatus("error");
+    } catch {
+      setStatus("error");
+    }
+  };
+
+  return (
+    <button
+      onClick={handleConnect}
+      disabled={status === "loading" || status === "success"}
+      className="bg-[rgb(228,25,31)] text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors font-medium flex items-center gap-2"
+    >
+      <Handshake className="w-4 h-4" />
+      {status === "success"
+        ? "Anfrage gesendet"
+        : status === "loading"
+          ? "Sende..."
+          : "Vernetzen"}
+    </button>
   );
 }

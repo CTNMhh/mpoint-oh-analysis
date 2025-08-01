@@ -66,7 +66,7 @@ user: { is: { id: { not: undefined } } }
             { senderCompanyId: myCompanyId },
             { receiverCompanyId: myCompanyId }
           ],
-          status: { in: [MatchStatus.ACCEPTED, MatchStatus.CONNECTED] }
+          status: { in: [MatchStatus.CONNECTED] } // Nur verbundene Matches
         },
         select: {
           senderCompanyId: true,
@@ -429,47 +429,63 @@ user: { is: { id: { not: undefined } } }
     }
 
     // 10. Formatiere die Ausgabe
-    const formattedMatches = selectedMatches.map((match) => ({
-      company: {
-        id: match.company.id,
-        name: match.company.name,
-        legalForm: match.company.legalForm,
-        district: match.company.district,
-        employeeRange: match.company.employeeRange,
-        customerType: match.company.customerType,
-        marketReach: match.company.marketReach,
-        growthPhase: match.company.growthPhase,
-        digitalizationLevel: match.company.digitalizationLevel,
-        sustainabilityFocus: match.company.sustainabilityFocus,
-        description: match.company.companyDescription,
-        branchDescription: match.company.branchDescription,
-        industryTags: match.company.industryTags.map((t: any) => t.value),
-        searchingFor: match.company.searchingFor.map((s: any) => ({
-          category: s.category,
-          details: s.details
-        })),
-        offeringTo: match.company.offeringTo.map((o: any) => ({
-          category: o.category,
-          details: o.details
-        })),
-        certifications: match.company.certifications.map((c: any) => c.name),
-        painPoints: match.company.painPoints.map((p: any) => p.point),
-        user: {
-          firstName: match.company.user.firstName,
-          lastName: match.company.user.lastName,
-          titel: match.company.user.titel
-        }
-      },
-      matching: {
-        score: Math.round(match.matchScore),
-        percentage: Math.min(Math.round(match.matchScore), 100),
-        type: match.matchType,
-        reasons: match.matchReasons,
-        commonInterests: match.commonInterests,
-        potentialSynergies: match.potentialSynergies,
-        lastActivedays: match.lastActive,
-        isRecentlyActive: match.lastActive <= 7
-      }
+    const formattedMatches = await Promise.all(selectedMatches.map(async (match) => {
+      // Prüfe, ob es einen offenen Match gibt (PENDING oder ACCEPTED_BY_SENDER)
+      const existing = await prisma.match.findFirst({
+        where: {
+          senderCompanyId: myCompanyId,
+          receiverCompanyId: match.company.id,
+          status: { in: [MatchStatus.PENDING, MatchStatus.ACCEPTED_BY_SENDER] }
+        },
+        select: { status: true }
+      });
+
+      return {
+        company: {
+          id: match.company.id,
+          name: match.company.name,
+          legalForm: match.company.legalForm,
+          district: match.company.district,
+          employeeRange: match.company.employeeRange,
+          customerType: match.company.customerType,
+          marketReach: match.company.marketReach,
+          growthPhase: match.company.growthPhase,
+          digitalizationLevel: match.company.digitalizationLevel,
+          sustainabilityFocus: match.company.sustainabilityFocus,
+          description: match.company.companyDescription,
+          branchDescription: match.company.branchDescription,
+          industryTags: match.company.industryTags.map((t: any) => t.value),
+          searchingFor: match.company.searchingFor.map((s: any) => ({
+            category: s.category,
+            details: s.details
+          })),
+          offeringTo: match.company.offeringTo.map((o: any) => ({
+            category: o.category,
+            details: o.details
+          })),
+          certifications: match.company.certifications.map((c: any) => c.name),
+          painPoints: match.company.painPoints.map((p: any) => p.point),
+          user: match.company.user
+            ? {
+                id: match.company.user.id,
+                firstName: match.company.user.firstName,
+                lastName: match.company.user.lastName,
+                titel: match.company.user.titel
+              }
+            : undefined
+        },
+        matching: {
+          score: Math.min(Math.round(match.matchScore), 100),
+          percentage: Math.min(Math.round(match.matchScore), 100),
+          type: match.matchType,
+          reasons: match.matchReasons,
+          commonInterests: match.commonInterests,
+          potentialSynergies: match.potentialSynergies,
+          lastActivedays: match.lastActive,
+          isRecentlyActive: match.lastActive <= 7
+        },
+        matchStatus: existing?.status || null // <--- HIER hinzugefügt!
+      };
     }));
 
     // 11. Logge Interaktion (optional)
