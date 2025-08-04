@@ -15,6 +15,9 @@ export default function AdminHeader() {
         <Link href="/admin/events" className="hover:underline">
           Events
         </Link>
+        <Link href="/admin/news" className="hover:underline">
+          News
+        </Link>
         <Link href="/admin/logout" className="hover:underline">
           Logout
         </Link>
