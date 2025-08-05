@@ -18,6 +18,7 @@ export default function AdminNewsEditPage() {
     tags: "",
     readTime: "",
     isPublished: false,
+    publishDate: "",
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -48,6 +49,7 @@ export default function AdminNewsEditPage() {
       body: JSON.stringify({
         ...form,
         tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean),
+        publishDate: form.publishDate ? new Date(form.publishDate).toISOString() : undefined,
       }),
     });
     if (res.ok) {
@@ -68,12 +70,19 @@ export default function AdminNewsEditPage() {
     <div className="max-w-2xl mx-auto p-8">
       <h1 className="text-2xl font-bold mb-6">News bearbeiten</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
+        <label className="block text-sm font-medium text-gray-700">Titel</label>
         <input name="title" value={form.title} onChange={handleChange} placeholder="Titel" required className="w-full border p-2 rounded" />
+        <label className="block text-sm font-medium text-gray-700">Untertitel</label>
         <input name="subtitle" value={form.subtitle} onChange={handleChange} placeholder="Untertitel" className="w-full border p-2 rounded" />
+        <label className="block text-sm font-medium text-gray-700">Kurztext</label>
         <input name="shortText" value={form.shortText} onChange={handleChange} placeholder="Kurztext" required className="w-full border p-2 rounded" />
+        <label className="block text-sm font-medium text-gray-700">Langtext (HTML erlaubt)</label>
         <textarea name="longText" value={form.longText} onChange={handleChange} placeholder="Langtext (HTML erlaubt)" required className="w-full border p-2 rounded min-h-[120px]" />
+        <label className="block text-sm font-medium text-gray-700">Bild-URL</label>
         <input name="imageUrl" value={form.imageUrl} onChange={handleChange} placeholder="Bild-URL" className="w-full border p-2 rounded" />
+        <label className="block text-sm font-medium text-gray-700">Autor</label>
         <input name="author" value={form.author} onChange={handleChange} placeholder="Autor" className="w-full border p-2 rounded" />
+        <label className="block text-sm font-medium text-gray-700">Kategorie</label>
         <select name="category" value={form.category} onChange={handleChange} className="w-full border p-2 rounded">
           <option value="ALLGEMEIN">Allgemein</option>
           <option value="WIRTSCHAFT">Wirtschaft</option>
@@ -85,8 +94,18 @@ export default function AdminNewsEditPage() {
           <option value="FOERDERUNG">Förderung</option>
           <option value="POLITIK">Politik</option>
         </select>
+        <label className="block text-sm font-medium text-gray-700">Tags (Komma-getrennt)</label>
         <input name="tags" value={form.tags} onChange={handleChange} placeholder="Tags (Komma-getrennt)" className="w-full border p-2 rounded" />
+        <label className="block text-sm font-medium text-gray-700">Lesezeit (z.B. 5 Min.)</label>
         <input name="readTime" value={form.readTime} onChange={handleChange} placeholder="Lesezeit (z.B. 5 Min.)" className="w-full border p-2 rounded" />
+        <label className="block text-sm font-medium text-gray-700">Veröffentlichungsdatum</label>
+        <input
+          type="datetime-local"
+          name="publishDate"
+          value={form.publishDate ? new Date(form.publishDate).toISOString().slice(0,16) : ""}
+          onChange={handleChange}
+          className="w-full border p-2 rounded"
+        />
         {error && <div className="text-red-600">{error}</div>}
         <button type="submit" disabled={loading} className="bg-[#e60000] text-white px-4 py-2 rounded hover:bg-red-700">
           {loading ? "Speichern..." : "Änderungen speichern"}
