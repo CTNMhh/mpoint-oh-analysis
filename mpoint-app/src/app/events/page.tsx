@@ -91,12 +91,22 @@ export default function EventsPage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showYearPicker]);
 
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      window.location.href = "/api/auth/signin";
+    }
+  }, [status]);
+
   if (loading || status === "loading") {
     return (
       <main className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[rgb(228,25,31)]"></div>
       </main>
     );
+  }
+
+  if (status === "unauthenticated") {
+    return null;
   }
 
   // Eigene Events filtern
