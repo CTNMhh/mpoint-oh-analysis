@@ -44,7 +44,7 @@ export default function NewsDetailPage() {
 
   return (
     <main className="min-h-screen bg-gray-50 pt-20">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <button
           className="mb-6 flex items-center gap-2 text-[#e60000] font-medium hover:underline"
           onClick={() => router.back()}
@@ -55,15 +55,17 @@ export default function NewsDetailPage() {
           {news.imageUrl && (
             <img src={news.imageUrl} alt={news.title} className="w-full h-64 object-cover rounded-lg mb-6" />
           )}
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">{news.title}</h1>
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-2 leading-tight">{news.title}</h1>
           {news.subtitle && <h2 className="text-lg text-gray-600 mb-4">{news.subtitle}</h2>}
           <div className="flex items-center gap-4 text-sm text-gray-500 mb-6">
-            <span>{new Date(news.publishDate).toLocaleDateString('de-DE', { day: '2-digit', month: 'long', year: 'numeric' })}</span>
-            {news.author && <><span>•</span><span>Von {news.author}</span></>}
-            {news.readTime && <><span>•</span><span>{news.readTime} Lesezeit</span></>}
-            {news.category && <><span>•</span><span>{news.category.charAt(0).toUpperCase() + news.category.slice(1).toLowerCase()}</span></>}
+            <div className="flex flex-row flex-wrap gap-x-4 text-sm text-gray-500 mb-6">
+              <span>{new Date(news.publishDate).toLocaleDateString('de-DE', { day: '2-digit', month: 'long', year: 'numeric' })}</span>
+              {news.author && <span>Von {news.author}</span>}
+              {news.readTime && <span>{news.readTime} Lesezeit</span>}
+              {news.category && <span>{news.category.charAt(0).toUpperCase() + news.category.slice(1).toLowerCase()}</span>}
+            </div>
           </div>
-          <div className="prose max-w-none text-gray-900" dangerouslySetInnerHTML={{ __html: news.longText || "" }} />
+          <div className="prose max-w-none text-gray-900 [&>*]:mb-4 [&_h2]:text-2xl [&_h2]:mb-4 [&_h3]:text-xl [&_h3]:mb-3 [&_blockquote]:italic [&_blockquote]:text-gray-600" dangerouslySetInnerHTML={{ __html: news.longText || "" }} />
         </article>
       </div>
     </main>
