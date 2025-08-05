@@ -357,8 +357,13 @@ export default function EventsPage() {
                         <div className="flex-1">
                           <h3 className="text-lg font-semibold text-gray-900 mb-2">{event.title}</h3>
                           <div className="flex flex-wrap gap-4 text-sm text-gray-600 mb-2">
-                            <span>📅 {new Date(event.startDate).toLocaleString()}</span>
-                            <span>📍 {event.location}</span>
+                            <span>
+                              📅 {new Date(event.startDate).toLocaleString()}
+                              {event.endDate && (
+                                <> – {new Date(event.endDate).toLocaleString()}</>
+                              )}
+                              {" "}– {event.location}
+                            </span>
                             <span>💰 {event.price === 0 ? 'Kostenlos' : `${event.price} €`}</span>
                             <span>👤 {event.user.firstName} {event.user.lastName}</span>
                           </div>
@@ -470,7 +475,11 @@ export default function EventsPage() {
                     )}
                     <h2 className="text-xl font-bold mb-2">{event.title}</h2>
                     <div className="text-gray-600 mb-2">
-                      {new Date(event.startDate).toLocaleString()} – {event.location}
+                      {new Date(event.startDate).toLocaleString()}
+                      {event.endDate && (
+                        <> – {new Date(event.endDate).toLocaleString()}</>
+                      )}
+                      {" "}– {event.location}
                     </div>
                     <div className="text-gray-700 font-medium mb-2">
                       Preis:{" "}
