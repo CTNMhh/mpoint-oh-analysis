@@ -172,6 +172,8 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
         organizer: body.organizer,
         calendarLinks: body.calendarLinks,
         categories: body.categories,
+        status: body.status,
+        isActive: body.isActive, // <-- richtiges Feld!
         updatedAt: new Date()
       }
     });

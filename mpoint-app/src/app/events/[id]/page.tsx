@@ -5,28 +5,7 @@ import { useEffect, useState } from "react";
 import { Calendar } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-
-type EventType = {
-  id: string;
-  title: string;
-  description: string;
-  imageUrl?: string;
-  startDate: string;
-  endDate?: string;
-  startTime?: string;
-  endTime?: string;
-  location: string;
-  ventType: string;
-  price: number;
-  categories: string[];
-  organizer?: string;
-  calendarLinks?: any;
-  user: {
-    firstName: string;
-    lastName: string;
-    email: string;
-  };
-};
+import { EventType, EventStatus } from "../types";
 
 export default function EventDetailPage({ params }: { params: { id: string } }) {
   const [event, setEvent] = useState<EventType | null>(null);
@@ -110,7 +89,21 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
         <div className="flex flex-col md:flex-row items-center mb-8 gap-8">
           <h1 className="text-4xl font-extrabold mb-6 md:mb-0 md:w-1/2 text-[rgb(228,25,31)]">
             {event.title}
+            {event.active && (
+              <span className="ml-3 px-3 py-1 bg-green-100 text-green-700 text-base rounded font-semibold align-middle">
+                Aktiv
+              </span>
+            )}
           </h1>
+          <div className="mb-4">
+            <span className="px-2 py-1 bg-gray-100 text-gray-700 text-sm rounded font-semibold">
+              {event.user.email === session?.user?.email
+                ? event.status
+                : (event.status === EventStatus.FULL || event.status === EventStatus.CANCELLED)
+                  ? event.status
+                  : null}
+            </span>
+          </div>
           {event.imageUrl && (
             <div className="md:w-1/2 w-full flex justify-center">
               <img
@@ -125,11 +118,12 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
           <div className="font-semibold text-gray--700 mb-2">
             Veranstalter: {event.ventType}
           </div>
-          <div className="text-gray-700 font-medium mb-2">
-            Datum: {new Date(event.startDate).toLocaleString()}
-          </div>
-          <div className="text-gray-700 font-medium">
-            Ort: {event.location}
+          <div className="text-gray-600 mb-2">
+            📅 {new Date(event.startDate).toLocaleString()}
+            {event.endDate && (
+              <> – {new Date(event.endDate).toLocaleString()}</>
+            )}
+            {" "}– {event.location}
           </div>
           <div className="text-gray-700 mt-3 font-medium">
             Preis:{" "}
@@ -172,18 +166,18 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
             {event.description}
           </div>
         </div>
-        
+
         {event.price === 0 && (
           <form
             onSubmit={async (e) => {
               e.preventDefault();
               setSuccess(null);
               setError(null);
-              
+
               // Speichere die Form-Referenz bevor der async Call startet
               const form = e.currentTarget;
               const formData = new FormData(form);
-              
+
               const res = await fetch("/api/bookings", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -196,18 +190,18 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                   userId: session?.user?.id || null,
                 }),
               });
-              
+
               if (res.ok) {
                 setSuccess("Anmeldung erfolgreich!");
-                
+
                 // Reset das Formular mit der gespeicherten Referenz
                 form.reset();
-                
+
                 // Optional: Setze die Standardwerte wieder ein
                 const nameInput = form.querySelector('input[name="name"]') as HTMLInputElement;
                 const emailInput = form.querySelector('input[name="email"]') as HTMLInputElement;
                 const spacesInput = form.querySelector('input[name="spaces"]') as HTMLInputElement;
-                
+
                 if (nameInput && session?.user) nameInput.value = fullName;
                 if (emailInput && session?.user) emailInput.value = userEmail;
                 if (spacesInput) spacesInput.value = "1";
@@ -223,74 +217,105 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
             <h3 className="font-semibold text-lg mb-2">
               {session?.user ? 'Schnellanmeldung' : 'Jetzt kostenlos anmelden'}
             </h3>
-            
+
             {session?.user ? (
               <>
                 {/* Angemeldet: Zeige vorausgefüllte, aber editierbare Felder */}
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
                   <p className="text-sm text-blue-700">Angemeldet als: <strong>{fullName}</strong></p>
                 </div>
-                <input 
-                  name="name" 
-                  required 
+                <input
+                  name="name"
+                  required
                   defaultValue={fullName}
-                  placeholder="Ihr Name" 
-                  className="w-full border rounded px-3 py-2 bg-gray-100" 
+                  placeholder="Ihr Name"
+                  className="w-full border rounded px-3 py-2 bg-gray-100"
                 />
-                <input 
-                  name="email" 
-                  required 
-                  type="email" 
+                <input
+                  name="email"
+                  required
+                  type="email"
                   defaultValue={userEmail}
-                  placeholder="Ihre E-Mail" 
-                  className="w-full border rounded px-3 py-2 bg-gray-100" 
+                  placeholder="Ihre E-Mail"
+                  className="w-full border rounded px-3 py-2 bg-gray-100"
                 />
               </>
             ) : (
               <>
                 {/* Nicht angemeldet: Zeige leere Felder */}
-                <input 
-                  name="name" 
-                  required 
-                  placeholder="Ihr Name" 
-                  className="w-full border rounded px-3 py-2" 
+                <input
+                  name="name"
+                  required
+                  placeholder="Ihr Name"
+                  className="w-full border rounded px-3 py-2"
                 />
-                <input 
-                  name="email" 
-                  required 
-                  type="email" 
-                  placeholder="Ihre E-Mail" 
-                  className="w-full border rounded px-3 py-2" 
+                <input
+                  name="email"
+                  required
+                  type="email"
+                  placeholder="Ihre E-Mail"
+                  className="w-full border rounded px-3 py-2"
                 />
               </>
             )}
-            
-            <input 
-              name="spaces" 
-              type="number" 
-              min={1} 
-              defaultValue={1} 
-              className="w-full border rounded px-3 py-2" 
-              placeholder="Anzahl Plätze" 
+
+            <input
+              name="spaces"
+              type="number"
+              min={1}
+              defaultValue={1}
+              className="w-full border rounded px-3 py-2"
+              placeholder="Anzahl Plätze"
             />
-            <textarea 
-              name="comment" 
-              placeholder="Kommentar (optional)" 
-              className="w-full border rounded px-3 py-2" 
+            <textarea
+              name="comment"
+              placeholder="Kommentar (optional)"
+              className="w-full border rounded px-3 py-2"
             />
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="bg-[rgb(228,25,31)] text-white px-6 py-3 rounded-lg hover:bg-green-700 w-full font-semibold transition-colors"
             >
               Anmelden
             </button>
           </form>
         )}
-        
+
         {event.price > 0 && (
-          <button className="bg-[rgb(228,25,31)] text-white px-8 py-3 rounded-xl hover:bg-red-700 transition-colors font-semibold w-full text-lg shadow-lg">
-            Jetzt anmelden (€{event.price})
-          </button>
+          <>
+            <button
+              className="bg-[rgb(228,25,31)] text-white px-8 py-3 rounded-xl hover:bg-red-700 transition-colors font-semibold w-full text-lg shadow-lg"
+              onClick={async () => {
+                setSuccess(null);
+                setError(null);
+                const res = await fetch("/api/bookings", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    eventId: event.id,
+                    name: fullName,
+                    email: userEmail,
+                    spaces: 1,
+                    userId: session?.user?.id || null,
+                  }),
+                });
+                if (res.ok) {
+                  setSuccess("Anmeldung erfolgreich!");
+                } else {
+                  const err = await res.json();
+                  setError(err.error || "Fehler bei der Anmeldung.");
+                }
+              }}
+            >
+              Jetzt anmelden (€{event.price})
+            </button>
+            {success && (
+              <div className="text-green-700 bg-green-50 rounded px-4 py-2 mt-2 text-center">{success}</div>
+            )}
+            {error && (
+              <div className="text-red-700 bg-red-50 rounded px-4 py-2 mt-2 text-center">{error}</div>
+            )}
+          </>
         )}
 
       </div>

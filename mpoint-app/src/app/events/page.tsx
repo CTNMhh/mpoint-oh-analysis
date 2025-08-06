@@ -1,33 +1,10 @@
 "use client";
+import { EventType, EventStatus } from "./types";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import EventCreateForm from "./EventCreateForm";
 import { ChevronLeft, ChevronRight, Calendar, Grid3X3, List } from "lucide-react";
-
-type EventType = {
-  id: string;
-  title: string;
-  description: string;
-  imageUrl?: string;
-  startDate: string;
-  endDate?: string;
-  location: string;
-  ventType: string;
-  price: number;
-  categories: string[];
-  user: {
-    firstName: string;
-    lastName: string;
-    email: string;
-  };
-};
-
-type BookingType = {
-  id: string;
-  spaces: number;
-  event: EventType;
-};
 
 const MONTHS = [
   "Januar", "Februar", "März", "April", "Mai", "Juni",
@@ -112,6 +89,14 @@ export default function EventsPage() {
   // Eigene Events filtern
   const myEvents = events.filter(
     (event) => event.user.email === session?.user?.email
+  );
+
+  // Verfügbare Events anderer User
+  const availableEvents = events.filter(
+    (event) =>
+      event.user.email !== session?.user?.email &&
+      event.isActive &&
+      event.status !== EventStatus.DRAFT
   );
 
   // Kalender-Funktionen
@@ -222,6 +207,10 @@ export default function EventsPage() {
       setBookings(data);
     }
   };
+
+  const visibleEvents = events.filter(
+    (event) => event.isActive && event.status !== EventStatus.DRAFT
+  );
 
   return (
     <main className="min-h-screen bg-gradient-to-br pt-40 from-gray-50 to-white py-12 px-4">
@@ -361,11 +350,20 @@ export default function EventsPage() {
                     Keine Events verfügbar.
                   </div>
                 ) : (
-                  events.map((event) => (
+                  visibleEvents.map((event) => (
                     <div key={event.id} className="p-6 border-b border-gray-100 hover:bg-gray-50 transition-colors">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <h3 className="text-lg font-semibold text-gray-900 mb-2">{event.title}</h3>
+                          <h2 className="text-xl font-bold mb-2">
+                            {event.title}
+                            {(
+                              event.user.email === session?.user?.email // Ersteller sieht alles
+                                ? <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-semibold">{event.status}</span>
+                                : (event.status === EventStatus.FULL || event.status === EventStatus.CANCELLED)
+                                  ? <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-semibold">{event.status}</span>
+                                  : null
+                            )}
+                          </h2>
                           <div className="flex flex-wrap gap-4 text-sm text-gray-600 mb-2">
                             <span>
                               📅 {new Date(event.startDate).toLocaleString()}
@@ -472,10 +470,7 @@ export default function EventsPage() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
                 {myEvents.map((event) => (
-                  <div
-                    key={event.id}
-                    className="bg-white rounded-xl shadow p-6 flex flex-col"
-                  >
+                  <div key={event.id} className="bg-white rounded-xl shadow p-6 flex flex-col">
                     {event.imageUrl && (
                       <img
                         src={event.imageUrl}
@@ -483,7 +478,16 @@ export default function EventsPage() {
                         className="rounded-lg mb-4 h-40 object-cover"
                       />
                     )}
-                    <h2 className="text-xl font-bold mb-2">{event.title}</h2>
+                    <h2 className="text-xl font-bold mb-2">
+                      {event.title}
+                      {(
+                        event.user.email === session?.user?.email // Ersteller sieht alles
+                          ? <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-semibold">{event.status}</span>
+                          : (event.status === EventStatus.FULL || event.status === EventStatus.CANCELLED)
+                            ? <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-semibold">{event.status}</span>
+                            : null
+                      )}
+                    </h2>
                     <div className="text-gray-600 mb-2">
                       {new Date(event.startDate).toLocaleString()}
                       {event.endDate && (
@@ -528,6 +532,78 @@ export default function EventsPage() {
                     >
                       Event bearbeiten
                     </Link>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Verfügbare Events anderer User */}
+            <h1 className="text-3xl font-extrabold text-gray-900 mb-8">
+              Verfügbare Events
+            </h1>
+            {availableEvents.length === 0 ? (
+              <p className="text-center text-gray-500">
+                Es gibt aktuell keine verfügbaren Events anderer Nutzer.
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                {availableEvents.map((event) => (
+                  <div key={event.id} className="bg-white rounded-xl shadow p-6 flex flex-col">
+                    {event.imageUrl && (
+                      <img
+                        src={event.imageUrl}
+                        alt={event.title}
+                        className="rounded-lg mb-4 h-40 object-cover"
+                      />
+                    )}
+                    <h2 className="text-xl font-bold mb-2">
+                      {event.title}
+                      {(
+                        event.user.email === session?.user?.email // Ersteller sieht alles
+                          ? <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-semibold">{event.status}</span>
+                          : (event.status === EventStatus.FULL || event.status === EventStatus.CANCELLED)
+                            ? <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-semibold">{event.status}</span>
+                            : null
+                      )}
+                    </h2>
+                    <div className="text-gray-600 mb-2">
+                      {new Date(event.startDate).toLocaleString()}
+                      {event.endDate && (
+                        <> – {new Date(event.endDate).toLocaleString()}</>
+                      )}
+                      {" "}– {event.location}
+                    </div>
+                    <div className="text-gray-700 font-medium mb-2">
+                      Preis:{" "}
+                      {event.price === 0 ? (
+                        <span className="text-green-700 font-semibold">Kostenlos</span>
+                      ) : (
+                        <span className="font-semibold">{event.price} €</span>
+                      )}
+                    </div>
+                    <div className="text-gray-500 text-sm mb-2">
+                      Veranstalter:{" "}
+                      <span className="font-semibold">{event.ventType}</span>
+                    </div>
+                    <div className="mb-4 line-clamp-3">{event.description}</div>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {event.categories.map((cat) => (
+                        <span
+                          key={cat}
+                          className="bg-gray-100 text-xs px-2 py-1 rounded"
+                        >
+                          {cat}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="mt-auto">
+                      <Link
+                        href={`/events/${event.id}`}
+                        className="bg-[rgb(228,25,31)] text-white px-4 py-2 rounded hover:bg-red-700 transition-colors text-center block"
+                      >
+                        Details & Anmeldung
+                      </Link>
+                    </div>
                   </div>
                 ))}
               </div>
