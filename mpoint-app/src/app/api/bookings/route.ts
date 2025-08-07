@@ -47,3 +47,22 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Buchung fehlgeschlagen" }, { status: 500 });
   }
 }
+
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const eventId = searchParams.get("eventId");
+
+  if (!eventId) {
+    return NextResponse.json({ error: "eventId fehlt" }, { status: 400 });
+  }
+
+  try {
+    const bookings = await prisma.booking.findMany({
+      where: { eventId },
+      orderBy: { createdAt: "asc" },
+    });
+    return NextResponse.json(bookings, { status: 200 });
+  } catch (error) {
+    return NextResponse.json({ error: "Fehler beim Laden der Buchungen" }, { status: 500 });
+  }
+}
