@@ -13,6 +13,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [bookings, setBookings] = useState<any[]>([]);
+  const [spaces, setSpaces] = useState(1); // NEU: State für Anzahl Plätze
   const { data: session, status } = useSession();
 
   useEffect(() => {
@@ -192,7 +193,6 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
               setSuccess(null);
               setError(null);
 
-              // Speichere die Form-Referenz bevor der async Call startet
               const form = e.currentTarget;
               const formData = new FormData(form);
 
@@ -203,19 +203,17 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                   eventId: event.id,
                   name: formData.get("name"),
                   email: formData.get("email"),
-                  spaces: Number(formData.get("spaces") || 1),
+                  spaces: Number(formData.get("spaces") || 1), // GEÄNDERT: spaces aus Formular
                   comment: formData.get("comment"),
                   userId: session?.user?.id || null,
                 }),
               });
 
               if (res.ok) {
-                setSuccess("Anmeldung erfolgreich!");
+                const spacesBooked = Number(formData.get("spaces") || 1);
+                setSuccess(`Anmeldung erfolgreich! ${spacesBooked} ${spacesBooked === 1 ? 'Platz' : 'Plätze'} gebucht.`);
 
-                // Reset das Formular mit der gespeicherten Referenz
                 form.reset();
-
-                // Optional: Setze die Standardwerte wieder ein
                 const nameInput = form.querySelector('input[name="name"]') as HTMLInputElement;
                 const emailInput = form.querySelector('input[name="email"]') as HTMLInputElement;
                 const spacesInput = form.querySelector('input[name="spaces"]') as HTMLInputElement;
@@ -223,6 +221,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                 if (nameInput && session?.user) nameInput.value = fullName;
                 if (emailInput && session?.user) emailInput.value = userEmail;
                 if (spacesInput) spacesInput.value = "1";
+                setSpaces(1); // NEU: Reset spaces state
               } else {
                 const err = await res.json();
                 setError(err.error || "Fehler bei der Anmeldung.");
@@ -238,7 +237,6 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
 
             {session?.user ? (
               <>
-                {/* Angemeldet: Zeige vorausgefüllte, aber editierbare Felder */}
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
                   <p className="text-sm text-blue-700">Angemeldet als: <strong>{fullName}</strong></p>
                 </div>
@@ -247,7 +245,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                   required
                   defaultValue={fullName}
                   placeholder="Ihr Name"
-                  className="w-full border rounded px-3 py-2 bg-gray-100"
+                  className="w-full border border-gray-300 rounded px-3 py-2 bg-gray-100"
                 />
                 <input
                   name="email"
@@ -255,40 +253,68 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                   type="email"
                   defaultValue={userEmail}
                   placeholder="Ihre E-Mail"
-                  className="w-full border rounded px-3 py-2 bg-gray-100"
+                  className="w-full border border-gray-300 rounded px-3 py-2 bg-gray-100"
                 />
               </>
             ) : (
               <>
-                {/* Nicht angemeldet: Zeige leere Felder */}
                 <input
                   name="name"
                   required
                   placeholder="Ihr Name"
-                  className="w-full border rounded px-3 py-2"
+                  className="w-full border border-gray-300 rounded px-3 py-2"
                 />
                 <input
                   name="email"
                   required
                   type="email"
                   placeholder="Ihre E-Mail"
-                  className="w-full border rounded px-3 py-2"
+                  className="w-full border border-gray-300 rounded px-3 py-2"
                 />
               </>
             )}
 
-            <input
-              name="spaces"
-              type="number"
-              min={1}
-              defaultValue={1}
-              className="w-full border rounded px-3 py-2"
-              placeholder="Anzahl Plätze"
-            />
+            {/* NEU: Erweiterte Spaces-Eingabe */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Anzahl Plätze *
+              </label>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setSpaces(Math.max(1, spaces - 1))}
+                  className="w-10 h-10 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center"
+                  disabled={spaces <= 1}
+                >
+                  −
+                </button>
+                <input
+                  name="spaces"
+                  type="number"
+                  min={1}
+                  max={10}
+                  value={spaces}
+                  onChange={(e) => setSpaces(Math.min(10, Math.max(1, Number(e.target.value) || 1)))}
+                  className="w-20 text-center border border-gray-300 rounded px-3 py-2 font-semibold"
+                />
+                <button
+                  type="button"
+                  onClick={() => setSpaces(Math.min(10, spaces + 1))}
+                  className="w-10 h-10 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center"
+                  disabled={spaces >= 10}
+                >
+                  +
+                </button>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                {spaces === 1 ? '1 Platz' : `${spaces} Plätze`} werden gebucht
+              </p>
+            </div>
+
             <textarea
               name="comment"
               placeholder="Kommentar (optional)"
-              className="w-full border rounded px-3 py-2"
+              className="w-full border border-gray-300 rounded px-3 py-2"
             />
             <button
               type="submit"
@@ -301,6 +327,30 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
 
         {event.price > 0 && (
           <>
+            {/* NEU: Spaces-Auswahl für bezahlte Events */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Anzahl Tickets:
+              </label>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setSpaces(Math.max(1, spaces - 1))}
+                  className="w-10 h-10 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center"
+                >
+                  −
+                </button>
+                <span className="w-20 text-center font-bold text-lg">{spaces}</span>
+                <button
+                  type="button"
+                  onClick={() => setSpaces(Math.min(10, spaces + 1))}
+                  className="w-10 h-10 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
             <button
               className="bg-[rgb(228,25,31)] text-white px-8 py-3 rounded-xl hover:bg-red-700 transition-colors font-semibold w-full text-lg shadow-lg"
               onClick={async () => {
@@ -313,19 +363,20 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                     eventId: event.id,
                     name: fullName,
                     email: userEmail,
-                    spaces: 1,
+                    spaces: spaces, // GEÄNDERT: spaces variable statt 1
                     userId: session?.user?.id || null,
                   }),
                 });
                 if (res.ok) {
-                  setSuccess("Anmeldung erfolgreich!");
+                  setSuccess(`Anmeldung erfolgreich! ${spaces} ${spaces === 1 ? 'Ticket' : 'Tickets'} gebucht.`);
+                  setSpaces(1); // NEU: Reset nach Buchung
                 } else {
                   const err = await res.json();
                   setError(err.error || "Fehler bei der Anmeldung.");
                 }
               }}
             >
-              Jetzt anmelden (€{event.price})
+              Jetzt anmelden (€{(event.price * spaces).toFixed(2)}) {/* GEÄNDERT: Preis * spaces */}
             </button>
             {success && (
               <div className="text-green-700 bg-green-50 rounded px-4 py-2 mt-2 text-center">{success}</div>
