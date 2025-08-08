@@ -1,3 +1,31 @@
+// ========== MARKETPLACE ENTRY MODEL ==========
+model MarketplaceEntry {
+  id     String @id @default(uuid())
+  userId String
+
+  // Daten aus Dummy-Daten und Formular
+  category         String
+  title            String
+  shortDescription String
+  longDescription  String
+  price            Json
+  type             String // "Anfrage" oder "Angebot"
+  email            String?
+  publicEmail      Boolean   @default(false)
+  location         String?
+  deadline         DateTime?
+  skills           String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Relation zum User
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([category])
+  @@index([type])
+  @@index([userId])
+}
+
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
@@ -12,31 +40,30 @@ datasource db {
 
 // ========== USER MODELS ==========
 model User {
-  id           String    @id @default(uuid())
-  username     String    @unique
-  email        String    @unique
-  password     String
-  anrede       String
-  titel        String?
-  firstName    String
-  lastName     String
-  role         UserRole  @default(FREE)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  id        String   @id @default(uuid())
+  username  String   @unique
+  email     String   @unique
+  password  String
+  anrede    String
+  titel     String?
+  firstName String
+  lastName  String
+  role      UserRole @default(FREE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  company      Company[]
+  company             Company[]
   matchingPreferences MatchingPreferences?
-  sentMatches     Match[] @relation("MatchSender")
-  receivedMatches Match[] @relation("MatchReceiver")
-  activities      Activity[]
-  interactions    Interaction[]
-  bookings       Booking[] // <-- Opposite relation for Booking
-  events         Event[]   // <-- Opposite relation for Event
-  eventActivityLogs   EventActivityLog[] @relation("UserEventLogs")
+  sentMatches         Match[]              @relation("MatchSender")
+  receivedMatches     Match[]              @relation("MatchReceiver")
+  activities          Activity[]
+  interactions        Interaction[]
+  bookings            Booking[] // <-- Opposite relation for Booking
+  events              Event[] // <-- Opposite relation for Event
+  eventActivityLogs   EventActivityLog[]   @relation("UserEventLogs")
+  MarketplaceEntry    MarketplaceEntry[]
 }
-
-
 
 enum UserRole {
   FREE
@@ -44,67 +71,68 @@ enum UserRole {
   PREMIUM
   ENTERPRISE
 }
+
 // ========== COMPANY MODELS ==========
 // ========== COMPANY MODELS ==========
 model Company {
-  id           String    @id @default(uuid())
-  userId       String
+  id     String @id @default(uuid())
+  userId String
 
   // Basis-Informationen
-  name         String
-  legalForm    String?
-  foundedYear  Int
+  name               String
+  legalForm          String?
+  foundedYear        Int
   registrationNumber String?
 
-  digitalizationLevel Int    @default(1) // 1-10, Digitalisierungsgrad
+  digitalizationLevel Int           @default(1) // 1-10, Digitalisierungsgrad
   itBudgetPercent     Float?
   // Größenklasse
-  employeeCount    Int       @default(1)
-  employeeRange    EmployeeRange @default(SOLO)
-  annualRevenue    Float     @default(0)
-  revenueRange     RevenueRange @default(MICRO)
+  employeeCount       Int           @default(1)
+  employeeRange       EmployeeRange @default(SOLO)
+  annualRevenue       Float         @default(0)
+  revenueRange        RevenueRange  @default(MICRO)
 
   // Lokation (Hamburg-spezifisch)
-  street       String?
-  zipCode      String?
-  district     HamburgDistrict?
-  primaryNaceCode   String? // <--- HINZUFÜGEN!
+  street          String?
+  zipCode         String?
+  district        HamburgDistrict?
+  primaryNaceCode String? // <--- HINZUFÜGEN!
 
   // Geschäftsmodell
-  customerType    CustomerType @default(B2B)
-  customerCount   CustomerCountRange @default(VERY_SMALL)
-  exportQuota     Int       @default(0)
-  marketReach     MarketReach @default(LOCAL)
-  seasonality     Seasonality @default(NONE)
+  customerType  CustomerType       @default(B2B)
+  customerCount CustomerCountRange @default(VERY_SMALL)
+  exportQuota   Int                @default(0)
+  marketReach   MarketReach        @default(LOCAL)
+  seasonality   Seasonality        @default(NONE)
 
   // Führung & Entscheidung
   leadershipStructure LeadershipStructure @default(OWNER_LED)
-  decisionSpeed       DecisionSpeed @default(MODERATE)
-  decisionMakers      Int @default(1)
+  decisionSpeed       DecisionSpeed       @default(MODERATE)
+  decisionMakers      Int                 @default(1)
 
   // Wachstum & Strategie
   growthPhase         GrowthPhase @default(ESTABLISHED)
-  growthRate          Float @default(0)
-  sustainabilityFocus Int @default(5)
+  growthRate          Float       @default(0)
+  sustainabilityFocus Int         @default(5)
 
   // Beschreibungen
-  branchDescription   String?
-  companyDescription  String?
+  branchDescription  String?
+  companyDescription String?
 
   // Timestamps
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Matching Score (berechnet)
-  matchingScore Float @default(0)
-  profileCompleteness Float @default(0)
-  lastMatchingUpdate DateTime @default(now())
+  matchingScore       Float    @default(0)
+  profileCompleteness Float    @default(0)
+  lastMatchingUpdate  DateTime @default(now())
 
   // Relations
-  user      User     @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 
   // Arrays als separate Models für bessere Queries
-  locationAdvantages  LocationAdvantage[]
+  locationAdvantages LocationAdvantage[]
   industryTags       IndustryTag[]
   secondaryNaceCodes SecondaryNaceCode[]
   expansionPlans     ExpansionPlan[]
@@ -116,12 +144,12 @@ model Company {
   offeringTo         OfferingTo[]
 
   // Matching Relations
-  sentMatches        Match[] @relation("CompanySender")
-  receivedMatches    Match[] @relation("CompanyReceiver")
+  sentMatches     Match[] @relation("CompanySender")
+  receivedMatches Match[] @relation("CompanyReceiver")
 
   // Analytics
-  activities         Activity[]
-  interactions       Interaction[]
+  activities   Activity[]
+  interactions Interaction[]
 
   @@index([district])
   @@index([employeeRange])
@@ -164,10 +192,10 @@ model SecondaryNaceCode {
 }
 
 model ExpansionPlan {
-  id        String     @id @default(uuid())
+  id        String        @id @default(uuid())
   companyId String
   type      ExpansionType
-  company   Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company   Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@index([companyId])
   @@index([type])
@@ -243,27 +271,27 @@ model MatchingPreferences {
   userId String @unique
 
   // Geografische Präferenzen
-  maxDistance      Int @default(50) // km
+  maxDistance        Int               @default(50) // km
   preferredDistricts HamburgDistrict[]
 
   // Unternehmensgröße Präferenzen
-  minEmployees     Int?
-  maxEmployees     Int?
-  preferredSizes   EmployeeRange[]
+  minEmployees   Int?
+  maxEmployees   Int?
+  preferredSizes EmployeeRange[]
 
   // Geschäftsmodell Präferenzen
   preferredCustomerTypes CustomerType[]
   preferredMarketReach   MarketReach[]
 
   // Wachstum & Innovation
-  minGrowthRate    Float?
-  preferredGrowthPhases GrowthPhase[]
-  minSustainabilityFocus Int @default(1)
+  minGrowthRate          Float?
+  preferredGrowthPhases  GrowthPhase[]
+  minSustainabilityFocus Int           @default(1)
 
   // Matching Einstellungen
-  autoMatch        Boolean @default(true)
-  weeklyMatches    Int @default(5)
-  matchingActive   Boolean @default(true)
+  autoMatch      Boolean @default(true)
+  weeklyMatches  Int     @default(5)
+  matchingActive Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -272,40 +300,40 @@ model MatchingPreferences {
 }
 
 model Match {
-  id            String      @id @default(uuid())
+  id String @id @default(uuid())
 
   // Match Partner
-  senderUserId    String
-  receiverUserId  String
-  senderCompanyId String
+  senderUserId      String
+  receiverUserId    String
+  senderCompanyId   String
   receiverCompanyId String
 
   // Match Details
-  matchScore      Float       // 0-100
-  matchType       MatchType
-  status          MatchStatus @default(PENDING)
+  matchScore Float // 0-100
+  matchType  MatchType
+  status     MatchStatus @default(PENDING)
 
   // Matching Gründe (JSON)
-  matchReasons    Json        // Warum diese Unternehmen matchen
-  commonInterests Json        // Gemeinsame Interessen
-  potentialSynergies Json     // Potentielle Synergien
+  matchReasons       Json // Warum diese Unternehmen matchen
+  commonInterests    Json // Gemeinsame Interessen
+  potentialSynergies Json // Potentielle Synergien
 
   // Kommunikation
-  message         String?
-  response        String?
+  message  String?
+  response String?
 
   // Zeitstempel
-  matchedAt       DateTime    @default(now())
-  respondedAt     DateTime?
-  expiresAt       DateTime?   // Auto-expire nach X Tagen
+  matchedAt   DateTime  @default(now())
+  respondedAt DateTime?
+  expiresAt   DateTime? // Auto-expire nach X Tagen
 
   // Relations
-  senderUser      User        @relation("MatchSender", fields: [senderUserId], references: [id])
-  receiverUser    User        @relation("MatchReceiver", fields: [receiverUserId], references: [id])
-  senderCompany   Company     @relation("CompanySender", fields: [senderCompanyId], references: [id])
-  receiverCompany Company     @relation("CompanyReceiver", fields: [receiverCompanyId], references: [id])
+  senderUser      User    @relation("MatchSender", fields: [senderUserId], references: [id])
+  receiverUser    User    @relation("MatchReceiver", fields: [receiverUserId], references: [id])
+  senderCompany   Company @relation("CompanySender", fields: [senderCompanyId], references: [id])
+  receiverCompany Company @relation("CompanyReceiver", fields: [receiverCompanyId], references: [id])
 
-  interactions    Interaction[]
+  interactions Interaction[]
 
   @@unique([senderUserId, receiverUserId])
   @@index([status])
@@ -314,11 +342,8 @@ model Match {
   @@index([expiresAt])
 }
 
-
-
-
 model Event {
-  id              String   @id @default(uuid())
+  id              String    @id @default(uuid())
   title           String
   description     String
   imageUrl        String?
@@ -328,74 +353,71 @@ model Event {
   endTime         String?
   location        String
   ventType        String? // Veranstaltungstyp als Textfeld
-  price           Float   @default(0)
+  price           Float     @default(0)
   maxParticipants Int?
-  bookedCount     Int     @default(0)
+  bookedCount     Int       @default(0)
   organizer       String?
   calendarLinks   Json?
   categories      String[]
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   // EVENT STATUS FELDER:
-  status          EventStatus @default(DRAFT)
-  isPublished     Boolean     @default(false)
-  isActive        Boolean     @default(true)
-  publishedAt     DateTime?
-  cancelledAt     DateTime?
-  cancelReason    String?
+  status       EventStatus @default(DRAFT)
+  isPublished  Boolean     @default(false)
+  isActive     Boolean     @default(true)
+  publishedAt  DateTime?
+  cancelledAt  DateTime?
+  cancelReason String?
 
   // Relation zum User (Veranstalter)
-  userId          String
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Relation zu Buchungen
-  bookings        Booking[]
+  bookings Booking[]
 
   // Relation zu Activity Logs
-  activityLogs        EventActivityLog[] @relation("EventActivityLogs")
+  activityLogs EventActivityLog[] @relation("EventActivityLogs")
 
   @@index([userId])
 }
 
 model Booking {
-  id          String   @id @default(uuid())
-  eventId     String
-  userId      String?
-  name        String
-  email       String
-  spaces      Int      @default(1)
-  comment     String?
-  createdAt   DateTime @default(now())
+  id        String   @id @default(uuid())
+  eventId   String
+  userId    String?
+  name      String
+  email     String
+  spaces    Int      @default(1)
+  comment   String?
+  createdAt DateTime @default(now())
 
   // Relationen
-  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  User        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  activityLogs        EventActivityLog[] @relation("BookingActivityLogs")
+  event        Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  User         User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+  activityLogs EventActivityLog[] @relation("BookingActivityLogs")
 
   @@index([eventId])
   @@index([userId])
 }
 
-
-
-
 // ========== INTERACTION TRACKING ==========
 model Interaction {
-  id        String          @id @default(uuid())
+  id        String  @id @default(uuid())
   userId    String
   companyId String
   matchId   String?
 
-  type      InteractionType
-  details   Json?           // Zusätzliche Details
-  metadata  Json?           // Tracking Daten
+  type     InteractionType
+  details  Json? // Zusätzliche Details
+  metadata Json? // Tracking Daten
 
-  createdAt DateTime        @default(now())
+  createdAt DateTime @default(now())
 
-  user      User            @relation(fields: [userId], references: [id])
-  company   Company         @relation(fields: [companyId], references: [id])
-  match     Match?          @relation(fields: [matchId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+  company Company @relation(fields: [companyId], references: [id])
+  match   Match?  @relation(fields: [matchId], references: [id])
 
   @@index([userId])
   @@index([type])
@@ -403,35 +425,34 @@ model Interaction {
 }
 
 model Activity {
-  id        String       @id @default(uuid())
+  id        String @id @default(uuid())
   userId    String
   companyId String
 
-  type      ActivityType
-  title     String
+  type        ActivityType
+  title       String
   description String?
-  data      Json?        // Flexible Datenstruktur
+  data        Json? // Flexible Datenstruktur
 
-  createdAt DateTime     @default(now())
+  createdAt DateTime @default(now())
 
-  user      User         @relation(fields: [userId], references: [id])
-  company   Company      @relation(fields: [companyId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+  company Company @relation(fields: [companyId], references: [id])
 
   @@index([userId])
   @@index([type])
   @@index([createdAt])
 }
 
-
-
 // ========== ENUMS ==========
 enum EmployeeRange {
-  SOLO              // 1
-  MICRO             // 2-9
-  SMALL             // 10-49
-  MEDIUM            // 50-249
-  LARGE             // 250+
+  SOLO // 1
+  MICRO // 2-9
+  SMALL // 10-49
+  MEDIUM // 50-249
+  LARGE // 250+
 }
+
 model Admin {
   id        String   @id @default(uuid())
   email     String   @unique
@@ -443,11 +464,11 @@ model Admin {
 }
 
 enum RevenueRange {
-  MICRO             // < 100k
-  SMALL             // 100k - 1M
-  MEDIUM            // 1M - 10M
-  LARGE             // 10M - 50M
-  ENTERPRISE        // > 50M
+  MICRO // < 100k
+  SMALL // 100k - 1M
+  MEDIUM // 1M - 10M
+  LARGE // 10M - 50M
+  ENTERPRISE // > 50M
 }
 
 enum HamburgDistrict {
@@ -472,19 +493,19 @@ enum CustomerType {
 }
 
 enum CustomerCountRange {
-  VERY_SMALL        // < 10
-  SMALL             // 10-100
-  MEDIUM            // 100-1000
-  LARGE             // 1000-10000
-  ENTERPRISE        // > 10000
+  VERY_SMALL // < 10
+  SMALL // 10-100
+  MEDIUM // 100-1000
+  LARGE // 1000-10000
+  ENTERPRISE // > 10000
 }
 
 enum MarketReach {
-  LOCAL             // Hamburg
-  REGIONAL          // Norddeutschland
-  NATIONAL          // Deutschland
-  EU                // Europa
-  GLOBAL            // Weltweit
+  LOCAL // Hamburg
+  REGIONAL // Norddeutschland
+  NATIONAL // Deutschland
+  EU // Europa
+  GLOBAL // Weltweit
 }
 
 enum Seasonality {
@@ -504,20 +525,20 @@ enum LeadershipStructure {
 }
 
 enum DecisionSpeed {
-  VERY_FAST         // 1-3 Tage
-  FAST              // 4-7 Tage
-  MODERATE          // 1-2 Wochen
-  SLOW              // 3-4 Wochen
-  VERY_SLOW         // > 4 Wochen
+  VERY_FAST // 1-3 Tage
+  FAST // 4-7 Tage
+  MODERATE // 1-2 Wochen
+  SLOW // 3-4 Wochen
+  VERY_SLOW // > 4 Wochen
 }
 
 enum GrowthPhase {
-  STARTUP           // < 2 Jahre
-  GROWTH            // 2-5 Jahre
-  SCALING           // 5-10 Jahre
-  ESTABLISHED       // 10-20 Jahre
-  MATURE            // > 20 Jahre
-  TRANSFORMATION    // Umbruch
+  STARTUP // < 2 Jahre
+  GROWTH // 2-5 Jahre
+  SCALING // 5-10 Jahre
+  ESTABLISHED // 10-20 Jahre
+  MATURE // > 20 Jahre
+  TRANSFORMATION // Umbruch
 }
 
 enum ExpansionType {
@@ -530,16 +551,20 @@ enum ExpansionType {
 }
 
 enum MatchType {
-  SUPPLIER_CUSTOMER     // Lieferant-Kunde
-  PARTNERSHIP          // Kooperation
-  SERVICE_PROVIDER     // Dienstleister
-  COLLABORATION        // Zusammenarbeit
-  NETWORKING          // Networking
-  KNOWLEDGE_EXCHANGE  // Wissensaustausch
+  SUPPLIER_CUSTOMER // Lieferant-Kunde
+  PARTNERSHIP // Kooperation
+  SERVICE_PROVIDER // Dienstleister
+  COLLABORATION // Zusammenarbeit
+  NETWORKING // Networking
+  KNOWLEDGE_EXCHANGE // Wissensaustausch
 }
 
 enum MatchStatus {
   PENDING
+  ACCEPTED
+  DECLINED
+  EXPIRED
+  ARCHIVED
   ACCEPTED_BY_SENDER
   ACCEPTED_BY_RECEIVER
   CONNECTED
@@ -570,47 +595,45 @@ enum ActivityType {
   GROWTH_MILESTONE
 }
 
-
-
 // ========== EVENT ACTIVITY LOGGING SYSTEM ==========
 
 // Event Activity Log - alle Event-bezogenen Aktionen
 model EventActivityLog {
-  id          String          @id @default(uuid())
-  userId      String
-  eventId     String?
+  id      String  @id @default(uuid())
+  userId  String
+  eventId String?
 
   // Event Action Details
   action      EventActionType
   description String?
 
   // Booking Details (falls relevant)
-  spaces      Int?            // Anzahl gebuchter/stornierter Plätze
-  totalCost   Float?          // Gesamtkosten
-  bookingId   String?         // Referenz zur Booking
+  spaces    Int? // Anzahl gebuchter/stornierter Plätze
+  totalCost Float? // Gesamtkosten
+  bookingId String? // Referenz zur Booking
 
   // Event Status Tracking
-  eventStatusBefore EventStatus?  // Status vor der Aktion
-  eventStatusAfter  EventStatus?  // Status nach der Aktion
+  eventStatusBefore EventStatus? // Status vor der Aktion
+  eventStatusAfter  EventStatus? // Status nach der Aktion
 
   // Technische Details
-  ipAddress   String?
-  userAgent   String?
-  deviceType  DeviceType?
-  sessionId   String?
+  ipAddress  String?
+  userAgent  String?
+  deviceType DeviceType?
+  sessionId  String?
 
   // Zusätzliche Daten
-  metadata    Json?           // Beliebige zusätzliche Informationen
-  success     Boolean         @default(true)
+  metadata     Json? // Beliebige zusätzliche Informationen
+  success      Boolean @default(true)
   errorMessage String?
 
   // Timestamps
-  timestamp   DateTime        @default(now())
+  timestamp DateTime @default(now())
 
   // Relations
-  user        User            @relation("UserEventLogs", fields: [userId], references: [id], onDelete: Cascade)
-  event       Event?          @relation("EventActivityLogs", fields: [eventId], references: [id], onDelete: SetNull)
-  booking     Booking?        @relation("BookingActivityLogs", fields: [bookingId], references: [id], onDelete: SetNull)
+  user    User     @relation("UserEventLogs", fields: [userId], references: [id], onDelete: Cascade)
+  event   Event?   @relation("EventActivityLogs", fields: [eventId], references: [id], onDelete: SetNull)
+  booking Booking? @relation("BookingActivityLogs", fields: [bookingId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([eventId])
@@ -623,66 +646,66 @@ model EventActivityLog {
 
 enum EventActionType {
   // Event Discovery
-  EVENT_VIEWED           // User hat Event-Details angeschaut
-  EVENT_LIST_VIEWED      // User hat Event-Liste angeschaut
-  EVENT_SEARCHED         // User hat nach Events gesucht
-  EVENT_FILTERED         // User hat Filter angewendet
+  EVENT_VIEWED // User hat Event-Details angeschaut
+  EVENT_LIST_VIEWED // User hat Event-Liste angeschaut
+  EVENT_SEARCHED // User hat nach Events gesucht
+  EVENT_FILTERED // User hat Filter angewendet
 
   // Event Bookings
-  BOOKING_STARTED        // User hat Buchungsprozess begonnen
-  BOOKING_COMPLETED      // Buchung erfolgreich abgeschlossen
-  BOOKING_CANCELLED      // Buchung wurde storniert
-  BOOKING_MODIFIED       // Buchung wurde geändert (z.B. mehr Plätze)
+  BOOKING_STARTED // User hat Buchungsprozess begonnen
+  BOOKING_COMPLETED // Buchung erfolgreich abgeschlossen
+  BOOKING_CANCELLED // Buchung wurde storniert
+  BOOKING_MODIFIED // Buchung wurde geändert (z.B. mehr Plätze)
 
   // Event Participation
-  EVENT_ATTENDED         // User war bei Event anwesend
-  EVENT_NO_SHOW          // User ist nicht erschienen
-  EVENT_CHECKED_IN       // User hat sich bei Event eingecheckt
+  EVENT_ATTENDED // User war bei Event anwesend
+  EVENT_NO_SHOW // User ist nicht erschienen
+  EVENT_CHECKED_IN // User hat sich bei Event eingecheckt
 
   // Event Interaction
-  EVENT_SHARED           // Event wurde geteilt
-  EVENT_FAVORITED        // Event zu Favoriten hinzugefügt
-  EVENT_UNFAVORITED      // Event von Favoriten entfernt
-  EVENT_RATED            // Event wurde bewertet
-  EVENT_COMMENTED        // Kommentar zu Event hinterlassen
+  EVENT_SHARED // Event wurde geteilt
+  EVENT_FAVORITED // Event zu Favoriten hinzugefügt
+  EVENT_UNFAVORITED // Event von Favoriten entfernt
+  EVENT_RATED // Event wurde bewertet
+  EVENT_COMMENTED // Kommentar zu Event hinterlassen
 
   // Calendar Integration
-  CALENDAR_EXPORT        // Event in Kalender exportiert
-  REMINDER_SET           // Erinnerung für Event gesetzt
+  CALENDAR_EXPORT // Event in Kalender exportiert
+  REMINDER_SET // Erinnerung für Event gesetzt
 
   // Admin Actions (Event Management)
-  EVENT_CREATED          // Event wurde erstellt
-  EVENT_UPDATED          // Event wurde bearbeitet
-  EVENT_PUBLISHED        // Event wurde veröffentlicht
-  EVENT_UNPUBLISHED      // Event wurde versteckt/zurückgezogen
-  EVENT_CANCELLED        // Event wurde abgesagt
-  EVENT_POSTPONED        // Event wurde verschoben
-  EVENT_COMPLETED        // Event als abgeschlossen markiert
-  EVENT_ARCHIVED         // Event wurde archiviert
-  EVENT_DELETED          // Event wurde gelöscht
+  EVENT_CREATED // Event wurde erstellt
+  EVENT_UPDATED // Event wurde bearbeitet
+  EVENT_PUBLISHED // Event wurde veröffentlicht
+  EVENT_UNPUBLISHED // Event wurde versteckt/zurückgezogen
+  EVENT_CANCELLED // Event wurde abgesagt
+  EVENT_POSTPONED // Event wurde verschoben
+  EVENT_COMPLETED // Event als abgeschlossen markiert
+  EVENT_ARCHIVED // Event wurde archiviert
+  EVENT_DELETED // Event wurde gelöscht
 }
 
 // Event Status (für das Event selbst)
 enum EventStatus {
-  DRAFT          // Event erstellt, aber noch nicht veröffentlicht
-  PUBLISHED      // Event ist live und buchbar
-  FULL           // Event ist ausgebucht (maxParticipants erreicht)
-  CANCELLED      // Event wurde abgesagt
-  POSTPONED      // Event wurde verschoben
-  COMPLETED      // Event ist beendet
-  ARCHIVED       // Event ist archiviert
+  DRAFT // Event erstellt, aber noch nicht veröffentlicht
+  PUBLISHED // Event ist live und buchbar
+  FULL // Event ist ausgebucht (maxParticipants erreicht)
+  CANCELLED // Event wurde abgesagt
+  POSTPONED // Event wurde verschoben
+  COMPLETED // Event ist beendet
+  ARCHIVED // Event ist archiviert
 }
 
 // User Booking Status (für User-Event-Beziehung)
 enum UserBookingStatus {
-  INTERESTED     // User zeigt Interesse
-  BOOKED         // User hat Event gebucht
-  CONFIRMED      // Buchung bestätigt
-  CANCELLED      // User hat Buchung storniert
-  ATTENDED       // User war anwesend
-  NO_SHOW        // User nicht erschienen
-  WAITLISTED     // User auf Warteliste
-  CHECKED_IN     // User hat sich eingecheckt
+  INTERESTED // User zeigt Interesse
+  BOOKED // User hat Event gebucht
+  CONFIRMED // Buchung bestätigt
+  CANCELLED // User hat Buchung storniert
+  ATTENDED // User war anwesend
+  NO_SHOW // User nicht erschienen
+  WAITLISTED // User auf Warteliste
+  CHECKED_IN // User hat sich eingecheckt
 }
 
 enum DeviceType {
@@ -691,4 +714,3 @@ enum DeviceType {
   TABLET
   UNKNOWN
 }
-

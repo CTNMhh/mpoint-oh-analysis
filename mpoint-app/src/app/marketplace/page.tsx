@@ -1,4 +1,12 @@
 "use client";
+
+// Diese Datei rendert die statische Dummy-Marktplatzseite aus marktplatztailwind.tml
+// und bindet sie als React-Komponente in Next.js ein.
+// Tailwind wird über PostCSS eingebunden, nicht per CDN.
+
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+
 // --- Preis-Objekt zu String Funktion für Vorschau und Anzeige ---
 export type PriceType = {
   from?: number;
@@ -24,13 +32,6 @@ export function priceDataToString(price: PriceType): string {
   if (price.perMonth) out += "/Monat";
   return out.trim();
 }
-
-// Diese Datei rendert die statische Dummy-Marktplatzseite aus marktplatztailwind.tml
-// und bindet sie als React-Komponente in Next.js ein.
-// Tailwind wird über PostCSS eingebunden, nicht per CDN.
-
-import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 
 // Kategorie-Farben Mapping (Tailwind-Klassen)
 const categoryColorClasses: Record<string, string> = {
@@ -97,153 +98,24 @@ function timeAgo(timestamp: number): string {
   }
 }
 
-// Dummy-Daten mit timestamp statt time-String
-const now = Date.now();
+const userCache: Record<string, string> = {};
 
-const dummyEntries = [
-  {
-    id: 1,
-    category: "DIENSTLEISTUNG",
-    title: "Website-Relaunch gesucht",
-    short_description: "Wir suchen ein Team für Webentwicklung & Design. Moderne, responsive Website mit CMS-Integration gewünscht.",
-    long_description: `<p>Wir suchen ein <strong>Team für Webentwicklung & Design</strong>. Unsere Anforderungen:</p>
-      <ul>
-        <li>Moderne, responsive Website</li>
-        <li>CMS-Integration (z.B. WordPress, Strapi)</li>
-        <li>SEO & Performance-Optimierung</li>
-        <li>Design nach Corporate Identity</li>
-      </ul>
-      <p>Bitte Referenzen und grobe Preisvorstellung angeben.</p>`,
-    price: { from: 10000, to: 15000 },
-    type: "Anfrage",
-    userName: "Thomas Müller",
-    email: "thomas.mueller@example.com",
-    publicEmail: false,
-    timestamp: 1754568000000,
-    actions: ["Details", "Anbieten"],
-  },
-  {
-    id: 2,
-    category: "PRODUKT",
-    title: "Büromöbel – Großabnahme",
-    short_description: "Preiswerte Büromöbel für Startups - jetzt anbieten. Hochwertige Schreibtische, Stühle und Schränke.",
-    long_description: `<p>Großabnahme von <strong>Büromöbeln</strong> für Startups:</p>
-      <ul>
-        <li>Schreibtische, Stühle, Schränke</li>
-        <li>Lieferung deutschlandweit</li>
-        <li>Rabatte ab 10 Stück</li>
-      </ul>
-      <p>Jetzt Angebot einholen!</p>`,
-    price: { from: 299, ab: true },
-    type: "Angebot",
-    userName: "Julia Schmidt",
-    email: "julia.schmidt@firma.com",
-    publicEmail: true,
-    timestamp: 1754488800000,
-    actions: ["Katalog", "Anfragen"],
-  },
-  {
-    id: 3,
-    category: "DIGITALISIERUNG",
-    title: "KI-Einsatz im deutschen Mittelstand: Chancen und Herausforderungen",
-    short_description: "Beratung zur Implementierung von KI-Lösungen und Automatisierungsprozesse für mittelständische Unternehmen.",
-    long_description: `<p>Wir bieten <strong>Beratung zur Implementierung von KI-Lösungen</strong> und Automatisierungsprozessen für mittelständische Unternehmen.</p>
-      <ul>
-        <li>Analyse der Potenziale</li>
-        <li>Workshops & Schulungen</li>
-        <li>Begleitung bei der Umsetzung</li>
-      </ul>
-      <p>Kontaktieren Sie uns für ein individuelles Angebot.</p>`,
-    price: { from: 150, perHour: true },
-    type: "Angebot",
-    userName: "Dr. Thomas Schmidt",
-    email: "kontakt@ki-mittelstand.de",
-    publicEmail: true,
-    timestamp: 1754316000000,
-    actions: ["Profil", "Kontakt"],
-  },
-  {
-    id: 4,
-    category: "NACHHALTIGKEIT",
-    title: "Nachhaltige Lieferketten aufbauen: Ein Leitfaden",
-    short_description: "Strategieberatung für umweltfreundliche und sozial verantwortliche Beschaffungsprozesse in Ihrem Unternehmen.",
-    long_description: `<p><strong>Strategieberatung</strong> für umweltfreundliche und sozial verantwortliche Beschaffungsprozesse:</p>
-      <ul>
-        <li>Analyse bestehender Lieferketten</li>
-        <li>Entwicklung nachhaltiger Strategien</li>
-        <li>Workshops für Ihr Team</li>
-      </ul>
-      <p>Wir helfen Ihnen, Ihre Lieferkette zukunftsfähig zu machen.</p>`,
-    price: { onRequest: true },
-    type: "Angebot",
-    userName: "Prof. Julia Müller",
-    email: "jm@nachhaltigberatung.de",
-    publicEmail: false,
-    timestamp: 1754143200000,
-    actions: ["Mehr Info", "Anfragen"],
-  },
-  {
-    id: 5,
-    category: "MANAGEMENT",
-    title: "Remote Leadership: Best Practices für hybride Teams",
-    short_description: "Schulungen und Workshops für Führungskräfte zur effektiven Leitung verteilter Teams in der neuen Arbeitswelt.",
-    long_description: `<p><strong>Remote Leadership</strong>: Best Practices für hybride Teams.</p>
-      <ul>
-        <li>Schulungen für Führungskräfte</li>
-        <li>Workshops zur Team-Kommunikation</li>
-        <li>Tools & Methoden für hybrides Arbeiten</li>
-      </ul>
-      <p>Jetzt Workshop buchen!</p>`,
-    price: { from: 1200, perDay: true },
-    type: "Angebot",
-    userName: "Lisa Weber",
-    email: "lisa@leadership-tools.de",
-    publicEmail: false,
-    timestamp: 1753970400000,
-    actions: ["Workshop", "Buchen"],
-  },
-  {
-    id: 6,
-    category: "PRODUKT",
-    title: "ERP-Software für KMU",
-    short_description: "Maßgeschneiderte Enterprise Resource Planning Lösung für kleine und mittlere Unternehmen. Cloud-basiert und skalierbar.",
-    long_description: `<p><strong>ERP-Software</strong> für KMU:</p>
-      <ul>
-        <li>Cloud-basiert & skalierbar</li>
-        <li>Individuelle Anpassung</li>
-        <li>Support & Schulung</li>
-      </ul>
-      <p>Demo & Testzugang verfügbar.</p>`,
-    price: { from: 99, ab: true, perMonth: true },
-    type: "Angebot",
-    userName: "Michael Klein",
-    email: "info@kleinerp.de",
-    publicEmail: false,
-    timestamp: 1753365600000,
-    actions: ["Demo", "Testen"],
-  },
-  {
-    id: 7,
-    category: "PRODUKT",
-    title: "ERP-Software für KMU",
-    short_description: "Maßgeschneiderte Enterprise Resource Planning Lösung für kleine und mittlere Unternehmen. Cloud-basiert und skalierbar.",
-    long_description: `<p><strong>ERP-Software</strong> für KMU:</p>
-      <ul>
-        <li>Cloud-basiert & skalierbar</li>
-        <li>Individuelle Anpassung</li>
-        <li>Support & Schulung</li>
-      </ul>
-      <p>Demo & Testzugang verfügbar. Premium-Features ab € 199/Monat.</p>`,
-    price: { from: 199, ab: true, perMonth: true },
-    type: "Angebot",
-    userName: "Michael Klein",
-    email: "info@kleinerp.de",
-    publicEmail: false,
-    timestamp: 1753279200000,
-    actions: ["Demo", "Testen"],
-  },
-];
+async function getUserNameById(userId: string): Promise<string> {
+  if (userCache[userId]) return userCache[userId];
 
+  try {
+    const res = await fetch(`/api/user/${userId}`);
+    if (!res.ok) throw new Error("User not found");
+
+    const { titel, firstName, lastName } = await res.json();
+    const name = [titel, firstName, lastName].filter(Boolean).join(" ");
+    userCache[userId] = name;
+    return name;
+  } catch (err) {
+    console.error(`Fehler beim Laden von Benutzer ${userId}:`, err);
+    return "Unbekannter Nutzer";
+  }
+}
 
 export default function MarketplaceDummy() {
   const [showModal, setShowModal] = useState(false);
@@ -263,8 +135,33 @@ export default function MarketplaceDummy() {
   const pageParam = searchParams.get("page");
   const currentPage = pageParam ? parseInt(pageParam, 10) : 1;
 
+
+  const [entries, setEntries] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchEntries = async () => {
+      try {
+        const res = await fetch("/api/marketplace");
+        const data = await res.json();
+
+        const enrichedData = await Promise.all(data.map(async (entry) => {
+          const userName = await getUserNameById(entry.userId);
+          return { ...entry, userName };
+        }));
+
+        setEntries(enrichedData);
+      } catch (err) {
+        console.error("Fehler beim Laden der Marktplatzdaten:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchEntries();
+  }, []);
+
   // Filterung
-  let filteredEntries = dummyEntries.filter(entry => {
+  let filteredEntries = entries.filter(entry => {
     // Kategorie-Filter
     const categoryMatch = categoryFilter === "Alle" || entry.category === categoryFilter.toUpperCase();
     // Typ-Filter
@@ -272,8 +169,8 @@ export default function MarketplaceDummy() {
     // Such-Filter
     const searchMatch = searchValue.trim() === "" || (
       entry.title.toLowerCase().includes(searchValue.toLowerCase()) ||
-      entry.short_description.toLowerCase().includes(searchValue.toLowerCase()) ||
-      entry.long_description.toLowerCase().includes(searchValue.toLowerCase())
+      entry.shortDescription.toLowerCase().includes(searchValue.toLowerCase()) ||
+      entry.longDescription.toLowerCase().includes(searchValue.toLowerCase())
     );
     return categoryMatch && typeMatch && searchMatch;
   });
@@ -666,12 +563,12 @@ export default function MarketplaceDummy() {
                   </span>
                 </div>
                 <h3 className="font-semibold text-base mb-2 text-gray-900">{entry.title}</h3>
-                <p className="text-gray-600 text-sm mb-3 leading-relaxed">{entry.short_description}</p>
+                <p className="text-gray-600 text-sm mb-3 leading-relaxed">{entry.shortDescription}</p>
                 <div className="flex justify-between items-center text-xs text-gray-500 mt-auto">
                   <div className="flex items-center gap-2">
                     <span>{entry.userName}</span>
                   </div>
-                  <span>{timeAgo(entry.timestamp)}</span>
+                  <span>{timeAgo(new Date(entry.createdAt).getTime())}</span>
                 </div>
               </div>
               <div className="p-4 bg-gray-50 flex justify-between items-center">
