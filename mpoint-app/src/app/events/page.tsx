@@ -1,10 +1,20 @@
+// mpoint\mpoint-app\src\app\events\page.tsx
+// Erweiterte Version mit Anzeige der gebuchten/verfügbaren Plätze
+
 "use client";
-import { EventType, EventStatus } from "./types";
+import {
+  EventType,
+  EventStatus,
+  BookingType,
+  EventWithBookingInfo,
+  getEventAvailability,
+  getAvailabilityColor
+} from "./types";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import EventCreateForm from "./EventCreateForm";
-import { ChevronLeft, ChevronRight, Calendar, Grid3X3, List } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar, Grid3X3, List, Users } from "lucide-react";
 
 const MONTHS = [
   "Januar", "Februar", "März", "April", "Mai", "Juni",
@@ -38,39 +48,109 @@ function PaymentStatusBadge({ status }: { status: string }) {
   );
 }
 
-// Payment Handler (Placeholder)
-async function handlePayment(bookingId: string) {
-  // TODO: Payment-Flow initiieren
-  alert('Payment-Integration kommt bald!');
-  // window.location.href = `/payment?bookingId=${bookingId}`;
+// NEU: Komponente zur Anzeige der Platz-Verfügbarkeit
+function PlaceAvailability({ event }: { event: EventWithBookingInfo }) {
+  const bookedSpaces = event.bookedSpaces || 0;
+  const maxParticipants = event.maxParticipants || 0;
+  const availableSpaces = event.availableSpaces || 0;
+  const bookingPercentage = event.bookingPercentage || 0;
+
+  // Verwende Helper-Funktion für Farben
+  const colors = getAvailabilityColor(bookingPercentage);
+  const colorClass = `${colors.textClass} ${colors.bgClass}`;
+  const progressBarColor = colors.progressClass;
+
+  if (!maxParticipants) {
+    return null;
+  }
+
+  return (
+    <div className="space-y-2">
+      {/* Badge mit Zahlen */}
+      <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${colorClass}`}>
+        <Users size={14} />
+        <span>{bookedSpaces} von {maxParticipants} Plätzen</span>
+        {availableSpaces <= 0 && <span className="ml-1">🔴 AUSGEBUCHT</span>}
+      </div>
+
+      {/* Progress Bar */}
+      <div className="w-full bg-gray-200 rounded-full h-2">
+        <div
+          className={`h-2 rounded-full transition-all duration-300 ${progressBarColor}`}
+          style={{ width: `${Math.min(bookingPercentage, 100)}%` }}
+        />
+      </div>
+
+      {/* Verfügbarkeits-Text */}
+      {availableSpaces > 0 && availableSpaces <= 5 && (
+        <p className="text-xs text-orange-600 font-semibold">
+          ⚠️ Nur noch {availableSpaces} {availableSpaces === 1 ? 'Platz' : 'Plätze'} verfügbar!
+        </p>
+      )}
+    </div>
+  );
 }
 
+// Payment Handler (Placeholder)
+async function handlePayment(bookingId: string) {
+  alert('Payment-Integration kommt bald!');
+}
 
 export default function EventsPage() {
   const { status, data: session } = useSession();
-  const [events, setEvents] = useState<EventType[]>([]);
+  const [events, setEvents] = useState<EventWithBookingInfo[]>([]);
   const [bookings, setBookings] = useState<BookingType[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'calendar' | 'list'>('grid');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showYearPicker, setShowYearPicker] = useState(false);
+  const [eventBookingCounts, setEventBookingCounts] = useState<Record<string, number>>({});
 
-  // Lade alle Events
+  // NEU: Lade Buchungszahlen für alle Events
+  useEffect(() => {
+    async function fetchEventBookingCounts() {
+      try {
+        const res = await fetch("/api/events/booking-counts");
+        if (res.ok) {
+          const data = await res.json();
+          setEventBookingCounts(data);
+        }
+      } catch (error) {
+        console.error("Fehler beim Laden der Buchungszahlen:", error);
+      }
+    }
+
+    if (status === "authenticated") {
+      fetchEventBookingCounts();
+    }
+  }, [status, events]); // Neu laden wenn sich Events ändern
+
+  // Lade alle Events und ergänze Buchungsinformationen
   useEffect(() => {
     async function fetchEvents() {
       setLoading(true);
       const res = await fetch("/api/events");
       if (res.ok) {
         const data = await res.json();
-        setEvents(data);
+        // Ergänze Events mit Buchungsinformationen unter Verwendung der Helper-Funktion
+        const eventsWithBookings: EventWithBookingInfo[] = data.map((event: EventType) => {
+          // Aktualisiere bookedCount mit den tatsächlichen Buchungszahlen
+          const updatedEvent = {
+            ...event,
+            bookedCount: eventBookingCounts[event.id] || event.bookedCount || 0
+          };
+          // Verwende Helper-Funktion für erweiterte Informationen
+          return getEventAvailability(updatedEvent);
+        });
+        setEvents(eventsWithBookings);
       }
       setLoading(false);
     }
     if (status === "authenticated") {
       fetchEvents();
     }
-  }, [status]);
+  }, [status, eventBookingCounts]);
 
   // Lade alle Buchungen des Users
   useEffect(() => {
@@ -86,7 +166,7 @@ export default function EventsPage() {
     }
   }, [status]);
 
-  // Click-Handler um Jahr-Picker zu schließen wenn außerhalb geklickt wird
+  // Click-Handler um Jahr-Picker zu schließen
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (showYearPicker) {
@@ -139,7 +219,7 @@ export default function EventsPage() {
 
   const getFirstDayOfMonth = (date: Date) => {
     const firstDay = new Date(date.getFullYear(), date.getMonth(), 1).getDay();
-    return firstDay === 0 ? 6 : firstDay - 1; // Montag = 0
+    return firstDay === 0 ? 6 : firstDay - 1;
   };
 
   const getEventsForDate = (date: Date) => {
@@ -190,12 +270,10 @@ export default function EventsPage() {
     const firstDay = getFirstDayOfMonth(currentDate);
     const days = [];
 
-    // Leere Zellen für Tage vor dem ersten Tag des Monats
     for (let i = 0; i < firstDay; i++) {
       days.push(<div key={`empty-${i}`} className="h-14 border border-gray-200"></div>);
     }
 
-    // Tage des Monats
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
       const dayEvents = getEventsForDate(date);
@@ -233,7 +311,6 @@ export default function EventsPage() {
   // Handler für das Löschen einer Buchung
   const handleDeleteBooking = async (bookingId: string) => {
     await fetch(`/api/bookings/${bookingId}`, { method: "DELETE" });
-    // Buchungen neu laden
     const res = await fetch("/api/my-bookings");
     if (res.ok) {
       const data = await res.json();
@@ -326,7 +403,6 @@ export default function EventsPage() {
                       {currentDate.getFullYear()}
                     </button>
 
-                    {/* Jahr-Dropdown */}
                     {showYearPicker && (
                       <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto min-w-[80px]">
                         {generateYearOptions().map(year => (
@@ -390,13 +466,19 @@ export default function EventsPage() {
                           <h2 className="text-xl font-bold mb-2">
                             {event.title}
                             {(
-                              event.user.email === session?.user?.email // Ersteller sieht alles
+                              event.user.email === session?.user?.email
                                 ? <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-semibold">{event.status}</span>
                                 : (event.status === EventStatus.FULL || event.status === EventStatus.CANCELLED)
                                   ? <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-semibold">{event.status}</span>
                                   : null
                             )}
                           </h2>
+
+                          {/* NEU: Platz-Verfügbarkeit in Listen-Ansicht */}
+                          <div className="mb-3">
+                            <PlaceAvailability event={event} />
+                          </div>
+
                           <div className="flex flex-wrap gap-4 text-sm text-gray-600 mb-2">
                             <span>
                               📅 {new Date(event.startDate).toLocaleString()}
@@ -436,7 +518,177 @@ export default function EventsPage() {
           </div>
         )}
 
-        {/* Meine gebuchten Events */}
+        {/* Grid-Ansicht */}
+        {viewMode === 'grid' && (
+          <>
+            {/* Meine erstellten Events */}
+            <h1 className="text-3xl font-extrabold text-gray-900 mb-8">
+              Meine erstellten Events
+            </h1>
+            {myEvents.length === 0 ? (
+              <p className="text-center text-gray-500 mb-12">
+                Du hast noch keine Events erstellt.
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                {myEvents.map((event) => (
+                  <div key={event.id} className="bg-white rounded-xl shadow p-6 flex flex-col">
+                    {event.imageUrl && (
+                      <img
+                        src={event.imageUrl}
+                        alt={event.title}
+                        className="rounded-lg mb-4 h-40 object-cover"
+                      />
+                    )}
+                    <h2 className="text-xl font-bold mb-2">
+                      {event.title}
+                      {(
+                        event.user.email === session?.user?.email
+                          ? <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-semibold">{event.status}</span>
+                          : (event.status === EventStatus.FULL || event.status === EventStatus.CANCELLED)
+                            ? <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-semibold">{event.status}</span>
+                            : null
+                      )}
+                    </h2>
+
+                    {/* NEU: Platz-Verfügbarkeit in Grid-Ansicht */}
+                    <div className="mb-3">
+                      <PlaceAvailability event={event} />
+                    </div>
+
+                    <div className="text-gray-600 mb-2">
+                      {new Date(event.startDate).toLocaleString()}
+                      {event.endDate && (
+                        <> – {new Date(event.endDate).toLocaleString()}</>
+                      )}
+                      {" "}– {event.location}
+                    </div>
+                    {!event.chargeFree && event.price > 0 ? (
+                      <div className="text-gray-700 font-medium mb-2">
+                        Preis: <span className="font-semibold">{event.price} €</span>
+                      </div>
+                    ) : event.chargeFree ? (
+                      <div className="text-green-700 font-bold mb-2">
+                        ✓ Kostenfrei
+                      </div>
+                    ) : null}
+                    <div className="text-gray-500 text-sm mb-2">
+                      Veranstalter:{" "}
+                      <span className="font-semibold">{event.ventType}</span>
+                    </div>
+                    <div className="mb-4 line-clamp-3">{event.description}</div>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {event.categories.map((cat) => (
+                        <span
+                          key={cat}
+                          className="bg-gray-100 text-xs px-2 py-1 rounded"
+                        >
+                          {cat}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="mt-auto space-y-2">
+                      <Link
+                        href={`/events/${event.id}`}
+                        className="bg-[rgb(228,25,31)] text-white px-4 py-2 rounded hover:bg-red-700 transition-colors text-center block"
+                      >
+                        Details & Anmeldung
+                      </Link>
+                      <Link
+                        href={`/events/${event.id}/edit`}
+                        className="px-4 py-2 bg-yellow-400 text-gray-900 font-semibold shadow hover:bg-yellow-500 transition-colors text-center block"
+                      >
+                        Event bearbeiten
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Verfügbare Events anderer User */}
+            <h1 className="text-3xl font-extrabold text-gray-900 mb-8">
+              Verfügbare Events
+            </h1>
+            {availableEvents.length === 0 ? (
+              <p className="text-center text-gray-500">
+                Es gibt aktuell keine verfügbaren Events anderer Nutzer.
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                {availableEvents.map((event) => (
+                  <div key={event.id} className="bg-white rounded-xl shadow p-6 flex flex-col">
+                    {event.imageUrl && (
+                      <img
+                        src={event.imageUrl}
+                        alt={event.title}
+                        className="rounded-lg mb-4 h-40 object-cover"
+                      />
+                    )}
+                    <h2 className="text-xl font-bold mb-2">
+                      {event.title}
+                      {(event.status === EventStatus.FULL || event.status === EventStatus.CANCELLED) && (
+                        <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-semibold">
+                          {event.status}
+                        </span>
+                      )}
+                    </h2>
+
+                    {/* NEU: Platz-Verfügbarkeit für verfügbare Events */}
+                    <div className="mb-3">
+                      <PlaceAvailability event={event} />
+                    </div>
+
+                    <div className="text-gray-600 mb-2">
+                      {new Date(event.startDate).toLocaleString()}
+                      {event.endDate && (
+                        <> – {new Date(event.endDate).toLocaleString()}</>
+                      )}
+                      {" "}– {event.location}
+                    </div>
+                    <div className="text-gray-700 font-medium mb-2">
+                      Preis:{" "}
+                      {event.price === 0 ? (
+                        <span className="text-green-700 font-semibold">Kostenlos</span>
+                      ) : (
+                        <span className="font-semibold">{event.price} €</span>
+                      )}
+                    </div>
+                    <div className="text-gray-500 text-sm mb-2">
+                      Veranstalter:{" "}
+                      <span className="font-semibold">{event.ventType}</span>
+                    </div>
+                    <div className="mb-4 line-clamp-3">{event.description}</div>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {event.categories.map((cat) => (
+                        <span
+                          key={cat}
+                          className="bg-gray-100 text-xs px-2 py-1 rounded"
+                        >
+                          {cat}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="mt-auto">
+                      <Link
+                        href={`/events/${event.id}`}
+                        className={`${
+                          event.isFullyBooked
+                            ? 'bg-gray-400 cursor-not-allowed'
+                            : 'bg-[rgb(228,25,31)] hover:bg-red-700'
+                        } text-white px-4 py-2 rounded transition-colors text-center block`}
+                      >
+                        {event.isFullyBooked ? 'Ausgebucht' : 'Details & Anmeldung'}
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Meine gebuchten Events - Tabelle bleibt unverändert */}
         <h2 className="text-2xl font-bold mb-6 text-gray-900">
           Meine gebuchten Events
         </h2>
@@ -535,161 +787,6 @@ export default function EventsPage() {
               </tfoot>
             </table>
           </div>
-        )}
-
-        {/* Meine erstellten Events - nur in Grid-Ansicht */}
-        {viewMode === 'grid' && (
-          <>
-            <h1 className="text-3xl font-extrabold text-gray-900 mb-8">
-              Meine erstellten Events
-            </h1>
-            {myEvents.length === 0 ? (
-              <p className="text-center text-gray-500">
-                Du hast noch keine Events erstellt.
-              </p>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-                {myEvents.map((event) => (
-                  <div key={event.id} className="bg-white rounded-xl shadow p-6 flex flex-col">
-                    {event.imageUrl && (
-                      <img
-                        src={event.imageUrl}
-                        alt={event.title}
-                        className="rounded-lg mb-4 h-40 object-cover"
-                      />
-                    )}
-                    <h2 className="text-xl font-bold mb-2">
-                      {event.title}
-                      {(
-                        event.user.email === session?.user?.email // Ersteller sieht alles
-                          ? <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-semibold">{event.status}</span>
-                          : (event.status === EventStatus.FULL || event.status === EventStatus.CANCELLED)
-                            ? <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-semibold">{event.status}</span>
-                            : null
-                      )}
-                    </h2>
-                    <div className="text-gray-600 mb-2">
-                      {new Date(event.startDate).toLocaleString()}
-                      {event.endDate && (
-                        <> – {new Date(event.endDate).toLocaleString()}</>
-                      )}
-                      {" "}– {event.location}
-                    </div>
-                    {!event.chargeFree && event.price > 0 ? (
-                      <div className="text-gray-700 font-medium mb-2">
-                        Preis: <span className="font-semibold">{event.price} €</span>
-                      </div>
-                    ) : event.chargeFree ? (
-                      <div className="text-green-700 font-bold mb-2">
-                        ✓ Kostenfrei
-                      </div>
-                    ) : null}
-                    <div className="text-gray-500 text-sm mb-2">
-                      Veranstalter:{" "}
-                      <span className="font-semibold">{event.ventType}</span>
-                    </div>
-                    <div className="mb-4 line-clamp-3">{event.description}</div>
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      {event.categories.map((cat) => (
-                        <span
-                          key={cat}
-                          className="bg-gray-100 text-xs px-2 py-1 rounded"
-                        >
-                          {cat}
-                        </span>
-                      ))}
-                    </div>
-                    <div className="mt-auto">
-                      <Link
-                        href={`/events/${event.id}`}
-                        className="bg-[rgb(228,25,31)] text-white px-4 py-2 rounded hover:bg-red-700 transition-colors text-center block"
-                      >
-                        Details & Anmeldung
-                      </Link>
-                    </div>
-                    <Link
-                      href={`/events/${event.id}/edit`}
-                      className="mt-2 inline-block px-4 py-2 bg-yellow-400 text-gray-900 font-semibold shadow hover:bg-yellow-500 transition-colors text-center"
-                    >
-                      Event bearbeiten
-                    </Link>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Verfügbare Events anderer User */}
-            <h1 className="text-3xl font-extrabold text-gray-900 mb-8">
-              Verfügbare Events
-            </h1>
-            {availableEvents.length === 0 ? (
-              <p className="text-center text-gray-500">
-                Es gibt aktuell keine verfügbaren Events anderer Nutzer.
-              </p>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-                {availableEvents.map((event) => (
-                  <div key={event.id} className="bg-white rounded-xl shadow p-6 flex flex-col">
-                    {event.imageUrl && (
-                      <img
-                        src={event.imageUrl}
-                        alt={event.title}
-                        className="rounded-lg mb-4 h-40 object-cover"
-                      />
-                    )}
-                    <h2 className="text-xl font-bold mb-2">
-                      {event.title}
-                      {(
-                        event.user.email === session?.user?.email // Ersteller sieht alles
-                          ? <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-semibold">{event.status}</span>
-                          : (event.status === EventStatus.FULL || event.status === EventStatus.CANCELLED)
-                            ? <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-semibold">{event.status}</span>
-                            : null
-                      )}
-                    </h2>
-                    <div className="text-gray-600 mb-2">
-                      {new Date(event.startDate).toLocaleString()}
-                      {event.endDate && (
-                        <> – {new Date(event.endDate).toLocaleString()}</>
-                      )}
-                      {" "}– {event.location}
-                    </div>
-                    <div className="text-gray-700 font-medium mb-2">
-                      Preis:{" "}
-                      {event.price === 0 ? (
-                        <span className="text-green-700 font-semibold">Kostenlos</span>
-                      ) : (
-                        <span className="font-semibold">{event.price} €</span>
-                      )}
-                    </div>
-                    <div className="text-gray-500 text-sm mb-2">
-                      Veranstalter:{" "}
-                      <span className="font-semibold">{event.ventType}</span>
-                    </div>
-                    <div className="mb-4 line-clamp-3">{event.description}</div>
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      {event.categories.map((cat) => (
-                        <span
-                          key={cat}
-                          className="bg-gray-100 text-xs px-2 py-1 rounded"
-                        >
-                          {cat}
-                        </span>
-                      ))}
-                    </div>
-                    <div className="mt-auto">
-                      <Link
-                        href={`/events/${event.id}`}
-                        className="bg-[rgb(228,25,31)] text-white px-4 py-2 rounded hover:bg-red-700 transition-colors text-center block"
-                      >
-                        Details & Anmeldung
-                      </Link>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </>
         )}
       </div>
     </main>

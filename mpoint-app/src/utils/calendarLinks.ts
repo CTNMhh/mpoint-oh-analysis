@@ -1,3 +1,5 @@
+// mpoint\mpoint-app\src\utils\calendarLinks.ts
+
 export function generateGoogleCalendarLink({
   title,
   description,

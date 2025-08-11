@@ -1,3 +1,5 @@
+// mpoint\mpoint-app\src\app\events\[id]\edit\page.tsx
+
 "use client";
 import { useEffect, useState, use } from "react"; // use war schon importiert
 import { useSession } from "next-auth/react";

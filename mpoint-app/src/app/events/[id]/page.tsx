@@ -1,3 +1,5 @@
+// mpoint\mpoint-app\src\app\events\[id]\page.tsx
+
 "use client";
 
 import { notFound } from "next/navigation";
