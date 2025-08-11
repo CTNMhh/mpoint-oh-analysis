@@ -13,6 +13,39 @@ const MONTHS = [
 
 const WEEKDAYS = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
 
+// Payment Status Badge Komponente
+function PaymentStatusBadge({ status }: { status: string }) {
+  const styles = {
+    NOT_REQUIRED: 'bg-gray-100 text-gray-700',
+    PENDING: 'bg-yellow-100 text-yellow-700',
+    PAID: 'bg-green-100 text-green-700',
+    REFUNDED: 'bg-blue-100 text-blue-700',
+    FAILED: 'bg-red-100 text-red-700',
+  };
+
+  const labels = {
+    NOT_REQUIRED: 'Kostenfrei',
+    PENDING: 'Offen',
+    PAID: 'Bezahlt',
+    REFUNDED: 'Erstattet',
+    FAILED: 'Fehlgeschlagen',
+  };
+
+  return (
+    <span className={`px-2 py-1 rounded text-xs font-semibold ${styles[status] || styles.PENDING}`}>
+      {labels[status] || status}
+    </span>
+  );
+}
+
+// Payment Handler (Placeholder)
+async function handlePayment(bookingId: string) {
+  // TODO: Payment-Flow initiieren
+  alert('Payment-Integration kommt bald!');
+  // window.location.href = `/payment?bookingId=${bookingId}`;
+}
+
+
 export default function EventsPage() {
   const { status, data: session } = useSession();
   const [events, setEvents] = useState<EventType[]>([]);
@@ -372,7 +405,11 @@ export default function EventsPage() {
                               )}
                               {" "}– {event.location}
                             </span>
-                            <span>💰 {event.price === 0 ? 'Kostenlos' : `${event.price} €`}</span>
+                            {event.chargeFree ? (
+                              <span className="text-green-700 font-semibold">✓ Kostenfrei</span>
+                            ) : event.price > 0 ? (
+                              <span>💰 {event.price} €</span>
+                            ) : null}
                             <span>👤 {event.user.firstName} {event.user.lastName}</span>
                           </div>
                           <p className="text-gray-700 line-clamp-2">{event.description}</p>
@@ -413,9 +450,10 @@ export default function EventsPage() {
                   <th className="py-3 px-4 text-left font-semibold text-gray-700">Titel</th>
                   <th className="py-3 px-4 text-left font-semibold text-gray-700">Datum</th>
                   <th className="py-3 px-4 text-left font-semibold text-gray-700">Ort</th>
-                  <th className="py-3 px-4 text-left font-semibold text-gray-700">Preis</th>
                   <th className="py-3 px-4 text-left font-semibold text-gray-700">Plätze</th>
-                  <th className="py-3 px-4 text-left font-semibold text-gray-700">Details</th>
+                  <th className="py-3 px-4 text-left font-semibold text-gray-700">Preis/Platz</th>
+                  <th className="py-3 px-4 text-left font-semibold text-gray-700">Gesamt</th>
+                  <th className="py-3 px-4 text-left font-semibold text-gray-700">Status</th>
                   <th className="py-3 px-4 text-left font-semibold text-gray-700">Aktionen</th>
                 </tr>
               </thead>
@@ -427,32 +465,74 @@ export default function EventsPage() {
                       {new Date(booking.event.startDate).toLocaleString()}
                     </td>
                     <td className="py-2 px-4">{booking.event.location}</td>
+                    <td className="py-2 px-4 text-center">{booking.spaces}</td>
                     <td className="py-2 px-4">
-                      {booking.event.price === 0
-                        ? <span className="text-green-700 font-semibold">Kostenlos</span>
-                        : <span className="font-semibold">{booking.event.price} €</span>
-                      }
+                      {booking.pricePerSpace === 0 ? (
+                        <span className="text-green-700 font-semibold">Kostenfrei</span>
+                      ) : (
+                        <span>{booking.pricePerSpace.toFixed(2)} €</span>
+                      )}
                     </td>
-                    <td className="py-2 px-4">{booking.spaces}</td>
-                    <td className="py-2 px-4">
-                      <Link
-                        href={`/events/${booking.event.id}`}
-                        className="text-blue-600 underline"
-                      >
-                        Event ansehen
-                      </Link>
+                    <td className="py-2 px-4 font-semibold">
+                      {booking.totalAmount === 0 ? (
+                        <span className="text-green-700">Kostenfrei</span>
+                      ) : (
+                        <span>{booking.totalAmount.toFixed(2)} €</span>
+                      )}
                     </td>
                     <td className="py-2 px-4">
-                      <button
-                        onClick={() => handleDeleteBooking(booking.id)}
-                        className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-700"
-                      >
-                        Abmelden
-                      </button>
+                      <PaymentStatusBadge status={booking.paymentStatus} />
+                    </td>
+                    <td className="py-2 px-4">
+                      <div className="flex gap-2">
+                        <Link
+                          href={`/events/${booking.event.id}`}
+                          className="text-blue-600 underline text-sm"
+                        >
+                          Details
+                        </Link>
+                        {booking.paymentStatus === 'PENDING' && booking.totalAmount > 0 && (
+                          <button
+                            onClick={() => handlePayment(booking.id)}
+                            className="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600"
+                          >
+                            Bezahlen
+                          </button>
+                        )}
+                        {(booking.paymentStatus === 'NOT_REQUIRED' ||
+                          booking.paymentStatus === 'PAID') && (
+                          <button
+                            onClick={() => handleDeleteBooking(booking.id)}
+                            className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-700"
+                          >
+                            Stornieren
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
               </tbody>
+              <tfoot className="bg-gray-100 font-semibold">
+                <tr>
+                  <td colSpan={3} className="py-3 px-4">Gesamt</td>
+                  <td className="py-3 px-4 text-center">
+                    {bookings.reduce((sum, b) => sum + b.spaces, 0)}
+                  </td>
+                  <td className="py-3 px-4"></td>
+                  <td className="py-3 px-4">
+                    {bookings.reduce((sum, b) => sum + b.totalAmount, 0).toFixed(2)} €
+                  </td>
+                  <td colSpan={2} className="py-3 px-4 text-sm text-gray-600">
+                    Davon bezahlt: {
+                      bookings
+                        .filter(b => b.paymentStatus === 'PAID')
+                        .reduce((sum, b) => sum + b.totalAmount, 0)
+                        .toFixed(2)
+                    } €
+                  </td>
+                </tr>
+              </tfoot>
             </table>
           </div>
         )}
@@ -495,14 +575,15 @@ export default function EventsPage() {
                       )}
                       {" "}– {event.location}
                     </div>
-                    <div className="text-gray-700 font-medium mb-2">
-                      Preis:{" "}
-                      {event.price === 0 ? (
-                        <span className="text-green-700 font-semibold">Kostenlos</span>
-                      ) : (
-                        <span className="font-semibold">{event.price} €</span>
-                      )}
-                    </div>
+                    {!event.chargeFree && event.price > 0 ? (
+                      <div className="text-gray-700 font-medium mb-2">
+                        Preis: <span className="font-semibold">{event.price} €</span>
+                      </div>
+                    ) : event.chargeFree ? (
+                      <div className="text-green-700 font-bold mb-2">
+                        ✓ Kostenfrei
+                      </div>
+                    ) : null}
                     <div className="text-gray-500 text-sm mb-2">
                       Veranstalter:{" "}
                       <span className="font-semibold">{event.ventType}</span>

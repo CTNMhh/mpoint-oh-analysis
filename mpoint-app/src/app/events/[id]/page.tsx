@@ -1,13 +1,20 @@
 "use client";
 
 import { notFound } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react"; // NEU: use importieren
 import { Calendar } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { EventType, EventStatus } from "../types";
 
-export default function EventDetailPage({ params }: { params: { id: string } }) {
+export default function EventDetailPage({
+  params
+}: {
+  params: Promise<{ id: string }> // NEU: Promise type
+}) {
+  // NEU: params unwrappen
+  const resolvedParams = use(params);
+  const eventId = resolvedParams.id;
   const [event, setEvent] = useState<EventType | null>(null);
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState<string | null>(null);
@@ -19,7 +26,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
   useEffect(() => {
     async function fetchEvent() {
       setLoading(true);
-      const res = await fetch(`/api/events/${params.id}`);
+      const res = await fetch(`/api/events/${eventId}`); // statt params.id
       if (res.ok) {
         const data = await res.json();
         setEvent(data);
@@ -29,7 +36,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
       setLoading(false);
     }
     fetchEvent();
-  }, [params.id]);
+  }, [eventId]); // statt [params.id]
 
   // Buchungen laden, wenn User der Ersteller ist
   useEffect(() => {
@@ -144,14 +151,16 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
             )}
             {" "}– {event.location}
           </div>
-          <div className="text-gray-700 mt-3 font-medium">
-            Preis:{" "}
-            {event.price === 0 ? (
-              <span className="text-green-700 font-semibold">Kostenlos</span>
-            ) : (
-              <span className="font-semibold">{event.price} €</span>
-            )}
-          </div>
+          {!event.chargeFree && event.price > 0 && (
+            <div className="text-gray-700 mt-3 font-medium">
+              Preis: <span className="font-semibold">{event.price} €</span>
+            </div>
+          )}
+          {event.chargeFree && (
+            <div className="text-green-700 mt-3 font-bold">
+              ✓ Kostenfreies Event
+            </div>
+          )}
         </div>
         {event.calendarLinks && (
           <div className="mb-6 flex items-center gap-4">
@@ -186,7 +195,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
           </div>
         </div>
 
-        {event.price === 0 && (
+        {event.chargeFree && (
           <form
             onSubmit={async (e) => {
               e.preventDefault();
@@ -325,7 +334,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
           </form>
         )}
 
-        {event.price > 0 && (
+        {!event.chargeFree && event.price > 0 && (
           <>
             {/* NEU: Spaces-Auswahl für bezahlte Events */}
             <div className="mb-4">
@@ -390,31 +399,107 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
         {/* Buchungsliste für Ersteller */}
         {event.user.email.toLowerCase() === session?.user?.email?.toLowerCase() && (
           <div className="mb-10">
-            <h3 className="font-semibold text-lg mb-2">Buchungen für dieses Event</h3>
+            <h3 className="font-semibold text-lg mb-4">Buchungen für dieses Event</h3>
+
+            {/* Statistik-Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+              <div className="bg-blue-50 rounded-lg p-4">
+                <div className="text-sm text-blue-600">Buchungen</div>
+                <div className="text-2xl font-bold text-blue-900">{bookings.length}</div>
+              </div>
+              <div className="bg-green-50 rounded-lg p-4">
+                <div className="text-sm text-green-600">Gebuchte Plätze</div>
+                <div className="text-2xl font-bold text-green-900">
+                  {bookings.reduce((sum, b) => sum + b.spaces, 0)}
+                  {event.maxParticipants && (
+                    <span className="text-sm font-normal"> / {event.maxParticipants}</span>
+                  )}
+                </div>
+              </div>
+              <div className="bg-purple-50 rounded-lg p-4">
+                <div className="text-sm text-purple-600">Gesamtumsatz</div>
+                <div className="text-2xl font-bold text-purple-900">
+                  {bookings.reduce((sum, b) => sum + b.totalAmount, 0).toFixed(2)} €
+                </div>
+              </div>
+              <div className="bg-yellow-50 rounded-lg p-4">
+                <div className="text-sm text-yellow-600">Offene Zahlungen</div>
+                <div className="text-2xl font-bold text-yellow-900">
+                  {bookings
+                    .filter(b => b.paymentStatus === 'PENDING')
+                    .reduce((sum, b) => sum + b.totalAmount, 0)
+                    .toFixed(2)} €
+                </div>
+              </div>
+            </div>
+
             {bookings.length === 0 ? (
               <div className="text-gray-500">Noch keine Buchungen vorhanden.</div>
             ) : (
-              <table className="w-full text-left border mt-2">
-                <thead>
-                  <tr>
-                    <th className="px-2 py-1 border-b">Name</th>
-                    <th className="px-2 py-1 border-b">E-Mail</th>
-                    <th className="px-2 py-1 border-b">Plätze</th>
-                    <th className="px-2 py-1 border-b">Kommentar</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {bookings.map((b) => (
-                    <tr key={b.id}>
-                      <td className="px-2 py-1 border-b">{b.name}</td>
-                      <td className="px-2 py-1 border-b">{b.email}</td>
-                      <td className="px-2 py-1 border-b">{b.spaces}</td>
-                      <td className="px-2 py-1 border-b">{b.comment || ""}</td>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border rounded-lg overflow-hidden">
+                  <thead className="bg-gray-100">
+                    <tr>
+                      <th className="px-3 py-2 text-sm font-semibold">Name</th>
+                      <th className="px-3 py-2 text-sm font-semibold">E-Mail</th>
+                      <th className="px-3 py-2 text-sm font-semibold text-center">Plätze</th>
+                      <th className="px-3 py-2 text-sm font-semibold text-right">Betrag</th>
+                      <th className="px-3 py-2 text-sm font-semibold">Status</th>
+                      <th className="px-3 py-2 text-sm font-semibold">Gebucht am</th>
+                      <th className="px-3 py-2 text-sm font-semibold">Kommentar</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {bookings.map((b) => (
+                      <tr key={b.id} className="border-t hover:bg-gray-50">
+                        <td className="px-3 py-2 text-sm">{b.name}</td>
+                        <td className="px-3 py-2 text-sm">{b.email}</td>
+                        <td className="px-3 py-2 text-sm text-center">{b.spaces}</td>
+                        <td className="px-3 py-2 text-sm text-right font-medium">
+                          {b.totalAmount > 0 ? `${b.totalAmount.toFixed(2)} €` : 'Kostenfrei'}
+                        </td>
+                        <td className="px-3 py-2 text-sm">
+                          <PaymentStatusBadge status={b.paymentStatus} />
+                        </td>
+                        <td className="px-3 py-2 text-sm text-gray-600">
+                          {new Date(b.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="px-3 py-2 text-sm text-gray-600">{b.comment || '-'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot className="bg-gray-100 font-semibold">
+                    <tr>
+                      <td colSpan={2} className="px-3 py-2 text-sm">Gesamt</td>
+                      <td className="px-3 py-2 text-sm text-center">
+                        {bookings.reduce((sum, b) => sum + b.spaces, 0)}
+                      </td>
+                      <td className="px-3 py-2 text-sm text-right">
+                        {bookings.reduce((sum, b) => sum + b.totalAmount, 0).toFixed(2)} €
+                      </td>
+                      <td colSpan={3} className="px-3 py-2 text-sm text-gray-600">
+                        Bezahlt: {
+                          bookings
+                            .filter(b => b.paymentStatus === 'PAID')
+                            .reduce((sum, b) => sum + b.totalAmount, 0)
+                            .toFixed(2)
+                        } €
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
             )}
+
+            {/* Export-Button */}
+            <div className="mt-4 flex gap-2">
+              <button
+                onClick={() => exportBookingsAsCSV(bookings, event)}
+                className="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300 text-sm font-semibold"
+              >
+                Buchungen als CSV exportieren
+              </button>
+            </div>
           </div>
         )}
 
@@ -423,19 +508,46 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
   );
 }
 
-function exportEventAsCSV(event: EventType) {
+// Payment Status Badge Komponente
+function PaymentStatusBadge({ status }: { status: string }) {
+  const styles: Record<string, string> = {
+    NOT_REQUIRED: 'bg-gray-100 text-gray-700',
+    PENDING: 'bg-yellow-100 text-yellow-700',
+    PAID: 'bg-green-100 text-green-700',
+    REFUNDED: 'bg-blue-100 text-blue-700',
+    FAILED: 'bg-red-100 text-red-700',
+    CANCELLED: 'bg-orange-100 text-orange-700'
+  };
+
+  const labels: Record<string, string> = {
+    NOT_REQUIRED: 'Kostenfrei',
+    PENDING: 'Offen',
+    PAID: 'Bezahlt',
+    REFUNDED: 'Erstattet',
+    FAILED: 'Fehlgeschlagen',
+    CANCELLED: 'Storniert'
+  };
+
+  return (
+    <span className={`px-2 py-1 rounded text-xs font-semibold ${styles[status] || styles.PENDING}`}>
+      {labels[status] || status}
+    </span>
+  );
+}
+
+function exportBookingsAsCSV(bookings: any[], event: any) {
   const csvRows = [
-    ["Titel", "Beschreibung", "Ort", "Start", "Ende", "Preis", "Veranstalter", "Kategorien"],
-    [
-      event.title,
-      event.description,
-      event.location,
-      event.startDate,
-      event.endDate || "",
-      event.price === 0 ? "Kostenlos" : `${event.price} €`,
-      `${event.user.firstName} ${event.user.lastName}`,
-      event.categories.join(", "),
-    ],
+    ["Name", "E-Mail", "Plätze", "Preis/Platz", "Gesamt", "Status", "Gebucht am", "Kommentar"],
+    ...bookings.map(b => [
+      b.name,
+      b.email,
+      b.spaces,
+      b.pricePerSpace.toFixed(2),
+      b.totalAmount.toFixed(2),
+      b.paymentStatus,
+      new Date(b.createdAt).toLocaleDateString(),
+      b.comment || ""
+    ])
   ];
 
   const csvContent = csvRows.map(row =>
@@ -444,10 +556,9 @@ function exportEventAsCSV(event: EventType) {
 
   const blob = new Blob([csvContent], { type: "text/csv" });
   const url = URL.createObjectURL(blob);
-
   const a = document.createElement("a");
   a.href = url;
-  a.download = `${event.title}.csv`;
+  a.download = `${event.title}_Buchungen_${new Date().toISOString().split('T')[0]}.csv`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);

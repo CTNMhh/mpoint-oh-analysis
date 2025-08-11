@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react"; // use war schon importiert
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -30,7 +30,12 @@ const statusLabels: Record<EventStatus, string> = {
   CANCELLED: "Abgesagt",
 };
 
-export default function EditEventPage({ params }: { params: { id: string } }) {
+// GEÄNDERT: params ist jetzt ein Promise
+export default function EditEventPage({ params }: { params: Promise<{ id: string }> }) {
+  // NEU: params unwrappen INNERHALB der Funktion
+  const resolvedParams = use(params);
+  const eventId = resolvedParams.id;
+
   const { status, data: session } = useSession();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -64,7 +69,7 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
   useEffect(() => {
     async function fetchEvent() {
       setLoading(true);
-      const res = await fetch(`/api/events/${params.id}`);
+      const res = await fetch(`/api/events/${eventId}`); // eventId ist jetzt definiert
       if (res.ok) {
         const data = await res.json();
 
@@ -82,6 +87,7 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
         setForm({
           ...data,
           status: enumStatus,
+          chargeFree: data.chargeFree ?? false,
           categories: Array.isArray(data.categories)
             ? data.categories.join(", ")
             : data.categories || "",
@@ -92,7 +98,7 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
       setLoading(false);
     }
     fetchEvent();
-  }, [params.id]);
+  }, [eventId]); // eventId als dependency
 
   useEffect(() => {
     if (form?.title && form?.startDate) {
@@ -114,7 +120,6 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
         }),
       }));
     }
-    // eslint-disable-next-line
   }, [
     form?.title,
     form?.startDate,
@@ -153,7 +158,8 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
     setError(null);
     const body = {
       ...form,
-      price: Number(form.price),
+      price: form.chargeFree ? 0 : Number(form.price),
+      chargeFree: form.chargeFree ?? false,
       categories: Array.isArray(form.categories)
         ? form.categories
         : form.categories.split(",").map((c: string) => c.trim()),
@@ -167,13 +173,13 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
       },
     };
     console.log("Sende an Backend:", body.status);
-    const res = await fetch(`/api/events/${params.id}`, {
+    const res = await fetch(`/api/events/${eventId}`, { // eventId ist jetzt definiert
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
     if (res.ok) {
-      router.push(`/events/${params.id}`);
+      router.push(`/events/${eventId}`); // eventId ist jetzt definiert
     } else {
       const err = await res.json();
       setError(err.error || "Fehler beim Bearbeiten.");
@@ -219,7 +225,7 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
                     body: formData,
                   });
                   const data = await res.json();
-                  setForm({ ...form, imageUrl: data.url }); // URL vom Backend
+                  setForm({ ...form, imageUrl: data.url });
                 }}
                 className="w-full border border-gray-300 rounded px-3 py-2 mb-2"
               />
@@ -271,15 +277,35 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Preis (€)</label>
-              <input
-                value={form.price}
-                onChange={(e) => setForm({ ...form, price: e.target.value })}
-                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
-                type="number"
-                min={0}
-                placeholder="0"
-              />
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                <input
+                  type="checkbox"
+                  checked={form.chargeFree}
+                  onChange={(e) => {
+                    const isChargeFree = e.target.checked;
+                    setForm({
+                      ...form,
+                      chargeFree: isChargeFree,
+                      price: isChargeFree ? 0 : form.price
+                    });
+                  }}
+                  className="mr-2"
+                />
+                Event ist kostenfrei
+              </label>
+              {!form.chargeFree && (
+                <>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 mt-2">Preis (€)</label>
+                  <input
+                    value={form.price}
+                    onChange={(e) => setForm({ ...form, price: e.target.value })}
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
+                    type="number"
+                    min={0}
+                    placeholder="0"
+                  />
+                </>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Kategorien</label>

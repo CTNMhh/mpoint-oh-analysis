@@ -117,7 +117,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Nicht authentifiziert." }, { status: 401 });
   }
 
-  // 🔄 ANGEPASST: User-Lookup für Logging hinzugefügt (war vorher schon da)
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
     select: { id: true }
@@ -128,6 +127,13 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
+
+  // Debug
+  console.log("Received from frontend:", {
+    status: body.status,
+    isActive: body.isActive,
+    chargeFree: body.chargeFree
+  });
 
   try {
     const event = await prisma.event.create({
@@ -140,21 +146,27 @@ export async function POST(request: NextRequest) {
         startTime: body.startTime,
         endTime: body.endTime,
         location: body.location,
-        ventType: body.ventType, // <-- Veranstaltungstyp als Textfeld
-        price: body.price ?? 0,
+        ventType: body.ventType,
+        price: body.chargeFree ? 0 : (body.price ?? 0),
+        chargeFree: body.chargeFree ?? false,  // ✅ HINZUGEFÜGT
         maxParticipants: body.maxParticipants,
         bookedCount: 0,
         organizer: body.organizer,
         calendarLinks: body.calendarLinks,
         categories: body.categories,
-        userId: user.id
+        userId: user.id,
+
+        // ✅ DIESE ZEILEN WAREN DAS PROBLEM - JETZT HINZUGEFÜGT:
+        status: body.status || "DRAFT",
+        isActive: body.isActive ?? false,
+        isPublished: body.status === "PUBLISHED"
       },
       include: {
         user: { select: { firstName: true, lastName: true, email: true } }
       }
     });
 
-    // 🆕 NEU HINZUGEFÜGT: Log Event Creation
+    // Activity Logging
     await logEventActivity(
       user.id,
       'EVENT_CREATED',
@@ -163,6 +175,9 @@ export async function POST(request: NextRequest) {
         eventTitle: event.title,
         eventType: event.ventType,
         price: event.price,
+        chargeFree: event.chargeFree,
+        status: event.status,
+        isActive: event.isActive,
         maxParticipants: event.maxParticipants,
         location: event.location,
         startDate: event.startDate,
@@ -172,26 +187,28 @@ export async function POST(request: NextRequest) {
     );
 
     return NextResponse.json(event, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Fehler beim Erstellen des Events:', error);
+    console.error('Error code:', error.code);
+    console.error('Error message:', error.message);
 
-    // 🆕 NEU HINZUGEFÜGT: Log Failed Event Creation
+    // Logging auch bei Fehler
     await logEventActivity(
       user.id,
       'EVENT_CREATED',
       undefined,
       {
         error: error.message,
-        eventData: {
-          title: body.title,
-          ventType: body.ventType,
-          price: body.price
-        }
+        errorCode: error.code,
+        eventData: body
       },
       request
     );
 
-    return NextResponse.json({ error: "Fehler beim Erstellen des Events." }, { status: 500 });
+    return NextResponse.json({
+      error: "Fehler beim Erstellen des Events.",
+      details: error.message
+    }, { status: 500 });
   }
 }
 

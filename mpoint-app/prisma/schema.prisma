@@ -329,6 +329,7 @@ model Event {
   location        String
   ventType        String? // Veranstaltungstyp als Textfeld
   price           Float   @default(0)
+  chargeFree      Boolean @default(false)  // NEU: Kostenfrei-Flag
   maxParticipants Int?
   bookedCount     Int     @default(0)
   organizer       String?
@@ -340,7 +341,7 @@ model Event {
   // EVENT STATUS FELDER:
   status          EventStatus @default(DRAFT)
   isPublished     Boolean     @default(false)
-  isActive        Boolean     @default(true)
+  isActive        Boolean     @default(false)
   publishedAt     DateTime?
   cancelledAt     DateTime?
   cancelReason    String?
@@ -356,6 +357,7 @@ model Event {
   activityLogs        EventActivityLog[] @relation("EventActivityLogs")
 
   @@index([userId])
+  @@index([chargeFree])  // NEU: Index für Performance
 }
 
 model Booking {
@@ -366,6 +368,24 @@ model Booking {
   email       String
   spaces      Int      @default(1)
   comment     String?
+
+    // NEU: Preis-Snapshot zum Zeitpunkt der Buchung
+  pricePerSpace   Float         @default(0)      // Einzelpreis pro Platz
+  totalAmount     Float         @default(0)      // Gesamtbetrag
+  currency        String        @default("EUR")  // Währung
+
+  // NEU: Payment-Tracking
+  paymentStatus   PaymentStatus @default(PENDING)  // ← VERWENDET DAS ENUM
+  paymentMethod   String?       // Später PaymentMethod enum
+  paymentId       String?       // External payment reference
+  paidAt          DateTime?     // Wann bezahlt
+
+  // NEU: Refund-Tracking
+  refundedAmount  Float?        // Teilbetrag bei Teilerstattung
+  refundedAt      DateTime?     // Wann erstattet
+  refundReason    String?       // Grund der Erstattung
+
+  updatedAt   DateTime @updatedAt  // NEU: UpdatedAt tracking
   createdAt   DateTime @default(now())
 
   // Relationen
@@ -375,6 +395,8 @@ model Booking {
 
   @@index([eventId])
   @@index([userId])
+  @@index([paymentStatus])  // NEU: Index für Performance
+  @@index([email])          // NEU: Index für Gast-Buchungen
 }
 
 
@@ -692,3 +714,23 @@ enum DeviceType {
   UNKNOWN
 }
 
+enum PaymentStatus {
+  NOT_REQUIRED      // Kostenloses Event
+  PENDING          // Zahlung ausstehend
+  PAID             // Bezahlt
+  PARTIALLY_REFUNDED // Teilweise erstattet
+  REFUNDED         // Vollständig erstattet
+  FAILED           // Zahlung fehlgeschlagen
+  CANCELLED        // Storniert
+}
+
+enum PaymentMethod {
+  CREDIT_CARD
+  DEBIT_CARD
+  PAYPAL
+  BANK_TRANSFER
+  INVOICE
+  CREDIT_BALANCE  // Internes Guthaben
+  STRIPE
+  FREE            // Für kostenlose Events
+}
