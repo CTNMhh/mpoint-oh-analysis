@@ -6,41 +6,51 @@ const prisma = new PrismaClient();
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { eventId, userId } = body;
+    const { eventId, userId, name, email, spaces = 1, comment } = body;
 
-    // Prüfen, ob schon eine Buchung existiert
-    const existing = await prisma.booking.findFirst({
-      where: { eventId, userId },
+    // Event laden für Preis
+    const event = await prisma.event.findUnique({
+      where: { id: eventId }
     });
-    if (existing) {
-      return NextResponse.json(
-        { error: "Du bist für dieses Event bereits angemeldet." },
-        { status: 400 }
-      );
+
+    if (!event) {
+      return NextResponse.json({ error: "Event nicht gefunden" }, { status: 404 });
     }
 
-    const { name, email, spaces, comment } = body;
+    // Preis berechnen
+    const pricePerSpace = event.chargeFree ? 0 : event.price;
+    const totalAmount = pricePerSpace * spaces;
 
-    if (!eventId || !name || !email) {
-      return NextResponse.json({ error: "Fehlende Felder" }, { status: 400 });
-    }
-
+    // Booking mit Preis-Snapshot erstellen
     const booking = await prisma.booking.create({
       data: {
         eventId,
         name,
         email,
-        spaces: spaces || 1,
+        spaces,
         comment: comment || "",
         userId: userId || null,
+
+        // NEU: Preis-Informationen speichern
+        pricePerSpace,
+        totalAmount,
+        currency: "EUR",
+        paymentStatus: event.chargeFree ? "NOT_REQUIRED" : "PENDING"
       },
     });
 
-    // Optional: Teilnehmerzahl im Event erhöhen
+    // Event bookedCount erhöhen
     await prisma.event.update({
       where: { id: eventId },
-      data: { bookedCount: { increment: spaces || 1 } },
+      data: { bookedCount: { increment: spaces } },
     });
+
+    // Wenn kostenpflichtig, Payment-Flow initiieren
+    if (!event.chargeFree && totalAmount > 0) {
+      // TODO: Stripe/PayPal Payment Intent erstellen
+      // const paymentIntent = await createPaymentIntent(booking, totalAmount);
+      // return NextResponse.json({ booking, paymentUrl: paymentIntent.url });
+    }
 
     return NextResponse.json(booking, { status: 201 });
   } catch (error) {
