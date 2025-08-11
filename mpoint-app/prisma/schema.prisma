@@ -385,7 +385,7 @@ model Booking {
   refundedAt      DateTime?     // Wann erstattet
   refundReason    String?       // Grund der Erstattung
 
-  updatedAt   DateTime @updatedAt  // NEU: UpdatedAt tracking
+  updatedAt   DateTime @default(now())
   createdAt   DateTime @default(now())
 
   // Relationen
