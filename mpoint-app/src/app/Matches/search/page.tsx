@@ -5,6 +5,7 @@ import MatchingList from "../../dashboard/MatchingList";
 import MarketplaceSection from "../../components/marketplace/MarketplaceSection";
 import OutgoingRequests from "../../components/matche/MatchingRequests";
 import IncomingRequests from "../../components/matche/MatchingRequestsReceived";
+import ConnectedCompanies from "../../components/matche/ConnectedCompanies";
 
 export default function MatchingMarketplacePage() {
  
@@ -102,6 +103,8 @@ export default function MatchingMarketplacePage() {
               <IncomingRequests />
 
                  <OutgoingRequests />
+
+                 <ConnectedCompanies />
 
 
             {/* Marketplace */}
