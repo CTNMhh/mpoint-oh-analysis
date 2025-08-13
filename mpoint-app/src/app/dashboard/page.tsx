@@ -675,7 +675,7 @@ function NewsItem({ date, title, imageUrl, onClick }: { date: string; title: str
 function EventItem({ day, month, title, location }: { day: string; month: string; title: string; location: string; }) {
   return (
     <div
-      onClick={onClick}
+     
       className="flex gap-4 p-4 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer group"
     >
       <div className="bg-[#e60000] text-white rounded-lg p-3 text-center flex-shrink-0">
