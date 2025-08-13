@@ -5,6 +5,8 @@ import Link from "next/link";
 import { BookOpen, Search, Filter, ArrowRight } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 
+export const dynamic = "force-dynamic";
+
 export default function NewsPage() {
   const [news, setNews] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
