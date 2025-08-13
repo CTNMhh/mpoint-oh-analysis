@@ -444,7 +444,28 @@ model Activity {
   @@index([createdAt])
 }
 
+// ========== NEWS MODEL ==========
+model News {
+  id          String    @id @default(uuid())
+  title       String
+  subtitle    String?
+  shortText   String    @db.Text
+  longText    String    @db.Text
+  imageUrl    String?
+  author      String?
+  category    NewsCategory @default(ALLGEMEIN)
+  tags        String[]
+  publishDate DateTime  @default(now())
+  isPublished Boolean   @default(false)
+  viewCount   Int      @default(0)
+  readTime    String?  // Lesedauer z.B. "5 Min."
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
+  @@index([category])
+  @@index([publishDate])
+  @@index([isPublished])
+}
 
 // ========== ENUMS ==========
 enum EmployeeRange {
@@ -590,6 +611,18 @@ enum ActivityType {
   INDUSTRY_UPDATED
   LOCATION_CHANGED
   GROWTH_MILESTONE
+}
+
+enum NewsCategory {
+  ALLGEMEIN
+  WIRTSCHAFT
+  TECHNOLOGIE
+  DIGITALISIERUNG
+  NACHHALTIGKEIT
+  EVENTS
+  NETZWERK
+  FOERDERUNG
+  POLITIK
 }
 
 
