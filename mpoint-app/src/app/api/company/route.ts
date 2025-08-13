@@ -44,7 +44,6 @@ export async function GET(request: NextRequest) {
         OR: [
           { name: { contains: search, mode: "insensitive" } },
           { branchDescription: { contains: search, mode: "insensitive" } },
-          { district: { equals: search as any } }
 
         ]
       },
