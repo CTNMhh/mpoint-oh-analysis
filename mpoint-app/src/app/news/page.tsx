@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { BookOpen, Search, Filter, ArrowRight } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -16,8 +15,6 @@ export default function NewsPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [categories, setCategories] = useState<string[]>([]);
   const pageSize = 8;
-  const router = useRouter();
-  const searchParams = useSearchParams();
 
   useEffect(() => {
     async function fetchNews() {
