@@ -1,5 +1,3 @@
-// mpoint\mpoint-app\src\app\api\bookings\route.ts
-
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 

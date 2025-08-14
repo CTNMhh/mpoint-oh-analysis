@@ -1,5 +1,3 @@
-// mpoint\mpoint-app\src\app\api\bookings\[id]\route.ts
-
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../../auth/[...nextauth]/route";
