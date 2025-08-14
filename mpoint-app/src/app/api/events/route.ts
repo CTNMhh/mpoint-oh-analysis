@@ -264,7 +264,7 @@ export async function PUT(request: NextRequest) {
         location: body.location,
         ventType: body.ventType,
         price: body.price ?? 0,
-        maxParticipants: body.maxParticipants,
+        maxParticipants: body.maxParticipants !== undefined ? body.maxParticipants : null,
         organizer: body.organizer,
         calendarLinks: body.calendarLinks,
         categories: body.categories,

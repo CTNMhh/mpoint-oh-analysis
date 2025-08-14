@@ -280,6 +280,22 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
+                Maximale Teilnehmerzahl
+              </label>
+              <input
+                type="number"
+                min={0}
+                name="maxParticipants"
+                value={form.maxParticipants ?? ""}
+                onChange={e => setForm({ ...form, maxParticipants: e.target.value ? Number(e.target.value) : null })}
+                className="w-full border border-gray-300 rounded px-3 py-2"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Leer lassen oder 0 für unbegrenzt
+              </p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 <input
                   type="checkbox"
                   checked={form.chargeFree}
