@@ -6,6 +6,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 // --- Preis-Objekt zu String Funktion für Vorschau und Anzeige ---
 export type PriceType = {
@@ -118,6 +119,7 @@ async function getUserNameById(userId: string): Promise<string> {
 }
 
 export default function MarketplaceDummy() {
+  const { data: session, status } = useSession();
   const [showModal, setShowModal] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -231,6 +233,77 @@ export default function MarketplaceDummy() {
     }
   };
 
+  // --- NEU: Submit-Handler für das Modal-Formular ---
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const form = e.target as HTMLFormElement;
+    const formData = new FormData(form);
+    // Alle Felder aus dem Formular korrekt auslesen
+    const entryType = (form.elements.namedItem("entryType") as HTMLInputElement)?.value || null;
+    const title = (form.elements.namedItem("projectTitle") as HTMLInputElement)?.value.trim() || null;
+    const category = (form.elements.namedItem("projectCategory") as HTMLSelectElement)?.value.toUpperCase() || null;
+    const shortDescription = (form.elements.namedItem("projectShortDescription") as HTMLInputElement)?.value.trim() || null;
+    // longDescription aus contenteditable div
+    let longDescription: string | null = (form.querySelector("#projectLongDescription") as HTMLDivElement)?.innerHTML?.trim() || null;
+    if (longDescription === "" || longDescription === "<br>") longDescription = null;
+    const location = (form.elements.namedItem("projectLocation") as HTMLInputElement)?.value.trim() || null;
+    const deadlineRaw = (form.elements.namedItem("projectDeadline") as HTMLInputElement)?.value;
+    const deadline = deadlineRaw ? new Date(deadlineRaw).toISOString() : null;
+    const skills = (form.elements.namedItem("projectSkills") as HTMLInputElement)?.value.trim() || null;
+    const email = (form.elements.namedItem("contactEmail") as HTMLInputElement)?.value.trim() || null;
+    const publicEmail = (form.elements.namedItem("allowContact") as HTMLInputElement)?.checked || false;
+    // Preis aus State
+    const price = Object.keys(priceInput).length > 0 ? priceInput : null;
+
+    // Userdaten aus Session
+    const user = session?.user;
+    if (!user?.id) {
+      alert("Nicht eingeloggt. Bitte zuerst anmelden.");
+      return;
+    }
+
+    // Payload für MarketplaceEntry
+    const payload = {
+      userId: user.id,
+      category,
+      title,
+      shortDescription,
+      longDescription,
+      price,
+      type: entryType,
+      email,
+      publicEmail,
+      location,
+      deadline,
+      skills,
+    };
+    try {
+      const res = await fetch("/api/marketplace", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        setShowModal(false);
+        setLoading(true);
+        // Nach dem Anlegen neu laden
+        const entriesRes = await fetch("/api/marketplace");
+        const data = await entriesRes.json();
+        const enrichedData = await Promise.all(data.map(async (entry: any) => {
+          const userName = await getUserNameById(entry.userId);
+          return { ...entry, userName };
+        }));
+        setEntries(enrichedData);
+      } else {
+        alert("Fehler beim Anlegen des Eintrags.");
+      }
+    } catch (err) {
+      alert("Fehler beim Anlegen des Eintrags.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div className="bg-gray-50 text-gray-900 min-h-screen relative">
       {/* Modal (außerhalb des Seiten-Containers platzieren) */}
@@ -250,7 +323,7 @@ export default function MarketplaceDummy() {
             </div>
             {/* Modal Body */}
             <div className="p-6">
-              <form /* id="projectForm" */>
+              <form onSubmit={handleSubmit}>
                 {/* Typ-Auswahl Angebot/Anfrage */}
                 <div className="mb-5">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Typ <span className="text-primary">*</span></label>
