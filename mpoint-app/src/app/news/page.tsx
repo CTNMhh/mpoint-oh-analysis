@@ -83,10 +83,11 @@ export default function NewsPage() {
               onChange={e => { setSearch(e.target.value); setPage(1); }}
             />
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 bg-white rounded-lg shadow-sm px-3">
             <Filter className="w-5 h-5 text-gray-400" />
             <select
-              className="bg-white rounded-lg shadow-sm px-3 py-2 text-gray-900"
+              className="pe-3 py-2 text-gray-900"
+              id="category-filter"
               value={filter}
               onChange={e => { setFilter(e.target.value); setPage(1); }}
             >
