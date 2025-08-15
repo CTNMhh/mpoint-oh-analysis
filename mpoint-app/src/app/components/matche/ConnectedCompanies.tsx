@@ -7,8 +7,22 @@ export default function ConnectedCompanies() {
   const { data: session } = useSession();
   const [matches, setMatches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [myCompanyId, setMyCompanyId] = useState<string | null>(null);
   const router = useRouter();
 
+  // Eigene companyId über API laden (nicht aus Session)
+  useEffect(() => {
+    if (!session?.user?.id) return;
+    fetch(`/api/company?userId=${session.user.id}`)
+      .then(r => r.json())
+      .then(d => {
+        const id = Array.isArray(d) ? d[0]?.id : d?.id;
+        setMyCompanyId(id ?? null);
+      })
+      .catch(() => setMyCompanyId(null));
+  }, [session?.user?.id]);
+
+  // Vernetzte Matches laden
   useEffect(() => {
     if (!session?.user?.id) return;
 
@@ -21,11 +35,9 @@ export default function ConnectedCompanies() {
     };
 
     fetchMatches();
-
     const onUpdate = () => fetchMatches();
     window.addEventListener("matching-requests-updated", onUpdate);
     window.addEventListener("matches-updated", onUpdate);
-
     return () => {
       window.removeEventListener("matching-requests-updated", onUpdate);
       window.removeEventListener("matches-updated", onUpdate);
@@ -34,6 +46,7 @@ export default function ConnectedCompanies() {
 
   if (!session?.user?.id) return null;
   if (loading) return <div>Lade vernetzte Unternehmen...</div>;
+  if (!myCompanyId) return <div className="text-gray-400 text-sm">Kein Unternehmen für deinen User gefunden.</div>;
   if (matches.length === 0) return <div className="text-gray-400 text-sm">Noch keine Vernetzungen.</div>;
 
   return (
@@ -44,18 +57,14 @@ export default function ConnectedCompanies() {
       </h2>
       <ul className="space-y-3">
         {matches.map(match => {
-          // Das jeweils andere Unternehmen bestimmen
-          const myCompanyId = session.user.companyId;
-          const company = match.senderCompany?.id === myCompanyId
-            ? match.receiverCompany
-            : match.senderCompany;
+          const partner = match.senderCompany?.id === myCompanyId ? match.receiverCompany : match.senderCompany;
           return (
             <li key={match.id} className="flex items-center gap-3">
               <Building2 className="w-6 h-6 text-gray-400" />
-              <span className="font-medium">{company?.name || "Unbekanntes Unternehmen"}</span>
+              <span className="font-medium">{partner?.name || "Unbekanntes Unternehmen"}</span>
               <button
                 className="ml-auto flex items-center gap-1 text-[#e60000] hover:underline text-xs"
-                onClick={() => router.push(`/chat/${match.id}`)} // <- nutze match.id statt company.id
+                onClick={() => router.push(`/chat/${match.id}`)}
                 title="Chat starten"
               >
                 <MessageSquare className="w-4 h-4" />
