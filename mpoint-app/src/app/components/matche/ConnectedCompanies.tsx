@@ -11,11 +11,25 @@ export default function ConnectedCompanies() {
 
   useEffect(() => {
     if (!session?.user?.id) return;
-    setLoading(true);
-    fetch(`/api/matching/connected?userId=${session.user.id}`)
-      .then(res => res.json())
-      .then(setMatches)
-      .finally(() => setLoading(false));
+
+    const fetchMatches = () => {
+      setLoading(true);
+      fetch(`/api/matching/connected?userId=${session.user.id}`)
+        .then(res => res.json())
+        .then(setMatches)
+        .finally(() => setLoading(false));
+    };
+
+    fetchMatches();
+
+    const onUpdate = () => fetchMatches();
+    window.addEventListener("matching-requests-updated", onUpdate);
+    window.addEventListener("matches-updated", onUpdate);
+
+    return () => {
+      window.removeEventListener("matching-requests-updated", onUpdate);
+      window.removeEventListener("matches-updated", onUpdate);
+    };
   }, [session?.user?.id]);
 
   if (!session?.user?.id) return null;
@@ -41,7 +55,7 @@ export default function ConnectedCompanies() {
               <span className="font-medium">{company?.name || "Unbekanntes Unternehmen"}</span>
               <button
                 className="ml-auto flex items-center gap-1 text-[#e60000] hover:underline text-xs"
-                onClick={() => router.push(`/chat/${company?.id}`)}
+                onClick={() => router.push(`/chat/${match.id}`)} // <- nutze match.id statt company.id
                 title="Chat starten"
               >
                 <MessageSquare className="w-4 h-4" />
