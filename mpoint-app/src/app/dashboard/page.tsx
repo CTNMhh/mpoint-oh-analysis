@@ -525,8 +525,8 @@ export default function DashboardPage() {
               </h3>
               <p className="text-sm text-gray-500 mb-6">Multifaktorielle Analyse der Wirtschaftslage</p>
 
-              <div className="relative inline-block">
-                <svg width="200" height="120" viewBox="0 0 200 120">
+              <div className="relative">
+                <svg width="200" height="120" viewBox="0 0 200 120" className="mx-auto">
                   {/* Background arc */}
                   <path
                     d="M 20 100 A 80 80 0 0 1 180 100"
@@ -675,7 +675,7 @@ function NewsItem({ date, title, imageUrl, onClick }: { date: string; title: str
 function EventItem({ day, month, title, location }: { day: string; month: string; title: string; location: string; }) {
   return (
     <div
-     
+
       className="flex gap-4 p-4 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer group"
     >
       <div className="bg-[#e60000] text-white rounded-lg p-3 text-center flex-shrink-0">
