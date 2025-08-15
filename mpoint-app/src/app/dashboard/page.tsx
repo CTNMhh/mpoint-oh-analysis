@@ -179,7 +179,7 @@ export default function DashboardPage() {
     <main className="min-h-screen bg-gray-50 pt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Header */}
-        <div className="mb-8 bg-wahite rounded-lg shadow-sm p-6">
+        <div className="mb-8 bg-white rounded-lg shadow-sm p-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Willkommen zurück{user ? `, ${user.anrede} ${user.firstName} ${user.lastName}` : ''}!
           </h1>
