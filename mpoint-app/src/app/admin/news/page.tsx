@@ -79,7 +79,7 @@ export default function AdminNewsListPage() {
   }
 
   return (
-    <div className="p-8 max-w-5xl mx-auto relative">
+    <div className="p-8 max-w-7xl mx-auto relative">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold">News verwalten</h1>
         <Link
