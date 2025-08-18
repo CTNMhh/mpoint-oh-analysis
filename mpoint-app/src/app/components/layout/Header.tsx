@@ -98,10 +98,10 @@ const Header = () => {
               News
             </Link>
             <Link
-              href="/marketplace"
+              href="/boerse"
               className="text-gray-700 hover:text-[rgb(228,25,31)] font-medium transition-colors"
             >
-              Marktplatz
+              Börse
             </Link>
             <Link
               href="/events"
