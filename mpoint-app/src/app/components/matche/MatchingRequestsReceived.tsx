@@ -51,12 +51,20 @@ export default function IncomingRequests() {
                             <>
                                 <button
                                     onClick={async () => {
-                                        await fetch(`/api/matching/accept`, {
-                                            method: "POST",
-                                            headers: { "Content-Type": "application/json" },
-                                            body: JSON.stringify({ matchId: req.id, userId: session.user.id }),
-                                        });
-                                        window.dispatchEvent(new Event("matching-requests-updated"));
+                                        try {
+                                            const res = await fetch(`/api/matching/accept`, {
+                                                method: "POST",
+                                                headers: { "Content-Type": "application/json" },
+                                                body: JSON.stringify({ matchId: req.id, userId: session.user.id }),
+                                            });
+                                            if (res.ok) {
+                                                // UI sofort aktualisieren
+                                                setRequests(prev => prev.filter(r => r.id !== req.id));
+                                                // andere Widgets aktualisieren
+                                                window.dispatchEvent(new Event("matching-requests-updated"));
+                                                window.dispatchEvent(new Event("matches-updated"));
+                                            }
+                                        } catch {}
                                     }}
                                     className="ml-2 text-green-600 hover:underline text-xs"
                                     title="Annehmen"
@@ -65,12 +73,17 @@ export default function IncomingRequests() {
                                 </button>
                                 <button
                                     onClick={async () => {
-                                        await fetch(`/api/matching/accept`, {
-                                            method: "DELETE",
-                                            headers: { "Content-Type": "application/json" },
-                                            body: JSON.stringify({ matchId: req.id }),
-                                        });
-                                        window.dispatchEvent(new Event("matching-requests-updated"));
+                                        try {
+                                            const res = await fetch(`/api/matching/accept`, {
+                                                method: "DELETE",
+                                                headers: { "Content-Type": "application/json" },
+                                                body: JSON.stringify({ matchId: req.id }),
+                                            });
+                                            if (res.ok) {
+                                                setRequests(prev => prev.filter(r => r.id !== req.id));
+                                                window.dispatchEvent(new Event("matching-requests-updated"));
+                                            }
+                                        } catch {}
                                     }}
                                     className="ml-2 text-red-600 hover:underline text-xs"
                                     title="Ablehnen"
