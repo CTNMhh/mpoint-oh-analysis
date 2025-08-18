@@ -8,6 +8,12 @@ export enum EventStatus {
   CANCELLED = "CANCELLED",
 }
 
+export enum BookingStatus {
+  PENDING = "PENDING",
+  CANCELLED = "CANCELLED",
+  COMPLETED = "COMPLETED",
+}
+
 export type EventType = {
   id: string;
   title: string;
@@ -54,6 +60,7 @@ export type BookingType = {
   email: string;
   spaces: number;
   comment?: string;
+  bookingStatus: BookingStatus; // <--- Typisiert!
 
   // Preis-Informationen
   pricePerSpace: number;

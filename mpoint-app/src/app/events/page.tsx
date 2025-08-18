@@ -719,6 +719,7 @@ export default function EventsPage() {
                   <th className="py-3 px-4 text-left font-semibold text-gray-700">Preis/Platz</th>
                   <th className="py-3 px-4 text-left font-semibold text-gray-700">Gesamt</th>
                   <th className="py-3 px-4 text-left font-semibold text-gray-700">Status</th>
+                  <th className="py-3 px-4 text-left font-semibold text-gray-700">Zahlung</th> {/* NEU */}
                   <th className="py-3 px-4 text-left font-semibold text-gray-700">Aktionen</th>
                 </tr>
               </thead>
@@ -746,6 +747,17 @@ export default function EventsPage() {
                       )}
                     </td>
                     <td className="py-2 px-4">
+                      <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                        booking.bookingStatus === "CANCELLED"
+                          ? "bg-red-100 text-red-700"
+                          : booking.bookingStatus === "COMPLETED"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-yellow-100 text-yellow-700"
+                      }`}>
+                        {booking.bookingStatus}
+                      </span>
+                    </td>
+                    <td className="py-2 px-4">
                       <PaymentStatusBadge status={booking.paymentStatus} />
                     </td>
                     <td className="py-2 px-4">
@@ -756,22 +768,26 @@ export default function EventsPage() {
                         >
                           Details
                         </Link>
-                        {booking.paymentStatus === 'PENDING' && booking.totalAmount > 0 && (
-                          <button
-                            onClick={() => handlePayment(booking.id)}
-                            className="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600"
-                          >
-                            Bezahlen
-                          </button>
-                        )}
-                        {(booking.paymentStatus === 'NOT_REQUIRED' ||
-                          booking.paymentStatus === 'PAID') && (
-                          <button
-                            onClick={() => handleDeleteBooking(booking.id)}
-                            className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-700"
-                          >
-                            Stornieren
-                          </button>
+                        {booking.bookingStatus !== "CANCELLED" && (
+                          <>
+                          {booking.paymentStatus === 'PENDING' && booking.totalAmount > 0 && (
+                            <button
+                              onClick={() => handlePayment(booking.id)}
+                              className="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600"
+                            >
+                              Bezahlen
+                            </button>
+                          )}
+                          {(booking.paymentStatus === 'NOT_REQUIRED' ||
+                            booking.paymentStatus === 'PAID') && (
+                            <button
+                              onClick={() => handleDeleteBooking(booking.id)}
+                              className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-700"
+                            >
+                              Stornieren
+                            </button>
+                          )}
+                          </>
                         )}
                       </div>
                     </td>
@@ -788,7 +804,7 @@ export default function EventsPage() {
                   <td className="py-3 px-4">
                     {bookings.reduce((sum, b) => sum + b.totalAmount, 0).toFixed(2)} €
                   </td>
-                  <td colSpan={2} className="py-3 px-4 text-sm text-gray-600">
+                  <td colSpan={3} className="py-3 px-4 text-sm text-gray-600">
                     Davon bezahlt: {
                       bookings
                         .filter(b => b.paymentStatus === 'PAID')
