@@ -177,9 +177,9 @@ export default function DashboardPage() {
 
   return (
     <main className="min-h-screen bg-gray-50 pt-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         {/* Welcome Header */}
-        <div className="mb-8 bg-wahite rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-xl shadow-sm p-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Willkommen zurück{user ? `, ${user.anrede} ${user.firstName} ${user.lastName}` : ''}!
           </h1>
@@ -191,10 +191,10 @@ export default function DashboardPage() {
 
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Recent Activities */}
-          <div className="lg:col-span-2">
-                    <section className="mb-10">
+          <div className="lg:col-span-2 space-y-6 mb-6">
+             <section className="bg-white rounded-xl p-6 shadow-sm">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-900">Aktuelle News</h2>
             <BookOpen className="w-8 h-8 text-gray-400" />
@@ -434,7 +434,7 @@ export default function DashboardPage() {
 
 
           {/* Quick Actions */}
-          <div className="space-y-6">
+          <div className="space-y-6 mb-6">
             {/* Quick Actions Card */}
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Schnellaktionen</h2>
@@ -470,7 +470,7 @@ export default function DashboardPage() {
 
 
             {/* Profile Completion */}
-            <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-6">
+            <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl shadow-sm p-6">
               <Link
                 href="/company"
                 className="text-lg font-semibold text-[rgb(228,25,31)] mb-2 hover:underline flex items-center gap-2"
@@ -484,7 +484,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Meine gebuchten Events */}
-            <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
+            <div className="bg-white rounded-xl shadow-sm p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Meine gebuchten Events</h2>
               {bookedEvents.length === 0 ? (
                 <p className="text-gray-500">Keine Buchungen gefunden.</p>
