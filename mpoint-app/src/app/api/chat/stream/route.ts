@@ -5,83 +5,130 @@ import { PrismaClient, MatchStatus } from "@prisma/client";
 import { subscribe, unsubscribe } from "../../../../lib/sse";
 
 const prisma = new PrismaClient();
+
+// WICHTIG: nodejs runtime für Coolify
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+// Kein maxDuration needed für self-hosted
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.email) return new Response("Unauthorized", { status: 401 });
+  if (!session?.user?.email) {
+    return new Response("Unauthorized", { status: 401 });
+  }
 
   const matchId = req.nextUrl.searchParams.get("matchId") || "";
   const companyIdParam = req.nextUrl.searchParams.get("companyId") || "";
   const userIdParam = req.nextUrl.searchParams.get("userId") || "";
 
-  if (!matchId) return new Response("matchId required", { status: 400 });
+  if (!matchId) {
+    return new Response("matchId required", { status: 400 });
+  }
 
-  // companyId NICHT aus Session holen
   let myCompanyId = companyIdParam;
   if (!myCompanyId && userIdParam) {
-    const comp = await prisma.company.findFirst({ where: { userId: userIdParam }, select: { id: true } });
+    const comp = await prisma.company.findFirst({
+      where: { userId: userIdParam },
+      select: { id: true }
+    });
     myCompanyId = comp?.id || "";
   }
-  if (!myCompanyId) return new Response("companyId or userId required", { status: 400 });
+
+  if (!myCompanyId) {
+    return new Response("companyId or userId required", { status: 400 });
+  }
 
   const match = await prisma.match.findUnique({
     where: { id: matchId },
     include: { senderCompany: true, receiverCompany: true }
   });
+
   const isParticipant = match && [match.senderCompanyId, match.receiverCompanyId].includes(myCompanyId);
-  if (!match || !isParticipant || match.status !== MatchStatus.CONNECTED) return new Response("Forbidden", { status: 403 });
+  
+  if (!match || !isParticipant || match.status !== MatchStatus.CONNECTED) {
+    return new Response("Forbidden", { status: 403 });
+  }
 
   const encoder = new TextEncoder();
-  let ping: NodeJS.Timer | null = null;
-
-  return new Response(new ReadableStream({
+  let pingInterval: NodeJS.Timer | null = null;
+  
+  const stream = new ReadableStream({
     start(controller) {
-      // Sofort flushen
-      controller.enqueue(encoder.encode(`: open\n\n`));
+      // WICHTIG: Sofort initial data senden für Traefik
+      controller.enqueue(encoder.encode("retry: 10000\n\n"));
+      controller.enqueue(encoder.encode(": SSE connection established\n\n"));
+      
+      // Kleine Verzögerung, dann ready event
+      setTimeout(() => {
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "ready" })}\n\n`));
+      }, 100);
 
       const send = (data: any) => {
         try {
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
-        } catch {
-          unsubscribe(matchId, send);
+          const message = `data: ${JSON.stringify(data)}\n\n`;
+          controller.enqueue(encoder.encode(message));
+        } catch (error) {
+          console.error("Error sending SSE message:", error);
+          cleanup();
         }
       };
 
-      subscribe(matchId, send);
-      send({ type: "ready" });
-
-      // Keepalive alle 25s
-      ping = setInterval(() => {
-        try {
-          controller.enqueue(encoder.encode(`: ping\n\n`));
-        } catch {
-          clearInterval(ping!);
-          unsubscribe(matchId, send);
-          try { controller.close(); } catch {}
+      const cleanup = () => {
+        if (pingInterval) {
+          clearInterval(pingInterval);
+          pingInterval = null;
         }
-      }, 25000);
-
-      // Client bricht ab -> aufräumen
-      // @ts-ignore
-      req.signal?.addEventListener("abort", () => {
-        if (ping) clearInterval(ping);
         unsubscribe(matchId, send);
-        try { controller.close(); } catch {}
+        try {
+          controller.close();
+        } catch (e) {
+          console.error("Error closing controller:", e);
+        }
+      };
+
+      // Subscribe to events
+      subscribe(matchId, send);
+
+      // WICHTIG: Ping alle 10 Sekunden für Traefik/Coolify
+      pingInterval = setInterval(() => {
+        try {
+          // Sende Kommentar-Ping (hält Verbindung offen)
+          controller.enqueue(encoder.encode(": keepalive\n\n"));
+        } catch (error) {
+          console.error("Ping error:", error);
+          cleanup();
+        }
+      }, 10000); // 10 Sekunden - aggressiver für Proxy Timeouts
+
+      // Cleanup on abort
+      req.signal.addEventListener("abort", () => {
+        cleanup();
       });
     },
+    
     cancel() {
-      if (ping) clearInterval(ping);
+      if (pingInterval) {
+        clearInterval(pingInterval);
+      }
     }
-  }), {
+  });
+
+  // Headers optimiert für Traefik/Coolify
+  return new Response(stream, {
     headers: {
-      "Content-Type": "text/event-stream; charset=utf-8",
-      "Cache-Control": "no-cache, no-transform",
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache, no-store, no-transform, must-revalidate, private",
       "Connection": "keep-alive",
-      "Keep-Alive": "timeout=120",
-      "X-Accel-Buffering": "no" // schadet nicht; bei Nginx nötig, Traefik ignoriert es
-    }
+      "X-Accel-Buffering": "no",
+      // WICHTIG für Traefik:
+      "X-SSE-Content-Type": "text/event-stream",
+      // Disable compression
+      "Content-Encoding": "identity",
+      // Transfer encoding
+      "Transfer-Encoding": "chunked",
+      // Keep-Alive mit timeout
+      "Keep-Alive": "timeout=300",
+    },
   });
 }
