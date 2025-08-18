@@ -92,7 +92,7 @@ export default function ChatPage() {
         if (d.partner) setPartner(d.partner);
 
         // Stream erst nach History öffnen
-        es = new EventSource(`/api/chat/stream?matchId=${matchId}&companyId=${companyId}`);
+        es = new EventSource(`/api/chat/stream?matchId=${matchId}&companyId=${companyId}&_=${Date.now()}`);
         es.onmessage = (e) => {
           try {
             const data = JSON.parse(e.data);

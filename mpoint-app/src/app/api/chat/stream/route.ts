@@ -7,6 +7,7 @@ import { subscribe, unsubscribe } from "../../../../lib/sse";
 const prisma = new PrismaClient();
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -38,44 +39,49 @@ export async function GET(req: NextRequest) {
 
   return new Response(new ReadableStream({
     start(controller) {
-      // Sende-Funktion mit Try/Catch absichern
+      // Sofort flushen
+      controller.enqueue(encoder.encode(`: open\n\n`));
+
       const send = (data: any) => {
         try {
           controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
         } catch {
-          // Stream ist zu – Subscriber entfernen
           unsubscribe(matchId, send);
         }
       };
 
-      // Subscribe
       subscribe(matchId, send);
-
-      // Initial
       send({ type: "ready" });
 
-      // Keepalive
+      // Keepalive alle 25s
       ping = setInterval(() => {
         try {
           controller.enqueue(encoder.encode(`: ping\n\n`));
         } catch {
-          // Stream ist zu – Cleanup
           clearInterval(ping!);
           unsubscribe(matchId, send);
+          try { controller.close(); } catch {}
         }
       }, 25000);
+
+      // Client bricht ab -> aufräumen
+      // @ts-ignore
+      req.signal?.addEventListener("abort", () => {
+        if (ping) clearInterval(ping);
+        unsubscribe(matchId, send);
+        try { controller.close(); } catch {}
+      });
     },
     cancel() {
       if (ping) clearInterval(ping);
-      // Wichtig: unsubscribe damit publish nicht in geschlossenen Stream schreibt
-      // send-Referenz hier nicht verfügbar -> oben in start schließen wir beim Fehler,
-      // alternativ könnte man send in Closure hoisten; pragmatisch reicht das Keepalive-Catch.
     }
   }), {
     headers: {
-      "Content-Type": "text/event-stream",
+      "Content-Type": "text/event-stream; charset=utf-8",
       "Cache-Control": "no-cache, no-transform",
-      "Connection": "keep-alive"
+      "Connection": "keep-alive",
+      "Keep-Alive": "timeout=120",
+      "X-Accel-Buffering": "no" // schadet nicht; bei Nginx nötig, Traefik ignoriert es
     }
   });
 }
