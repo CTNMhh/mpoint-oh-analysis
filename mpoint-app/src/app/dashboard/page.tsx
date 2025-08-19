@@ -14,7 +14,7 @@ ArrowUpRight,
   BarChart3,
   Plus,
   Users,
-  
+
   ArrowRight,
   Target,
   MapPin,
@@ -71,12 +71,12 @@ export default function DashboardPage() {
       const tomorrow = new Date(now);
       tomorrow.setDate(tomorrow.getDate() + 1);
       tomorrow.setHours(8, 0, 0, 0);
-      
+
       const diff = tomorrow.getTime() - now.getTime();
       const hours = Math.floor(diff / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-      
+
       setCountdown(`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
     };
 
@@ -153,7 +153,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 pt-20">
+    <div className="min-h-screen bg-gray-50 pt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Header */}
         <div className="mb-8 bg-wahite rounded-lg shadow-sm p-6">
@@ -165,7 +165,7 @@ export default function DashboardPage() {
           </p>
         </div>
 
-     
+
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -209,8 +209,8 @@ export default function DashboardPage() {
                   <span>10 Min. Lesezeit</span>
                 </div>
                 <p className="text-gray-600 line-clamp-3">
-                  Eine neue Studie zeigt: Deutsche Mittelständler investieren 2025 so viel wie nie zuvor in digitale Technologien. 
-                  Besonders KI-Lösungen und Automatisierungsprozesse stehen im Fokus. Die Investitionen sollen die Wettbewerbsfähigkeit 
+                  Eine neue Studie zeigt: Deutsche Mittelständler investieren 2025 so viel wie nie zuvor in digitale Technologien.
+                  Besonders KI-Lösungen und Automatisierungsprozesse stehen im Fokus. Die Investitionen sollen die Wettbewerbsfähigkeit
                   sichern und neue Geschäftsmodelle ermöglichen...
                 </p>
               </div>
@@ -218,28 +218,28 @@ export default function DashboardPage() {
 
             {/* Regular Articles */}
             <div className="space-y-4">
-              <NewsItem 
-                date="23. Juli 2025" 
-                title="Neue Förderprogramme für KMU in NRW beschlossen" 
+              <NewsItem
+                date="23. Juli 2025"
+                title="Neue Förderprogramme für KMU in NRW beschlossen"
                 imageUrl="/news-1.jpg"
                 onClick={() => alert('News: Neue Förderprogramme 2025')}
               />
-              <NewsItem 
+              <NewsItem
                 date="22. Juli 2025"
                 imageUrl="/news-2.jpg"
-                title="Erfolgreiches Business Networking Event mit 200 Teilnehmern" 
+                title="Erfolgreiches Business Networking Event mit 200 Teilnehmern"
                 onClick={() => alert('News: Netzwerk-Event Erfolg')}
               />
-              <NewsItem 
+              <NewsItem
                 date="21. Juli 2025"
                 imageUrl="/news-3.jpg"
-                title="Deutsche Exporte erreichen neues Allzeithoch" 
+                title="Deutsche Exporte erreichen neues Allzeithoch"
                 onClick={() => alert('News: Export-Boom')}
               />
-              <NewsItem 
+              <NewsItem
                 date="20. Juli 2025"
                 imageUrl="/news-4.jpg"
-                title="NRW wird zum Startup-Hub: 15 neue Tech-Unternehmen gegründet" 
+                title="NRW wird zum Startup-Hub: 15 neue Tech-Unternehmen gegründet"
                 onClick={() => alert('News: Startup-Förderung')}
               />
             </div>
@@ -261,7 +261,7 @@ export default function DashboardPage() {
               <h3 className="text-xl font-bold text-gray-900">Kommende Events</h3>
               <Calendar className="w-6 h-6 text-[#e60000]" />
             </div>
-            
+
             <div className="space-y-4">
               {(allEvents.slice(0, 4)).map(event => (
                 <Link
@@ -292,24 +292,24 @@ export default function DashboardPage() {
               <h3 className="text-xl font-bold text-gray-900">Neue Fachartikel</h3>
               <BookOpen className="w-6 h-6 text-[#e60000]" />
             </div>
-            
+
             <div className="space-y-4">
-              <ArticleItem 
-                category="Digitalisierung" 
+              <ArticleItem
+                category="Digitalisierung"
                 title="KI-Einsatz im deutschen Mittelstand: Chancen und Herausforderungen"
                 author="Dr. Thomas Schmidt"
                 readTime="5 Min."
                 onClick={() => alert('Artikel: KI im Mittelstand')}
               />
-              <ArticleItem 
-                category="Nachhaltigkeit" 
+              <ArticleItem
+                category="Nachhaltigkeit"
                 title="Nachhaltige Lieferketten aufbauen: Ein Leitfaden"
                 author="Prof. Julia Müller"
                 readTime="8 Min."
                 onClick={() => alert('Artikel: Nachhaltige Lieferketten')}
               />
-              <ArticleItem 
-                category="Management" 
+              <ArticleItem
+                category="Management"
                 title="Remote Leadership: Best Practices für hybride Teams"
                 author="Lisa Weber"
                 readTime="6 Min."
@@ -328,7 +328,7 @@ export default function DashboardPage() {
 
 
 
-            {/* Alle Events als Slider 
+            {/* Alle Events als Slider
             <div className="mt-8">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-2xl font-semibold text-gray-900">Alle Events</h2>
@@ -392,7 +392,7 @@ export default function DashboardPage() {
             </div>
             */}
           </div>
-          
+
 
           {/* Quick Actions */}
           <div className="space-y-6">
@@ -428,7 +428,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-           
+
 
             {/* Profile Completion */}
             <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-6">
@@ -469,7 +469,7 @@ export default function DashboardPage() {
 
           </div>
 
-          
+
         </div>
    <section className="bg-white rounded-xl shadow-sm p-8">
           <div className="flex items-center justify-between mb-8">
@@ -485,7 +485,7 @@ export default function DashboardPage() {
                 Wirtschaftsstimmung Index
               </h3>
               <p className="text-sm text-gray-500 mb-6">Multifaktorielle Analyse der Wirtschaftslage</p>
-              
+
               <div className="relative inline-block">
                 <svg width="200" height="120" viewBox="0 0 200 120">
                   {/* Background arc */}
@@ -512,17 +512,17 @@ export default function DashboardPage() {
                   </text>
                 </svg>
               </div>
-              
+
               <div className="mt-4 inline-block bg-green-100 text-green-800 px-4 py-2 rounded-lg font-medium">
                 Optimistisch
               </div>
-              
+
               <div className="flex justify-between text-xs text-gray-500 mt-4 px-4">
                 <span>Pessimistisch</span>
                 <span>Neutral</span>
                 <span>Optimistisch</span>
               </div>
-              
+
               <p className="text-sm text-gray-500 mt-4">
                 Letztes Update: 23. Juli 2025
               </p>
@@ -531,7 +531,7 @@ export default function DashboardPage() {
             {/* Historical Values */}
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-6">Historische Werte</h3>
-              
+
               <div className="space-y-4 mb-6">
                 <HistoricalValue label="Jetzt" value={74} status="Optimistisch" />
                 <HistoricalValue label="Gestern" value={72} status="Optimistisch" />
@@ -555,7 +555,7 @@ export default function DashboardPage() {
               <div className="text-3xl font-bold text-[#e60000] font-mono mb-8">
                 {countdown}
               </div>
-              
+
               <div className="border-t pt-6">
                 <h4 className="font-medium text-gray-900 mb-3">Faktoren im Index:</h4>
                 <ul className="space-y-2 text-sm text-gray-600">
@@ -596,11 +596,13 @@ export default function DashboardPage() {
         </section>
 
       </div>
-    </main>
+    </div>
   );
+}
+
 function NewsItem({ date, title, imageUrl, onClick }: { date: string; title: string; imageUrl?: string; onClick: () => void }) {
   return (
-    <article 
+    <article
       onClick={onClick}
       className="bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition-all cursor-pointer group"
     >
@@ -633,7 +635,7 @@ function NewsItem({ date, title, imageUrl, onClick }: { date: string; title: str
 
 function EventItem({ day, month, title, location }: { day: string; month: string; title: string; location: string; }) {
   return (
-    <div 
+    <div
       className="flex gap-4 p-4 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer group"
     >
       <div className="bg-[#e60000] text-white rounded-lg p-3 text-center flex-shrink-0">
@@ -662,7 +664,7 @@ function ArticleItem({ category, title, author, readTime, onClick }: { category:
   };
 
   return (
-    <div 
+    <div
       onClick={onClick}
       className="p-4 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer group"
     >
@@ -727,5 +729,4 @@ function IndicatorCard({ label, value, trend }: { label: string; value: string; 
       </div>
     </div>
   );
-}
 }

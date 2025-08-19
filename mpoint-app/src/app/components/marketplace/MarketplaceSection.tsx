@@ -1,28 +1,75 @@
-import React, { useState } from "react";
-import { Briefcase, Plus, FileText, Package, Users, AlertCircle } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Briefcase, ArrowRight, FileText, Package, Users, AlertCircle } from "lucide-react";
+import Link from "next/link";
 
-function ProjectCard({ type, title, description, urgent, isNew }: {
+// Kategorie-Farben Mapping (wie in Marktplatz)
+const categoryColorClasses: Record<string, string> = {
+  "DIENSTLEISTUNG": "bg-blue-50 text-blue-700",
+  "PRODUKT": "bg-violet-50 text-violet-700",
+  "DIGITALISIERUNG": "bg-green-50 text-green-700",
+  "NACHHALTIGKEIT": "bg-green-50 text-green-700",
+  "MANAGEMENT": "bg-blue-50 text-blue-700",
+};
+
+// Typ-Farben Mapping für Anfrage/Angebot
+const typeColors: Record<string, string> = {
+  "Anfrage": "bg-yellow-50 text-yellow-700",
+  "Angebot": "bg-blue-50 text-blue-700",
+};
+
+// Hilfsfunktion für Preisformatierung (wie in Marktplatz)
+function renderPrice(price: any): string {
+  if (!price) return "-";
+  if (price.onRequest) return "Auf Anfrage";
+  let out = "";
+  if (price.ab) out += "ab ";
+  if (price.from != null) out += price.from.toLocaleString("de-DE") + "€";
+  if (price.to != null) out += ` - ${price.to.toLocaleString("de-DE")}€`;
+  if (price.perHour) out += "/Std";
+  if (price.perDay) out += "/Tag";
+  if (price.perWeek) out += "/Woche";
+  if (price.perMonth) out += "/Monat";
+  return out.trim();
+}
+
+function ProjectCard({ id, type, title, description, category, entryType, price, urgent, isNew }: {
+  id: string | number;
   type: string;
   title: string;
   description: string;
+  category?: string;
+  entryType?: string;
+  price?: any;
   urgent?: boolean;
   isNew?: boolean;
 }) {
   const getTypeIcon = () => {
     switch(type) {
-      case 'Dienstleistung': return <FileText className="w-4 h-4" />;
-      case 'Produkt': return <Package className="w-4 h-4" />;
+      case 'Dienstleistung':
+      case 'DIENSTLEISTUNG': return <FileText className="w-4 h-4" />;
+      case 'Produkt':
+      case 'PRODUKT': return <Package className="w-4 h-4" />;
       case 'Kooperation': return <Users className="w-4 h-4" />;
       default: return <Briefcase className="w-4 h-4" />;
     }
   };
 
+  // Kategorie-Farbe
+  const catClass = category ? categoryColorClasses[category.toUpperCase()] || "bg-gray-100 text-gray-800" : "bg-gray-100 text-gray-800";
+  // Typ-Farbe
+  const typeClass = entryType ? typeColors[entryType] || "bg-gray-100 text-gray-800" : "bg-gray-100 text-gray-800";
+
   return (
-    <div className="border border-gray-200 rounded-xl bg-gray-50 p-4 hover:shadow-md transition-all group cursor-pointer">
+    <Link href={`/boerse/${id}`} className="border border-gray-200 rounded-xl bg-gray-50 p-4 hover:shadow-md transition-all group cursor-pointer block">
       <div className="flex items-start justify-between mb-2">
         <div className="flex items-center gap-2">
           <div className="text-gray-500">{getTypeIcon()}</div>
-          <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">{type}</span>
+          {category && (
+            <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${catClass}`}>{category}</span>
+          )}
+          {entryType && (
+            <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${typeClass}`}>{entryType}</span>
+          )}
         </div>
         {urgent && (
           <span className="bg-red-100 text-red-600 text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1">
@@ -36,16 +83,14 @@ function ProjectCard({ type, title, description, urgent, isNew }: {
           </span>
         )}
       </div>
-
       <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-[#e60000] transition-colors">
         {title}
       </h3>
       <p className="text-sm text-gray-600 mb-3">{description}</p>
-
-      <button className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
-        Ansehen
-      </button>
-    </div>
+      <div className="w-full text-right text-sm font-semibold text-gray-700 mt-2">
+        {renderPrice(price)}
+      </div>
+    </Link>
   );
 }
 
@@ -69,47 +114,60 @@ function TabButton({ active, children, onClick }: {
 }
 
 const MarketplaceSection: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<"search" | "offer" | "mine">("search");
+  const [entries, setEntries] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchEntries() {
+      try {
+        const res = await fetch("/api/marketplace");
+        const data = await res.json();
+        setEntries(data);
+      } catch {
+        // Fehlerhandling
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchEntries();
+  }, []);
+
+  // Zeige nur die ersten 3 Einträge
+  const showEntries = entries.slice(0, 3);
 
   return (
     <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
       <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
         <Briefcase className="w-5 h-5 text-[#e60000]" />
-  Börse
+        Börse
       </h2>
-
-      {/* Tab Navigation */}
-      <div className="flex gap-2 mb-4">
-        <TabButton active={activeTab === "search"} onClick={() => setActiveTab("search")}>
-          Projekte suchen
-        </TabButton>
-        <TabButton active={activeTab === "offer"} onClick={() => setActiveTab("offer")}>
-          Anbieten
-        </TabButton>
-        <TabButton active={activeTab === "mine"} onClick={() => setActiveTab("mine")}>
-          Meine
-        </TabButton>
+      <div className="flex flex-col gap-3">
+        {loading ? (
+          <div className="text-gray-400 text-sm">Lädt...</div>
+        ) : showEntries.length === 0 ? (
+          <div className="text-gray-400 text-sm">Keine Projekte gefunden.</div>
+        ) : (
+          showEntries.map((entry: any) => (
+            <ProjectCard
+              key={entry.id}
+              id={entry.id}
+              type={entry.category || "Projekt"}
+              title={entry.title}
+              description={entry.shortDescription}
+              category={entry.category}
+              entryType={entry.type}
+              price={entry.price}
+              urgent={entry.urgent}
+              isNew={entry.isNew}
+            />
+          ))
+        )}
       </div>
-
-      {/* Projects List */}
-      <div className="space-y-3 mb-4">
-        <ProjectCard
-          type="Dienstleistung"
-          title="Website-Relaunch gesucht"
-          description="Wir suchen ein Team für Webentwicklung & Design"
-          urgent
-        />
-        <ProjectCard
-          type="Produkt"
-          title="Büromöbel – Großabnahme"
-          description="Preiswerte Büromöbel für Startups – jetzt anbieten"
-        />
+      <div className="mt-4 flex justify-center">
+        <Link href="/boerse" className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all">
+          Alle Projekte anzeigen <ArrowRight className="w-4 h-4" />
+        </Link>
       </div>
-
-      <button className="w-full bg-[#e60000] text-white py-3 rounded-xl font-semibold hover:bg-red-700 transition-colors shadow-sm hover:shadow-md flex items-center justify-center gap-2">
-        <Plus className="w-5 h-5" />
-        Eigenes Projekt einstellen
-      </button>
     </section>
   );
 };

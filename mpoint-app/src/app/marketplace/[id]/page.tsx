@@ -20,7 +20,26 @@ export default async function MarketplaceDetailPage({ params }: { params: { id: 
         </div>
         <div className="prose prose-lg max-w-none mb-8" dangerouslySetInnerHTML={{ __html: entry.longDescription || "<em>Keine Detailbeschreibung vorhanden.</em>" }} />
         <div className="text-sm text-gray-500 mb-2">Erstellt von: {entry.user?.firstName} {entry.user?.lastName}</div>
-        <div className="text-sm text-gray-500">Kontakt: {entry.email}</div>
+        <div className="text-sm text-gray-500 mb-6">Kontakt: {entry.email}</div>
+        <div className="flex justify-between items-center mt-6">
+          <div className="font-semibold text-primary text-lg">
+            {/* Preis anzeigen falls vorhanden */}
+            {entry.price ? (
+              entry.price.onRequest ? (
+                "Auf Anfrage"
+              ) : (
+                `${entry.price.ab ? "ab " : ""}${entry.price.from != null ? entry.price.from.toLocaleString("de-DE") + "€" : ""}${
+                    entry.price.to != null ? ` - ${entry.price.to.toLocaleString("de-DE")}€` : ""
+                  }${entry.price.perHour ? "/Std" : ""}${entry.price.perDay ? "/Tag" : ""}${entry.price.perWeek ? "/Woche" : ""}${entry.price.perMonth ? "/Monat" : ""}`
+              )
+            ) : (
+              "-"
+            )}
+          </div>
+          <button className="px-5 py-2 bg-[#e31e24] text-white rounded text-sm font-medium hover:bg-[#c01a1f] hover:shadow transition-colors">
+            Anfragen
+          </button>
+        </div>
       </div>
     </main>
   );
