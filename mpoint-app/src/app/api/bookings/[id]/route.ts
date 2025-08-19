@@ -35,7 +35,10 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
   // Buchung stornieren (Status ändern)
   await prisma.booking.update({
     where: { id: params.id },
-    data: { bookingStatus: "CANCELLED" }
+    data: {
+      bookingStatus: "CANCELLED",
+      paymentStatus: "CANCELLED" // ← Status auch hier setzen!
+    }
   });
 
   // Teilnehmerzahl im Event verringern

@@ -725,12 +725,7 @@ enum PaymentStatus {
 }
 
 enum PaymentMethod {
-  CREDIT_CARD
-  DEBIT_CARD
-  PAYPAL
   BANK_TRANSFER
   INVOICE
-  CREDIT_BALANCE  // Internes Guthaben
-  STRIPE
-  FREE            // Für kostenlose Events
+  PAYPAL
 }

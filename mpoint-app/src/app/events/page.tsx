@@ -115,7 +115,6 @@ function enrichEventWithBookingInfo(event: EventType) {
 export default function EventsPage() {
   const { status, data: session } = useSession();
   const [events, setEvents] = useState<EventType[]>([]);
-  const [bookings, setBookings] = useState<BookingType[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'calendar' | 'list'>('grid');
@@ -155,20 +154,6 @@ export default function EventsPage() {
     }
     fetchEvents();
   }, []); // <--- nach Buchung hier erneut aufrufen
-
-  // Lade alle Buchungen des Users
-  useEffect(() => {
-    async function fetchBookings() {
-      const res = await fetch("/api/my-bookings");
-      if (res.ok) {
-        const data = await res.json();
-        setBookings(data);
-      }
-    }
-    if (status === "authenticated") {
-      fetchBookings();
-    }
-  }, [status]);
 
   // Click-Handler um Jahr-Picker zu schließen
   useEffect(() => {
@@ -310,16 +295,6 @@ export default function EventsPage() {
     }
 
     return days;
-  };
-
-  // Handler für das Löschen einer Buchung
-  const handleDeleteBooking = async (bookingId: string) => {
-    await fetch(`/api/bookings/${bookingId}`, { method: "DELETE" });
-    const res = await fetch("/api/my-bookings");
-    if (res.ok) {
-      const data = await res.json();
-      setBookings(data);
-    }
   };
 
   const visibleEvents = events.filter(
@@ -701,122 +676,6 @@ export default function EventsPage() {
           </>
         )}
 
-        {/* Meine gebuchten Events - Tabelle bleibt unverändert */}
-        <h2 className="text-2xl font-bold mb-6 text-gray-900">
-          Meine gebuchten Events
-        </h2>
-        {bookings.length === 0 ? (
-          <div className="text-gray-500 mb-12">Du hast noch keine Events gebucht.</div>
-        ) : (
-          <div className="mb-12">
-            <table className="w-full border rounded-xl overflow-hidden shadow bg-white">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="py-3 px-4 text-left font-semibold text-gray-700">Titel</th>
-                  <th className="py-3 px-4 text-left font-semibold text-gray-700">Datum</th>
-                  <th className="py-3 px-4 text-left font-semibold text-gray-700">Ort</th>
-                  <th className="py-3 px-4 text-left font-semibold text-gray-700">Plätze</th>
-                  <th className="py-3 px-4 text-left font-semibold text-gray-700">Preis/Platz</th>
-                  <th className="py-3 px-4 text-left font-semibold text-gray-700">Gesamt</th>
-                  <th className="py-3 px-4 text-left font-semibold text-gray-700">Status</th>
-                  <th className="py-3 px-4 text-left font-semibold text-gray-700">Zahlung</th> {/* NEU */}
-                  <th className="py-3 px-4 text-left font-semibold text-gray-700">Aktionen</th>
-                </tr>
-              </thead>
-              <tbody>
-                {bookings.map((booking) => (
-                  <tr key={booking.id} className="border-t hover:bg-gray-50">
-                    <td className="py-2 px-4">{booking.event.title}</td>
-                    <td className="py-2 px-4">
-                      {new Date(booking.event.startDate).toLocaleString()}
-                    </td>
-                    <td className="py-2 px-4">{booking.event.location}</td>
-                    <td className="py-2 px-4 text-center">{booking.spaces}</td>
-                    <td className="py-2 px-4">
-                      {booking.pricePerSpace === 0 ? (
-                        <span className="text-green-700 font-semibold">Kostenfrei</span>
-                      ) : (
-                        <span>{booking.pricePerSpace.toFixed(2)} €</span>
-                      )}
-                    </td>
-                    <td className="py-2 px-4 font-semibold">
-                      {booking.totalAmount === 0 ? (
-                        <span className="text-green-700">Kostenfrei</span>
-                      ) : (
-                        <span>{booking.totalAmount.toFixed(2)} €</span>
-                      )}
-                    </td>
-                    <td className="py-2 px-4">
-                      <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                        booking.bookingStatus === "CANCELLED"
-                          ? "bg-red-100 text-red-700"
-                          : booking.bookingStatus === "COMPLETED"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-yellow-100 text-yellow-700"
-                      }`}>
-                        {booking.bookingStatus}
-                      </span>
-                    </td>
-                    <td className="py-2 px-4">
-                      <PaymentStatusBadge status={booking.paymentStatus} />
-                    </td>
-                    <td className="py-2 px-4">
-                      <div className="flex gap-2">
-                        <Link
-                          href={`/events/${booking.event.id}`}
-                          className="text-blue-600 underline text-sm"
-                        >
-                          Details
-                        </Link>
-                        {booking.bookingStatus !== "CANCELLED" && (
-                          <>
-                          {booking.paymentStatus === 'PENDING' && booking.totalAmount > 0 && (
-                            <button
-                              onClick={() => handlePayment(booking.id)}
-                              className="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600"
-                            >
-                              Bezahlen
-                            </button>
-                          )}
-                          {(booking.paymentStatus === 'NOT_REQUIRED' ||
-                            booking.paymentStatus === 'PAID') && (
-                            <button
-                              onClick={() => handleDeleteBooking(booking.id)}
-                              className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-700"
-                            >
-                              Stornieren
-                            </button>
-                          )}
-                          </>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot className="bg-gray-100 font-semibold">
-                <tr>
-                  <td colSpan={3} className="py-3 px-4">Gesamt</td>
-                  <td className="py-3 px-4 text-center">
-                    {bookings.reduce((sum, b) => sum + b.spaces, 0)}
-                  </td>
-                  <td className="py-3 px-4"></td>
-                  <td className="py-3 px-4">
-                    {bookings.reduce((sum, b) => sum + b.totalAmount, 0).toFixed(2)} €
-                  </td>
-                  <td colSpan={3} className="py-3 px-4 text-sm text-gray-600">
-                    Davon bezahlt: {
-                      bookings
-                        .filter(b => b.paymentStatus === 'PAID')
-                        .reduce((sum, b) => sum + b.totalAmount, 0)
-                        .toFixed(2)
-                    } €
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-        )}
       </div>
     </main>
   );
