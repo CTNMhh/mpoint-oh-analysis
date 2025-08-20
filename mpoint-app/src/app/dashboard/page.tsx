@@ -208,7 +208,7 @@ export default function DashboardPage() {
             ) : allNews.length > 0 ? (
               <>
                 {/* Lead Article */}
-                <article className="lg:col-span-2 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-pointer overflow-hidden group">
+                <article className="lg:col-span-2 bg-gray-50 rounded-lg border border-gray-200 hover:shadow-md transition-all cursor-pointer overflow-hidden group">
                   <Link href={`/news/${allNews[0].id}`}>
                     <div className="h-64 relative overflow-hidden">
                       {allNews[0].imageUrl ? (
@@ -443,7 +443,7 @@ export default function DashboardPage() {
 
                 <Link
                   href="/company"
-                  className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 hover:shadow-md transition-all"
                 >
                   <Users className="w-5 h-5 text-gray-600" />
                   <span>Unternehmensprofil</span>
@@ -451,7 +451,7 @@ export default function DashboardPage() {
 
                 <Link
                   href="/netzwerk"
-                  className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 hover:shadow-md transition-all"
                 >
                   <Users className="w-5 h-5 text-blue-600" />
                   <span>Netzwerk</span>
@@ -459,7 +459,7 @@ export default function DashboardPage() {
 
                 <Link
                   href="/Matches"
-                  className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 hover:shadow-md transition-all"
                 >
                   <Users className="w-5 h-5 text-green-600" />
                   <span>Matches</span>
@@ -474,7 +474,11 @@ export default function DashboardPage() {
               <h2 className="text-xl font-semibold text-gray-900 mb-4">
                 Profil
               </h2>
-              <ProgressBar bgClassName="bg-white" showSuggestions={false} />
+              <Link
+                  href="/company"
+                >
+              <ProgressBar bgClassName="bg-white hover:bg-gray-50" showSuggestions={false} />
+              </Link>
               <div className="mt-8 text-center">
                 <Link
                   href="/company"
@@ -643,15 +647,15 @@ function NewsItem({ date, title, imageUrl, onClick }: { date: string; title: str
   return (
     <article
       onClick={onClick}
-      className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer group"
+      className="bg-gray-50 rounded-lg border border-gray-200 hover:shadow-md transition-all cursor-pointer group"
     >
       <div className="flex gap-4">
         {imageUrl ? (
-          <div className="relative w-20 rounded-l-xl overflow-hidden flex-shrink-0">
+          <div className="relative w-20 rounded-l-lg overflow-hidden flex-shrink-0">
             <img
               src={imageUrl}
               alt={title}
-              className="w-full h-full object-cover rounded-l-xl"
+              className="w-full h-full object-cover rounded-l-lg"
             />
           </div>
         ) : (
@@ -708,7 +712,7 @@ function ArticleItem({ category, title, author, readTime, onClick }: { category:
   return (
     <div
       onClick={onClick}
-      className="p-4 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer group"
+      className="rounded-lg bg-white hover:bg-gray-50 cursor-pointer group border border-gray-200 hover:shadow-md p-4 transition-all"
     >
       <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${getCategoryColor(category)} mb-2`}>
         {category}

@@ -44,7 +44,7 @@ export default function NetzwerkPage() {
               <SidebarStat label="Unternehmen" icon={<Building2 className="w-5 h-5 text-orange-500" />} count={15} />
             </div>
           </div>
-          
+
           <div className="bg-white/80 backdrop-blur rounded-2xl shadow-lg shadow-gray-200/50 p-6 border border-white/50">
             <h3 className="font-bold text-lg mb-4 text-gray-900">Smart Filter</h3>
             <div className="space-y-4">
@@ -82,12 +82,12 @@ export default function NetzwerkPage() {
           <nav className="flex gap-2 mb-6 overflow-x-auto pb-2">
             <TabButton active={activeTab === "invitations"} onClick={() => setActiveTab("invitations")}>
               <UserPlus className="w-4 h-4" />
-              Einladungen 
+              Einladungen
               <span className="ml-2 bg-[#e60000] text-white text-xs rounded-full px-2 py-0.5 font-bold">15</span>
             </TabButton>
             <TabButton active={activeTab === "messages"} onClick={() => setActiveTab("messages")}>
               <MessageSquare className="w-4 h-4" />
-              Nachrichten 
+              Nachrichten
               <span className="ml-2 bg-[#e60000] text-white text-xs rounded-full px-2 py-0.5 font-bold">3</span>
             </TabButton>
             <TabButton active={activeTab === "connections"} onClick={() => setActiveTab("connections")}>
@@ -135,7 +135,7 @@ export default function NetzwerkPage() {
               </a>
             </div>
           </div>
-          
+
           <div className="bg-white/90 backdrop-blur rounded-2xl shadow-lg shadow-gray-200/50 p-6 border border-[#e60000]/10">
             <h3 className="font-bold text-lg mb-6 text-[#e60000]">Ihre Performance</h3>
             <div className="space-y-4">
@@ -170,8 +170,8 @@ function TabButton({ active, children, onClick }: { active: boolean; children: R
   return (
     <button
       className={`flex items-center gap-2 px-5 py-3 rounded-2xl font-medium transition-all whitespace-nowrap ${
-        active 
-          ? "bg-[#e60000] text-white shadow-lg" 
+        active
+          ? "bg-[#e60000] text-white shadow-lg"
           : "bg-white/80 text-gray-700 hover:bg-gray-100 border border-gray-200"
       }`}
       onClick={onClick}
@@ -307,8 +307,8 @@ function InvitationItem({ name, title, mutual, type }: { name: string; title: st
             <button
               key={action}
               className={`px-4 py-2 rounded-xl font-medium transition-all transform hover:scale-105 ${
-                idx === 0 
-                  ? "bg-gray-100 text-gray-700 hover:bg-gray-200" 
+                idx === 0
+                  ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   : "bg-[#e60000] text-white hover:shadow-lg hover:shadow-[#e60000]/25"
               }`}
               onClick={() => alert(`Aktion: ${action}`)}
@@ -345,12 +345,12 @@ function MessagesSection() {
 // Modern Message Item Component
 function MessageItem({ name, preview, time, unread }: { name: string; preview: string; time: string; unread?: boolean }) {
   return (
-    <div 
+    <div
       className={`group p-4 rounded-xl cursor-pointer transition-all ${
-        unread 
-          ? "bg-[#e60000]/5 hover:bg-[#e60000]/10" 
+        unread
+          ? "bg-[#e60000]/5 hover:bg-[#e60000]/10"
           : "hover:bg-gray-100"
-      }`} 
+      }`}
       onClick={() => alert("Chat-Fenster würde sich öffnen...")}
     >
       <div className="flex items-start gap-4">
