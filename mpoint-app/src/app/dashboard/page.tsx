@@ -645,7 +645,7 @@ function NewsItem({ date, title, imageUrl, onClick }: { date: string; title: str
     >
       <div className="flex gap-4">
         {imageUrl ? (
-          <div className="relative w-20 h-full rounded-l-xl overflow-hidden flex-shrink-0">
+          <div className="relative w-20 rounded-l-xl overflow-hidden flex-shrink-0">
             <img
               src={imageUrl}
               alt={title}
