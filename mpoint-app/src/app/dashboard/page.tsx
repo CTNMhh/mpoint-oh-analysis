@@ -641,26 +641,26 @@ function NewsItem({ date, title, imageUrl, onClick }: { date: string; title: str
   return (
     <article
       onClick={onClick}
-      className="bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition-all cursor-pointer group"
+      className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer group"
     >
       <div className="flex gap-4">
         {imageUrl ? (
-          <div className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+          <div className="relative w-20 h-full rounded-l-xl overflow-hidden flex-shrink-0">
             <img
               src={imageUrl}
               alt={title}
-              className="w-full h-40 object-cover rounded-lg mb-3"
+              className="w-full h-full object-cover rounded-l-xl"
             />
           </div>
         ) : (
           <div
-            className="w-20 h-20 rounded-lg flex-shrink-0"
+            className="w-20 h-20 flex-shrink-0"
             style={{
               background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
             }}
           ></div>
         )}
-        <div>
+        <div className="py-2 pr-2">
           <div className="text-sm text-gray-500 mb-1">{date}</div>
           <h4 className="font-semibold text-gray-900 group-hover:text-[#e60000] transition-colors line-clamp-2">
             {title}
