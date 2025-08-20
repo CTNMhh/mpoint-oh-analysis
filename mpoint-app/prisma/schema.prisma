@@ -1,4 +1,3 @@
-// ========== MARKETPLACE ENTRY MODEL ==========
 model MarketplaceEntry {
   id     String @id @default(uuid())
   userId String
@@ -21,9 +20,35 @@ model MarketplaceEntry {
   // Relation zum User
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  // Relation zu Anfragen
+  requests MarketplaceRequest[]
+
   @@index([category])
   @@index([type])
   @@index([userId])
+}
+
+// ========== MARKETPLACE REQUEST MODEL ==========
+model MarketplaceRequest {
+  id         String   @id @default(uuid())
+  projectId  String
+  userId     String
+  message    String?
+  status     RequestStatus @default(PENDING)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  project MarketplaceEntry @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId]) // Ein Nutzer kann nur einmal pro Projekt anfragen
+}
+
+enum RequestStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
 }
 
 // This is your Prisma schema file,
@@ -58,6 +83,9 @@ model User {
   sentMatches         Match[]              @relation("MatchSender")
   receivedMatches     Match[]              @relation("MatchReceiver")
   activities          Activity[]
+
+  // Relation zu MarketplaceRequests
+  marketplaceRequests MarketplaceRequest[]
   interactions        Interaction[]
   bookings            Booking[] // <-- Opposite relation for Booking
   events              Event[] // <-- Opposite relation for Event
