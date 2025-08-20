@@ -471,16 +471,18 @@ export default function DashboardPage() {
 
             {/* Profile Completion */}
             <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl shadow-sm p-6">
-              <Link
-                href="/company"
-                className="text-lg font-semibold text-[rgb(228,25,31)] mb-2 hover:underline flex items-center gap-2"
-              >
-                Profil vervollständigen
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </Link>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                Profil
+              </h2>
               <ProgressBar bgClassName="bg-white" showSuggestions={false} />
+              <div className="mt-8 text-center">
+                <Link
+                  href="/company"
+                  className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all"
+                >
+                  Profil vervollständigen <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
             </div>
 
             {/* Meine gebuchten Events */}

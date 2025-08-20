@@ -73,10 +73,12 @@ const MarketplaceSection: React.FC = () => {
 
   return (
     <section className="bg-white rounded-xl shadow-sm p-6">
-      <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-        <Briefcase className="w-5 h-5 text-[#e60000]" />
-        Börse
-      </h2>
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-xl font-bold text-gray-900">
+          Börse
+        </h3>
+        <Briefcase className="w-6 h-6 text-[#e60000]" />
+      </div>
 
       {/* Tab Navigation */}
       <div className="flex gap-2 mb-4">
