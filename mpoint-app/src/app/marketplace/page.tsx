@@ -119,8 +119,61 @@ async function getUserNameById(userId: string): Promise<string> {
 }
 
 export default function MarketplaceDummy() {
+  // State für Projekt-Bearbeiten-Modal
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editProject, setEditProject] = useState<any>(null);
+  // --- Eigene Projekte und angefragte Projekte ---
+  const [myProjects, setMyProjects] = useState<any[]>([]);
+  const [requestedProjects, setRequestedProjects] = useState<any[]>([]);
+
+  // Entfernen eines eigenen Projekts
+  async function handleRemoveProject(projectId: string) {
+    if (!window.confirm("Projekt wirklich löschen?")) return;
+    try {
+      const res = await fetch(`/api/marketplace/${projectId}`, { method: "DELETE" });
+      if (res.ok) {
+        setEntries(prev => prev.filter(e => e.id !== projectId));
+      } else {
+        alert("Fehler beim Löschen des Projekts.");
+      }
+    } catch {
+      alert("Fehler beim Löschen des Projekts.");
+    }
+  }
+
+  // Entfernen einer eigenen Anfrage
+  async function handleRemoveRequest(projectId: string) {
+    if (!window.confirm("Anfrage wirklich löschen?")) return;
+    try {
+      const res = await fetch("/api/marketplace/request", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ projectId }),
+      });
+      if (res.ok) {
+        setUserRequests(prev => {
+          const copy = { ...prev };
+          delete copy[projectId];
+          return copy;
+        });
+      } else {
+        alert("Fehler beim Löschen der Anfrage.");
+      }
+    } catch {
+      alert("Fehler beim Löschen der Anfrage.");
+    }
+  }
   const { data: session, status } = useSession();
   const [showModal, setShowModal] = useState(false);
+  // Modal für Anfrage/Bearbeiten pro Eintrag
+  const [showRequestModal, setShowRequestModal] = useState(false);
+  const [requestMessage, setRequestMessage] = useState("");
+  const [requestLoading, setRequestLoading] = useState(false);
+  const [requestSuccess, setRequestSuccess] = useState<string | null>(null);
+  const [requestError, setRequestError] = useState<string | null>(null);
+  const [activeEntry, setActiveEntry] = useState<any>(null);
+  const [userRequests, setUserRequests] = useState<Record<string, any>>({});
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -142,25 +195,48 @@ export default function MarketplaceDummy() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!session?.user?.id) {
+      setMyProjects([]);
+      setRequestedProjects([]);
+      return;
+    }
+    // Eigene Projekte filtern
+    setMyProjects(entries.filter(entry => entry.userId === session.user.id));
+    // Angefragte Projekte filtern
+    const requestedIds = Object.keys(userRequests);
+    setRequestedProjects(entries.filter(entry => requestedIds.includes(entry.id)));
+  }, [entries, userRequests, session]);
+
+  useEffect(() => {
     const fetchEntries = async () => {
       try {
         const res = await fetch("/api/marketplace");
         const data = await res.json();
-
         const enrichedData = await Promise.all(data.map(async (entry) => {
           const userName = await getUserNameById(entry.userId);
           return { ...entry, userName };
         }));
-
         setEntries(enrichedData);
+        // Hole alle User-Requests für die Einträge
+        if (session?.user?.id) {
+          const requests: Record<string, any> = {};
+          await Promise.all(enrichedData.map(async (entry: any) => {
+            try {
+              const resReq = await fetch(`/api/marketplace/request?projectId=${entry.id}`);
+              const dataReq = await resReq.json();
+              if (dataReq.request) requests[entry.id] = dataReq.request;
+            } catch {}
+          }));
+          setUserRequests(requests);
+        }
       } catch (err) {
-  console.error("Fehler beim Laden der Börsendaten:", err);
+        console.error("Fehler beim Laden der Börsendaten:", err);
       } finally {
         setLoading(false);
       }
     };
     fetchEntries();
-  }, []);
+  }, [session]);
 
   // Filterung
   let filteredEntries = entries.filter(entry => {
@@ -208,7 +284,76 @@ export default function MarketplaceDummy() {
   // Preis-Eingabe-Handler
   const handlePriceChange = (field: keyof PriceType, value: any) => {
     setPriceInput(prev => ({ ...prev, [field]: value }));
+  }
+
+  // Anfrage-Modal Handler
+  const openRequestModal = (entry: any) => {
+    setActiveEntry(entry);
+    setRequestMessage(userRequests[entry.id]?.message || "");
+    setRequestError(null);
+    setRequestSuccess(null);
+    setShowRequestModal(true);
   };
+
+  async function handleRequestSubmit() {
+    if (!activeEntry) return;
+    setRequestLoading(true);
+    setRequestError(null);
+    setRequestSuccess(null);
+    try {
+      const method = userRequests[activeEntry.id] ? "PATCH" : "POST";
+      const res = await fetch("/api/marketplace/request", {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ projectId: activeEntry.id, message: requestMessage }),
+      });
+      if (res.ok) {
+        setRequestSuccess(userRequests[activeEntry.id] ? "Anfrage erfolgreich bearbeitet!" : "Anfrage erfolgreich gesendet!");
+        setShowRequestModal(false);
+        setRequestMessage("");
+        // Reload userRequest for this entry
+        const reqRes = await fetch(`/api/marketplace/request?projectId=${activeEntry.id}`);
+        const reqData = await reqRes.json();
+        setUserRequests(prev => ({ ...prev, [activeEntry.id]: reqData.request }));
+      } else {
+        const data = await res.json();
+        setRequestError(data.error || "Fehler beim Senden der Anfrage.");
+      }
+    } catch (err) {
+      setRequestError("Fehler beim Senden der Anfrage.");
+    } finally {
+      setRequestLoading(false);
+    }
+  }
+
+  async function handleDeleteRequest() {
+    if (!activeEntry) return;
+    setDeleteLoading(true);
+    setRequestError(null);
+    try {
+      const res = await fetch("/api/marketplace/request", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ projectId: activeEntry.id }),
+      });
+      if (res.ok) {
+        setShowRequestModal(false);
+        setRequestMessage("");
+        setUserRequests(prev => {
+          const copy = { ...prev };
+          delete copy[activeEntry.id];
+          return copy;
+        });
+      } else {
+        const data = await res.json();
+        setRequestError(data.error || "Fehler beim Löschen der Anfrage.");
+      }
+    } catch {
+      setRequestError("Fehler beim Löschen der Anfrage.");
+    } finally {
+      setDeleteLoading(false);
+    }
+  }
 
   // Preis-Modus-Handler
   const handlePriceModeChange = (mode: string) => {
@@ -305,7 +450,13 @@ export default function MarketplaceDummy() {
   }
 
   return (
-  <div className="bg-gray-50 text-gray-900 min-h-screen relative pt-24">
+    <div className="bg-gray-50 text-gray-900 min-h-screen relative pt-24">
+      {/* Ladeanzeige während die Einträge geladen werden */}
+      {loading && (
+        <div className="max-w-3xl mx-auto py-12 px-4 text-center text-gray-500 text-lg">
+          Lädt Einträge...
+        </div>
+      )}
       {/* Modal (außerhalb des Seiten-Containers platzieren) */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 backdrop-blur-sm">
@@ -547,7 +698,286 @@ export default function MarketplaceDummy() {
           </div>
         </div>
       )}
-      <div className="max-w-7xl mx-auto p-5 relative z-0">
+      {!loading && (
+        <div className="max-w-7xl mx-auto p-5 relative z-0">
+          {/* Meine Projekte & Angefragte Projekte Karte */}
+          {session?.user?.id && (
+            <div className="bg-white rounded-lg shadow-sm mb-8 p-6 flex flex-col md:flex-row gap-8">
+              <div className="flex-1">
+                <h2 className="text-lg font-bold mb-3">Meine Projekte</h2>
+                {myProjects.length === 0 ? (
+                  <div className="text-gray-500 text-sm">Keine eigenen Projekte.</div>
+                ) : (
+                  <ul className="space-y-2">
+                    {myProjects.map(entry => (
+                      <li key={entry.id} className="flex items-center justify-between gap-2">
+                        <a href={`/boerse/${entry.id}`} className="text-primary hover:underline font-medium">{entry.title}</a>
+                        <div className="flex items-center gap-1">
+                          <button
+                            className="text-gray-500 hover:text-blue-600 text-lg px-2"
+                            title="Projekt bearbeiten"
+                            onClick={() => { setEditProject(entry); setShowEditModal(true); }}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5"><path d="M17.414 2.586a2 2 0 0 0-2.828 0l-9.5 9.5A2 2 0 0 0 4 13.5V16a1 1 0 0 0 1 1h2.5a2 2 0 0 0 1.414-.586l9.5-9.5a2 2 0 0 0 0-2.828l-2.5-2.5ZM15 4l2 2-9.5 9.5a1 1 0 0 1-.707.293H5v-1.293a1 1 0 0 1 .293-.707L15 4Z" /></svg>
+                          </button>
+      {/* Modal für Projekt bearbeiten */}
+      {showEditModal && editProject && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 backdrop-blur-sm">
+          <div className="bg-white rounded-xl w-11/12 max-w-2xl max-h-screen overflow-y-auto shadow-2xl">
+            <div className="flex justify-between items-center p-6 border-b border-gray-200">
+              <h2 className="text-2xl font-semibold text-gray-900">Projekt bearbeiten</h2>
+              <button
+                className="text-gray-500 hover:text-gray-700 text-2xl p-1 hover:bg-gray-100 rounded"
+                onClick={() => setShowEditModal(false)}
+                aria-label="Schließen"
+              >
+                ×
+              </button>
+            </div>
+            <div className="p-6">
+              <form onSubmit={async e => {
+                e.preventDefault();
+                if (!editProject) return;
+                const form = e.target as HTMLFormElement;
+                const formData = new FormData(form);
+                const entryType = (form.elements.namedItem("entryType") as HTMLInputElement)?.value || null;
+                const title = (form.elements.namedItem("projectTitle") as HTMLInputElement)?.value.trim() || null;
+                const category = (form.elements.namedItem("projectCategory") as HTMLSelectElement)?.value.toUpperCase() || null;
+                const shortDescription = (form.elements.namedItem("projectShortDescription") as HTMLInputElement)?.value.trim() || null;
+                let longDescription: string | null = (form.querySelector("#projectLongDescription") as HTMLDivElement)?.innerHTML?.trim() || null;
+                if (longDescription === "" || longDescription === "<br>") longDescription = null;
+                const location = (form.elements.namedItem("projectLocation") as HTMLInputElement)?.value.trim() || null;
+                const deadlineRaw = (form.elements.namedItem("projectDeadline") as HTMLInputElement)?.value;
+                const deadline = deadlineRaw ? new Date(deadlineRaw).toISOString() : null;
+                const skills = (form.elements.namedItem("projectSkills") as HTMLInputElement)?.value.trim() || null;
+                const email = (form.elements.namedItem("contactEmail") as HTMLInputElement)?.value.trim() || null;
+                const publicEmail = (form.elements.namedItem("allowContact") as HTMLInputElement)?.checked || false;
+                const price = Object.keys(editProject.price || {}).length > 0 ? editProject.price : null;
+                const payload = {
+                  category,
+                  title,
+                  shortDescription,
+                  longDescription,
+                  price,
+                  type: entryType,
+                  email,
+                  publicEmail,
+                  location,
+                  deadline,
+                  skills,
+                };
+                try {
+                  const res = await fetch(`/api/marketplace/${editProject.id}`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                  });
+                  if (res.ok) {
+                    setShowEditModal(false);
+                    // Aktualisiere die Einträge
+                    const entriesRes = await fetch("/api/marketplace");
+                    const data = await entriesRes.json();
+                    const enrichedData = await Promise.all(data.map(async (entry: any) => {
+                      const userName = await getUserNameById(entry.userId);
+                      return { ...entry, userName };
+                    }));
+                    setEntries(enrichedData);
+                  } else {
+                    alert("Fehler beim Bearbeiten des Eintrags.");
+                  }
+                } catch (err) {
+                  alert("Fehler beim Bearbeiten des Eintrags.");
+                }
+              }}>
+                {/* Typ-Auswahl Angebot/Anfrage */}
+                <div className="mb-5">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Typ <span className="text-primary">*</span></label>
+                  <div className="flex gap-3">
+                    <label className="flex items-center gap-2 text-sm cursor-pointer px-3 py-2 rounded-lg border border-yellow-200 bg-yellow-50 text-yellow-700">
+                      <input type="radio" name="entryType" value="Anfrage" defaultChecked={editProject.type === "Anfrage"} /> Anfrage
+                    </label>
+                    <label className="flex items-center gap-2 text-sm cursor-pointer px-3 py-2 rounded-lg border border-blue-200 bg-blue-50 text-blue-700">
+                      <input type="radio" name="entryType" value="Angebot" defaultChecked={editProject.type === "Angebot"} /> Angebot
+                    </label>
+                  </div>
+                </div>
+                {/* Projekttitel */}
+                <div className="mb-5">
+                  <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="projectTitle">
+                    Projekttitel <span className="text-primary">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="projectTitle"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                    placeholder="z.B. Website-Relaunch für Startup"
+                    defaultValue={editProject.title}
+                    required
+                  />
+                </div>
+                {/* Kategorie */}
+                <div className="mb-5">
+                  <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="projectCategory">
+                    Kategorie <span className="text-primary">*</span>
+                  </label>
+                  <select id="projectCategory" className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" defaultValue={editProject.category?.toLowerCase()} required>
+                    <option value="">Kategorie auswählen</option>
+                    <option value="dienstleistung">Dienstleistung</option>
+                    <option value="produkt">Produkt</option>
+                    <option value="digitalisierung">Digitalisierung</option>
+                    <option value="nachhaltigkeit">Nachhaltigkeit</option>
+                    <option value="management">Management</option>
+                    <option value="marketing">Marketing</option>
+                    <option value="consulting">Consulting</option>
+                  </select>
+                </div>
+                {/* Beschreibung (kurz) */}
+                <div className="mb-5">
+                  <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="projectShortDescription">
+                    Beschreibung (kurz) <span className="text-primary">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="projectShortDescription"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                    placeholder="Kurze Projektbeschreibung..."
+                    defaultValue={editProject.shortDescription}
+                    required
+                  />
+                </div>
+                {/* Beschreibung (lang) WYSIWYG Editor */}
+                <div className="mb-5">
+                  <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="projectLongDescription">
+                    Beschreibung (lang)
+                  </label>
+                  <div
+                    id="projectLongDescription"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm min-h-24 bg-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                    contentEditable={true}
+                    style={{ minHeight: "96px" }}
+                    suppressContentEditableWarning={true}
+                    dangerouslySetInnerHTML={{ __html: editProject.longDescription || "" }}
+                  />
+                </div>
+                {/* Standort und Deadline */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="projectLocation">
+                      Standort
+                    </label>
+                    <input
+                      type="text"
+                      id="projectLocation"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                      placeholder="z.B. München, Remote"
+                      defaultValue={editProject.location}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="projectDeadline">
+                      Deadline
+                    </label>
+                    <input
+                      type="date"
+                      id="projectDeadline"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                      defaultValue={editProject.deadline ? editProject.deadline.slice(0, 10) : ""}
+                    />
+                  </div>
+                </div>
+                {/* Benötigte Fähigkeiten */}
+                <div className="mb-5">
+                  <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="projectSkills">
+                    Benötigte Fähigkeiten
+                  </label>
+                  <input
+                    type="text"
+                    id="projectSkills"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                    placeholder="z.B. JavaScript, React, Design, SEO (mit Komma trennen)"
+                    defaultValue={editProject.skills}
+                  />
+                </div>
+                {/* Kontakt E-Mail */}
+                <div className="mb-5">
+                  <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="contactEmail">
+                    Kontakt E-Mail <span className="text-primary">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    id="contactEmail"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                    placeholder="ihre@email.de"
+                    defaultValue={editProject.email}
+                    required
+                  />
+                </div>
+                {/* Kontakt-Erlaubnis Checkbox */}
+                <div className="mb-4">
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" id="allowContact" className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary" defaultChecked={!!editProject.publicEmail} />
+                    <span className="text-sm">Ich stimme zu, dass Interessenten mich kontaktieren dürfen <span className="text-primary">*</span></span>
+                  </label>
+                </div>
+                {/* Form Actions */}
+                <div className="flex flex-col sm:flex-row gap-3 justify-end pt-5 border-t border-gray-200">
+                  <button
+                    type="button"
+                    className="px-6 py-3 border border-blue-600 bg-white text-blue-600 rounded-lg font-medium hover:bg-blue-600 hover:text-white hover:shadow transition-colors"
+                    onClick={() => setShowEditModal(false)}
+                  >
+                    Abbrechen
+                  </button>
+                  <button type="submit" className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 hover:shadow transition-colors">
+                    Bearbeiten
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+                          <button
+                            className="text-red-500 hover:text-red-700 text-lg px-2"
+                            title="Projekt entfernen"
+                            onClick={() => handleRemoveProject(entry.id)}
+                          >×</button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              <div className="flex-1">
+                <h2 className="text-lg font-bold mb-3">Angefragte Projekte</h2>
+                {requestedProjects.length === 0 ? (
+                  <div className="text-gray-500 text-sm">Keine Anfragen gestellt.</div>
+                ) : (
+                  <ul className="space-y-2">
+                    {requestedProjects.map(entry => (
+                      <li key={entry.id} className="flex items-center justify-between gap-2">
+                        <a href={`/boerse/${entry.id}`} className="text-primary hover:underline font-medium">{entry.title}</a>
+                        <div className="flex items-center gap-1">
+                          <button
+                            className="text-gray-500 hover:text-blue-600 text-lg px-2"
+                            title="Anfrage bearbeiten"
+                            onClick={() => openRequestModal(entry)}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5"><path d="M17.414 2.586a2 2 0 0 0-2.828 0l-9.5 9.5A2 2 0 0 0 4 13.5V16a1 1 0 0 0 1 1h2.5a2 2 0 0 0 1.414-.586l9.5-9.5a2 2 0 0 0 0-2.828l-2.5-2.5ZM15 4l2 2-9.5 9.5a1 1 0 0 1-.707.293H5v-1.293a1 1 0 0 1 .293-.707L15 4Z" /></svg>
+                          </button>
+                          <button
+                            className="text-red-500 hover:text-red-700 text-lg px-2"
+                            title="Anfrage entfernen"
+                            onClick={() => handleRemoveRequest(entry.id)}
+                          >×</button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          )}
         {/* Header */}
         <div className="bg-white p-5 rounded-lg shadow-sm mb-8">
           <h1 className="text-primary text-2xl font-bold mb-4">Börse</h1>
@@ -622,46 +1052,59 @@ export default function MarketplaceDummy() {
         </div>
         {/* Results Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-10" id="resultsGrid">
-          {paginatedEntries.map(entry => (
-            <div
-              key={entry.id}
-              className="result-card bg-white rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer overflow-hidden flex flex-col h-full"
-              onClick={e => {
-                // Nur öffnen, wenn nicht auf Anfrage-Button geklickt
-                if ((e.target as HTMLElement).closest('button')) return;
-                router.push(`/boerse/${entry.id}`);
-              }}
-            >
-              <div className="p-4 border-b border-gray-100 flex-1 flex flex-col">
-                <div className="flex justify-between items-start mb-2">
-                  <span
-                    className={`card-category px-3 py-1 rounded-full text-xs font-medium ${categoryColorClasses[entry.category] || "bg-gray-50 text-gray-700"}`}
-                  >
-                    {entry.category}
-                  </span>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${typeColors[entry.type] || "bg-gray-50 text-gray-700"}`}>
-                    {entry.type}
-                  </span>
-                </div>
-                <h3 className="font-semibold text-base mb-2 text-gray-900">{entry.title}</h3>
-                <p className="text-gray-600 text-sm mb-3 leading-relaxed">{entry.shortDescription}</p>
-                <div className="flex justify-between items-center text-xs text-gray-500 mt-auto">
-                  <div className="flex items-center gap-2">
-                    <span>{entry.userName}</span>
+          {paginatedEntries.map(entry => {
+            const userRequest = userRequests[entry.id];
+            const requestButton = userRequest ? (
+              <button
+                className="px-4 py-2 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 hover:shadow transition-colors"
+                onClick={e => { e.stopPropagation(); openRequestModal(entry); }}
+              >
+                Bearbeiten
+              </button>
+            ) : (
+              <button
+                className="px-4 py-2 bg-[#e31e24] text-white rounded text-sm font-medium hover:bg-[#c01a1f] hover:shadow transition-colors"
+                onClick={e => { e.stopPropagation(); openRequestModal(entry); }}
+              >
+                Anfragen
+              </button>
+            );
+            return (
+              <div
+                key={entry.id}
+                className="result-card bg-white rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer overflow-hidden flex flex-col h-full"
+                onClick={e => {
+                  if ((e.target as HTMLElement).closest('button')) return;
+                  router.push(`/boerse/${entry.id}`);
+                }}
+              >
+                <div className="p-4 border-b border-gray-100 flex-1 flex flex-col">
+                  <div className="flex justify-between items-start mb-2">
+                    <span
+                      className={`card-category px-3 py-1 rounded-full text-xs font-medium ${categoryColorClasses[entry.category] || "bg-gray-50 text-gray-700"}`}
+                    >
+                      {entry.category}
+                    </span>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${typeColors[entry.type] || "bg-gray-50 text-gray-700"}`}>
+                      {entry.type}
+                    </span>
                   </div>
-                  <span>{timeAgo(new Date(entry.createdAt).getTime())}</span>
+                  <h3 className="font-semibold text-base mb-2 text-gray-900">{entry.title}</h3>
+                  <p className="text-gray-600 text-sm mb-3 leading-relaxed">{entry.shortDescription}</p>
+                  <div className="flex justify-between items-center text-xs text-gray-500 mt-auto">
+                    <div className="flex items-center gap-2">
+                      <span>{entry.userName}</span>
+                    </div>
+                    <span>{timeAgo(new Date(entry.createdAt).getTime())}</span>
+                  </div>
+                </div>
+                <div className="p-4 bg-gray-50 flex justify-between items-center">
+                  <div className="font-semibold text-primary text-base">{renderPrice(entry.price)}</div>
+                  {requestButton}
                 </div>
               </div>
-              <div className="p-4 bg-gray-50 flex justify-between items-center">
-                <div className="font-semibold text-primary text-base">{renderPrice(entry.price)}</div>
-                <button
-                  className="px-4 py-2 bg-[#e31e24] text-white rounded text-sm font-medium hover:bg-[#c01a1f] hover:shadow transition-colors"
-                >
-                  Anfragen
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
         {/* Pagination */}
         {totalPages > 1 && (
@@ -691,7 +1134,35 @@ export default function MarketplaceDummy() {
             </button>
           </div>
         )}
-      </div>
+        </div>
+      )}
+      {/* Anfrage Modal für Listenansicht */}
+      {showRequestModal && activeEntry && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl p-8 max-w-sm w-full">
+            <h2 className="text-lg font-bold mb-4">{userRequests[activeEntry.id] ? "Anfrage bearbeiten" : "Projekt anfragen"}</h2>
+            <textarea
+              className="w-full border rounded p-2 mb-4"
+              rows={4}
+              placeholder="Ihre Nachricht an den Anbieter..."
+              value={requestMessage}
+              onChange={e => setRequestMessage(e.target.value)}
+              disabled={requestLoading || deleteLoading}
+            />
+            {requestError && <div className="text-red-600 text-sm mb-2">{requestError}</div>}
+            {requestSuccess && <div className="text-green-600 text-sm mb-2">{requestSuccess}</div>}
+            <div className="flex gap-3 justify-end">
+              {userRequests[activeEntry.id] && (
+                <button className="px-5 py-2 rounded bg-gray-100 text-gray-700 hover:bg-gray-200" onClick={handleDeleteRequest} disabled={deleteLoading || requestLoading}>Löschen</button>
+              )}
+              <button className="px-5 py-2 rounded bg-gray-100 text-gray-700 hover:bg-gray-200" onClick={() => setShowRequestModal(false)} disabled={requestLoading || deleteLoading}>Abbrechen</button>
+              <button className={`px-5 py-2 rounded ${userRequests[activeEntry.id] ? "bg-blue-600 hover:bg-blue-700" : "bg-[#e31e24] hover:bg-[#c01a1f]"} text-white font-medium hover:shadow transition-colors`} onClick={handleRequestSubmit} disabled={requestLoading || deleteLoading || !requestMessage.trim()}>
+                {userRequests[activeEntry.id] ? "Speichern" : "Anfrage senden"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
