@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Menu, X, ChevronDown, Bell, User, Search } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
+import NotificationsDropdown from "../notifications/NotificationsDropdown";
 
 const Header = () => {
   const { data: session, status } = useSession();
@@ -191,10 +192,7 @@ const Header = () => {
                   <Search className="w-5 h-5 text-gray-600" />
                 </button>
                 {/* Notifications */}
-                <button className="p-2 hover:bg-[rgb(228,25,31,0.07)] rounded-lg transition-colors relative">
-                  <Bell className="w-5 h-5 text-gray-600" />
-                  <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-[rgb(228,25,31)] rounded-full"></span>
-                </button>
+                <NotificationsDropdown />
                 {/* Profile Dropdown */}
                 <div className="relative" ref={profileRef}>
                   <button

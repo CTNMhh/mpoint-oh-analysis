@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "../../auth/[...nextauth]/route";
 import { PrismaClient, MatchStatus } from "@prisma/client";
 import { publish } from "../../../../lib/sse";
+import { NotificationType } from "@prisma/client";
+import { createNotification } from "../../../../lib/notifications";
 
 const prisma = new PrismaClient();
 export const runtime = "nodejs";
@@ -69,6 +71,13 @@ export async function POST(req: NextRequest) {
           receiverUserId,
           receiverCompanyId,
         },
+      });
+      await createNotification({
+        userId: message.receiverUserId,
+        type: NotificationType.MESSAGE,
+        title: "Neue Nachricht",
+        body: `${senderUserId}: ${message.content?.slice(0, 120) || ""}`,
+        url: `/chat/${message.matchId}`,
       });
 
       publish(matchId, { type: "message", message });
