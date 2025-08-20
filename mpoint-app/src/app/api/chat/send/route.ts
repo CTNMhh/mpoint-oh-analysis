@@ -60,6 +60,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Receiver user missing" }, { status: 422 });
     }
 
+    // Anzeigenamen des Senders ermitteln
+    const senderUser = isSenderSide ? match.senderCompany?.user : match.receiverCompany?.user;
+    const senderDisplayName =
+      [senderUser?.firstName, senderUser?.lastName].filter(Boolean).join(" ") ||
+      senderUser?.name ||
+      session.user.name ||
+      senderUser?.email ||
+      senderUserId;
+
     // Nachricht speichern
     try {
       const message = await prisma.message.create({
@@ -76,7 +85,7 @@ export async function POST(req: NextRequest) {
         userId: message.receiverUserId,
         type: NotificationType.MESSAGE,
         title: "Neue Nachricht",
-        body: `${senderUserId}: ${message.content?.slice(0, 120) || ""}`,
+        body: `${senderDisplayName}: ${message.content?.slice(0, 120) || ""}`,
         url: `/chat/${message.matchId}`,
       });
 
