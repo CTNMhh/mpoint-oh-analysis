@@ -14,13 +14,14 @@ ArrowUpRight,
   BarChart3,
   Plus,
   Users,
-
+  Timer,
   ArrowRight,
   Target,
   MapPin,
   BookOpen,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  UserRoundCog
 } from "lucide-react";
 import MatchingList from "./MatchingList";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -198,9 +199,8 @@ export default function DashboardPage() {
              <section className="bg-white rounded-xl p-6 shadow-sm">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-900">Aktuelle News</h2>
-            <BookOpen className="w-8 h-8 text-gray-400" />
+            <BookOpen className="w-6 h-6 text-[#e60000]" />
           </div>
-
           <div className="grid lg:grid-cols-3 gap-6">
             {isLoadingNews ? (
               <div className="lg:col-span-3 flex justify-center items-center py-12">
@@ -438,7 +438,10 @@ export default function DashboardPage() {
           <div className="space-y-6 mb-6">
             {/* Quick Actions Card */}
             <div className="bg-white rounded-xl shadow-sm p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Schnellaktionen</h2>
+              <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-gray-900">Schnellaktionen</h2>
+                <Timer className="w-6 h-6 text-[#e60000]" />
+              </div>
               <div className="space-y-3">
 
 
@@ -472,9 +475,10 @@ export default function DashboardPage() {
 
             {/* Profile Completion */}
             <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl shadow-sm p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                Profil
-              </h2>
+              <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-gray-900">Profil</h2>
+                <UserRoundCog className="w-6 h-6 text-[#e60000]" />
+              </div>
               <Link
                   href="/company"
                 >
@@ -492,7 +496,10 @@ export default function DashboardPage() {
 
             {/* Meine gebuchten Events */}
             <div className="bg-white rounded-xl shadow-sm p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Meine gebuchten Events</h2>
+              <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-gray-900">Meine gebuchten Events</h2>
+                <Calendar className="w-6 h-6 text-[#e60000]" />
+              </div>
               {bookedEvents.length === 0 ? (
                 <p className="text-gray-500">Keine Buchungen gefunden.</p>
               ) : (
@@ -520,7 +527,7 @@ export default function DashboardPage() {
    <section className="bg-white rounded-xl shadow-sm p-8">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl font-bold text-gray-900">Wirtschaftswetter</h2>
-            <BarChart3 className="w-8 h-8 text-gray-400" />
+            <BarChart3 className="w-6 h-6 text-[#e60000]" />
           </div>
 
           <div className="grid lg:grid-cols-3 gap-8">
