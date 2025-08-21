@@ -34,6 +34,8 @@ model User {
   bookings       Booking[] // <-- Opposite relation for Booking
   events         Event[]   // <-- Opposite relation for Event
   eventActivityLogs   EventActivityLog[] @relation("UserEventLogs")
+  carts    Cart[]    // Ein User kann mehrere Warenkörbe haben
+  transactions Transaction[] // <--- Gegenrelation für Transaction
 }
 
 
@@ -356,6 +358,9 @@ model Event {
   // Relation zu Activity Logs
   activityLogs        EventActivityLog[] @relation("EventActivityLogs")
 
+  // Gegenrelation für CartItem
+  cartItems CartItem[]
+
   @@index([userId])
   @@index([chargeFree])  // NEU: Index für Performance
 }
@@ -369,7 +374,10 @@ model Booking {
   spaces      Int      @default(1)
   comment     String?
 
-    // NEU: Preis-Snapshot zum Zeitpunkt der Buchung
+  // NEU: Status der Buchung
+  bookingStatus BookingStatus @default(PENDING)
+
+  // NEU: Preis-Snapshot zum Zeitpunkt der Buchung
   pricePerSpace   Float         @default(0)      // Einzelpreis pro Platz
   totalAmount     Float         @default(0)      // Gesamtbetrag
   currency        String        @default("EUR")  // Währung
@@ -379,6 +387,8 @@ model Booking {
   paymentMethod   String?       // Später PaymentMethod enum
   paymentId       String?       // External payment reference
   paidAt          DateTime?     // Wann bezahlt
+
+  transactionId String?
 
   // NEU: Refund-Tracking
   refundedAmount  Float?        // Teilbetrag bei Teilerstattung
@@ -392,6 +402,7 @@ model Booking {
   event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
   User        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   activityLogs        EventActivityLog[] @relation("BookingActivityLogs")
+  transaction   Transaction? @relation(fields: [transactionId], references: [id])
 
   @@index([eventId])
   @@index([userId])
@@ -728,4 +739,41 @@ enum PaymentMethod {
   BANK_TRANSFER
   INVOICE
   PAYPAL
+}
+
+model Cart {
+  id        String     @id @default(uuid())
+  userId    String
+  user      User       @relation(fields: [userId], references: [id])
+  items     CartItem[] // NEU: Relation zu CartItem
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        String   @id @default(uuid())
+  cartId    String
+  cart      Cart     @relation(fields: [cartId], references: [id])
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id])
+  spaces    Int      // Anzahl Tickets
+  createdAt DateTime @default(now())
+}
+
+model Transaction {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  amount        Float
+  currency      String   @default("EUR")
+  paymentMethod String
+  paymentStatus PaymentStatus
+  createdAt     DateTime @default(now())
+  bookings      Booking[] // Relation zu den Buchungen dieser Transaktion
+}
+
+enum BookingStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
 }
