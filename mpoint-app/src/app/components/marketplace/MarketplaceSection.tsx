@@ -18,7 +18,7 @@ function ProjectCard({ type, title, description, urgent, isNew }: {
   };
 
   return (
-    <div className="border border-gray-200 rounded-xl bg-gray-50 p-4 hover:shadow-md transition-all group cursor-pointer">
+    <div className="border border-gray-200 rounded-lg bg-white hover:bg-gray-50 p-4 hover:shadow-md transition-all group cursor-pointer">
       <div className="flex items-start justify-between mb-2">
         <div className="flex items-center gap-2">
           <div className="text-gray-500">{getTypeIcon()}</div>
@@ -42,7 +42,7 @@ function ProjectCard({ type, title, description, urgent, isNew }: {
       </h3>
       <p className="text-sm text-gray-600 mb-3">{description}</p>
 
-      <button className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
+      <button className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer">
         Ansehen
       </button>
     </div>
@@ -57,7 +57,7 @@ function TabButton({ active, children, onClick }: {
   return (
     <button
       onClick={onClick}
-      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
         active
           ? 'bg-[#e60000] text-white'
           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -108,7 +108,7 @@ const MarketplaceSection: React.FC = () => {
         />
       </div>
 
-      <button className="w-full bg-[#e60000] text-white py-3 rounded-xl font-semibold hover:bg-red-700 transition-colors shadow-sm hover:shadow-md flex items-center justify-center gap-2">
+      <button className="w-full bg-[#e60000] text-white py-3 rounded-xl font-semibold hover:bg-red-700 transition-colors shadow-sm hover:shadow-md flex items-center justify-center gap-2 cursor-pointer">
         <Plus className="w-5 h-5" />
         Eigenes Projekt einstellen
       </button>
