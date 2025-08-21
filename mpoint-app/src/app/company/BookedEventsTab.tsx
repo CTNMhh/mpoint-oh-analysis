@@ -48,6 +48,7 @@ export default function BookedEventsTab({ userId }: { userId: string }) {
             <th className="py-2 px-2 text-right">Gesamt</th>
             <th className="py-2 px-2 text-center">Status</th>
             <th className="py-2 px-2 text-center">Zahlung</th>
+            <th className="py-2 px-2 text-center">Zahlungsart</th> {/* NEU */}
             <th className="py-2 px-2 text-center">Aktionen</th>
           </tr>
         </thead>
@@ -66,31 +67,15 @@ export default function BookedEventsTab({ userId }: { userId: string }) {
               <td className="py-2 px-2 border-b text-center">
                 <PaymentStatusBadge status={booking.paymentStatus} />
               </td>
+              <td className="py-2 px-2 border-b text-center">
+                {booking.paymentMethod || "-"}
+              </td>
               <td className="py-4 px-6 border-b text-center">
                 <div className="flex gap-1 flex-wrap justify-center">
                   <Link href={`/events/${booking.event?.id}`} className="text-blue-600 underline text-xs">
                     Details
                   </Link>
-                  {booking.bookingStatus !== "CANCELLED" && (
-                    <>
-                      {booking.paymentStatus === "PENDING" && booking.totalAmount > 0 && (
-                        <button
-                          onClick={() => handlePayment(booking.id)}
-                          className="bg-green-500 text-white px-2 py-1 rounded text-xs hover:bg-green-600"
-                        >
-                          Bezahlen
-                        </button>
-                      )}
-                      {(booking.bookingStatus === "PENDING" || booking.bookingStatus === "COMPLETED") && (
-                        <button
-                          onClick={() => handleDeleteBooking(booking.id)}
-                          className="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-700"
-                        >
-                          Stornieren
-                        </button>
-                      )}
-                    </>
-                  )}
+                  {/* Keine Bezahlen- oder Stornieren-Buttons mehr */}
                 </div>
               </td>
             </tr>

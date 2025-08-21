@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]/route";
+import { createPayPalOrder } from "@/lib/paypalClient";
 const prisma = new PrismaClient({
   log: ["query", "info", "warn", "error"]
 });
@@ -33,7 +34,11 @@ export async function POST(request: NextRequest) {
           spaces: item.spaces,
           bookingStatus: "PENDING",
           name: address.name,
-          email: address.email // <--- Email aus dem Checkout-Formular
+          email: address.email,
+          paymentMethod: paymentMethod, // <--- Hier ergänzen!
+          pricePerSpace: item.event.price,
+          totalAmount: item.event.price * item.spaces,
+          currency: "EUR"
         }
       })
     ));
@@ -70,6 +75,21 @@ export async function POST(request: NextRequest) {
 
     // Warenkorb leeren
     await prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
+
+    // PayPal-Zahlung initiieren
+    if (paymentMethod === "PAYPAL") {
+      const paypalOrder = await createPayPalOrder(totalAmount, "EUR");
+      // Speichere die PayPal-Order-ID in Transaction
+      await prisma.transaction.update({
+        where: { id: transaction.id },
+        data: {
+          externalTransactionId: paypalOrder.id,
+          paymentStatus: "PENDING"
+        }
+      });
+      // Gib die PayPal-Order-ID an das Frontend zurück, damit der User bezahlen kann
+      return NextResponse.json({ paypalOrderId: paypalOrder.id });
+    }
 
     return NextResponse.json({ success: true, transactionId: transaction.id });
   } catch (error) {

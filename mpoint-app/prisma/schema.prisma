@@ -366,48 +366,33 @@ model Event {
 }
 
 model Booking {
-  id          String   @id @default(uuid())
-  eventId     String
-  userId      String?
-  name        String
-  email       String
-  spaces      Int      @default(1)
-  comment     String?
-
-  // NEU: Status der Buchung
+  id            String   @id @default(uuid())
+  eventId       String
+  userId        String?
+  name          String
+  email         String
+  spaces        Int      @default(1)
+  comment       String?
   bookingStatus BookingStatus @default(PENDING)
-
-  // NEU: Preis-Snapshot zum Zeitpunkt der Buchung
-  pricePerSpace   Float         @default(0)      // Einzelpreis pro Platz
-  totalAmount     Float         @default(0)      // Gesamtbetrag
-  currency        String        @default("EUR")  // Währung
-
-  // NEU: Payment-Tracking
-  paymentStatus   PaymentStatus @default(PENDING)  // ← VERWENDET DAS ENUM
-  paymentMethod   String?       // Später PaymentMethod enum
-  paymentId       String?       // External payment reference
-  paidAt          DateTime?     // Wann bezahlt
-
+  pricePerSpace Float    @default(0)
+  totalAmount   Float    @default(0)
+  currency      String   @default("EUR")
+  paymentStatus PaymentStatus @default(PENDING)
+  paymentMethod String?
   transactionId String?
-
-  // NEU: Refund-Tracking
-  refundedAmount  Float?        // Teilbetrag bei Teilerstattung
-  refundedAt      DateTime?     // Wann erstattet
-  refundReason    String?       // Grund der Erstattung
-
-  updatedAt   DateTime @default(now())
-  createdAt   DateTime @default(now())
-
-  // Relationen
-  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  User        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  activityLogs        EventActivityLog[] @relation("BookingActivityLogs")
+  refundedAmount  Float?
+  refundedAt      DateTime?
+  refundReason    String?
+  updatedAt     DateTime @default(now())
+  createdAt     DateTime @default(now())
+  event         Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  User          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  activityLogs  EventActivityLog[] @relation("BookingActivityLogs")
   transaction   Transaction? @relation(fields: [transactionId], references: [id])
-
   @@index([eventId])
   @@index([userId])
-  @@index([paymentStatus])  // NEU: Index für Performance
-  @@index([email])          // NEU: Index für Gast-Buchungen
+  @@index([paymentStatus])
+  @@index([email])
 }
 
 
@@ -472,7 +457,7 @@ model Admin {
   firstName String
   lastName  String
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 enum RevenueRange {
@@ -761,15 +746,17 @@ model CartItem {
 }
 
 model Transaction {
-  id            String   @id @default(uuid())
-  userId        String
-  user          User     @relation(fields: [userId], references: [id])
-  amount        Float
-  currency      String   @default("EUR")
-  paymentMethod String
-  paymentStatus PaymentStatus
-  createdAt     DateTime @default(now())
-  bookings      Booking[] // Relation zu den Buchungen dieser Transaktion
+  id                    String   @id @default(uuid())
+  userId                String
+  user                  User     @relation(fields: [userId], references: [id])
+  amount                Float
+  currency              String   @default("EUR")
+  paymentMethod         String
+  paymentStatus         PaymentStatus
+  createdAt             DateTime @default(now())
+  bookings              Booking[]
+  externalTransactionId String?  @unique
+  paypalResponse        Json?    // NEU: PayPal-Antwort als JSON
 }
 
 enum BookingStatus {

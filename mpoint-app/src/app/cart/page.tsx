@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 
 export default function CartPage() {
-  const [cart, setCart] = useState<{ id: string, bookings: any[] } | null>(null);
+  const [cart, setCart] = useState<{ id: string, items: any[] } | null>(null);
   const [loading, setLoading] = useState(true);
   const [step, setStep] = useState<0 | 1 | 2 | 3>(0); // Initialwert ist 0
   const [form, setForm] = useState({
@@ -52,6 +52,50 @@ export default function CartPage() {
     }
     fetchCartAndUser();
   }, []);
+
+  useEffect(() => {
+    if (!window.paypal) {
+      const script = document.createElement("script");
+      script.src = `https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}&currency=EUR`;
+      script.async = true;
+      document.body.appendChild(script);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (
+      form.paymentMethod === "PAYPAL" &&
+      typeof window !== "undefined" &&
+      window.paypal &&
+      document.getElementById("paypal-button-container")
+    ) {
+      window.paypal.Buttons({
+        createOrder: async () => {
+          // Hole die PayPal-Order-ID vom Backend
+          const res = await fetch("/api/checkout", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ paymentMethod: "PAYPAL", address: form }),
+          });
+          const data = await res.json();
+          return data.paypalOrderId; // Muss vom Backend geliefert werden!
+        },
+        onApprove: async (data: any) => {
+          const res = await fetch("/api/paypal/capture", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ orderId: data.orderID }),
+          });
+          const result = await res.json();
+          if (result.success) {
+            setStep(3); // Danke-Seite anzeigen
+          } else {
+            setError("PayPal-Zahlung fehlgeschlagen.");
+          }
+        }
+      }).render("#paypal-button-container");
+    }
+  }, [form.paymentMethod, step, form]);
 
   async function handleRemoveCartItem(cartItemId: string) {
     if (!cart) return;
@@ -226,37 +270,40 @@ export default function CartPage() {
           {error && <div className="text-red-600 mb-2">{error}</div>}
           <div className="flex justify-end gap-4">
             <button type="button" className="px-4 py-2 bg-gray-300 rounded" onClick={() => setStep(1)}>Zurück</button>
-            <button
-              type="button"
-              className="px-4 py-2 bg-green-600 text-white rounded"
-              onClick={async () => {
-                setError("");
-                try {
-                  // API-Call zum Checkout
-                  console.log("Checkout-API wird aufgerufen ...");
-                  const res = await fetch("/api/checkout", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ paymentMethod: form.paymentMethod, address: form }),
-                  });
-                  console.log("Checkout-API sendete Antwort ...");
-                  console.log(res);
-                  if (res.ok) {
-                    const result = await res.json();
-                    setCheckoutResult(result);
-                    setStep(3);
-                  } else {
-                    setError("Zahlung fehlgeschlagen. Bitte versuchen Sie es erneut.");
+            {/* Button nur anzeigen, wenn NICHT PayPal */}
+            {form.paymentMethod !== "PAYPAL" && (
+              <button
+                type="button"
+                className="px-4 py-2 bg-green-600 text-white rounded"
+                onClick={async () => {
+                  setError("");
+                  try {
+                    // API-Call zum Checkout
+                    const res = await fetch("/api/checkout", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ paymentMethod: form.paymentMethod, address: form }),
+                    });
+                    if (res.ok) {
+                      const result = await res.json();
+                      setCheckoutResult(result);
+                      setStep(3);
+                    } else {
+                      setError("Zahlung fehlgeschlagen. Bitte versuchen Sie es erneut.");
+                    }
+                  } catch (error) {
+                    console.error("Fehler im Checkout:", error);
+                    setError("Interner Serverfehler. Bitte versuchen Sie es später erneut.");
                   }
-                } catch (error) {
-                  console.error("Fehler im Checkout:", error);
-                  setError("Interner Serverfehler. Bitte versuchen Sie es später erneut.");
-                }
-              }}
-            >
-              Zahlung bestätigen
-            </button>
+                }}
+              >
+                Zahlung bestätigen
+              </button>
+            )}
           </div>
+          {form.paymentMethod === "PAYPAL" && (
+            <div id="paypal-button-container" className="mt-4"></div>
+          )}
         </div>
       )}
 
