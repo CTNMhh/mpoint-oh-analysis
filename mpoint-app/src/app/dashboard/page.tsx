@@ -9,8 +9,8 @@ import MarketplaceSection from "../components/marketplace/MarketplaceSection"; /
 import {
   Activity,
   Calendar,
-ArrowDownRight,
-ArrowUpRight,
+  ArrowDownRight,
+  ArrowUpRight,
   BarChart3,
   Plus,
   Users,
@@ -21,7 +21,8 @@ ArrowUpRight,
   BookOpen,
   ChevronLeft,
   ChevronRight,
-  UserRoundCog
+  UserRoundCog,
+  House
 } from "lucide-react";
 import MatchingList from "./MatchingList";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -182,7 +183,8 @@ export default function DashboardPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         {/* Welcome Header */}
         <div className="bg-white rounded-xl shadow-sm p-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3 mb-4">
+            <House className="w-8 h-8 text-[#e60000]" />
             Willkommen zurück{user ? `, ${user.anrede} ${user.firstName} ${user.lastName}` : ''}!
           </h1>
           <p className="text-gray-600">
