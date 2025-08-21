@@ -86,6 +86,7 @@ export default function DashboardPage() {
     updateCountdown();
     return () => clearInterval(interval);
   }, []);
+
   // Redirect wenn nicht eingeloggt
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -208,7 +209,7 @@ export default function DashboardPage() {
             ) : allNews.length > 0 ? (
               <>
                 {/* Lead Article */}
-                <article className="lg:col-span-2 bg-gray-50 rounded-lg border border-gray-200 hover:shadow-md transition-all cursor-pointer overflow-hidden group">
+                <article className="lg:col-span-2 bg-white hover:bg-gray-50 rounded-lg border border-gray-200 hover:shadow-md transition-all cursor-pointer overflow-hidden group">
                   <Link href={`/news/${allNews[0].id}`}>
                     <div className="h-64 relative overflow-hidden">
                       {allNews[0].imageUrl ? (
@@ -647,7 +648,7 @@ function NewsItem({ date, title, imageUrl, onClick }: { date: string; title: str
   return (
     <article
       onClick={onClick}
-      className="bg-gray-50 rounded-lg border border-gray-200 hover:shadow-md transition-all cursor-pointer group"
+      className="bg-white hover:bg-gray-50 rounded-lg border border-gray-200 hover:shadow-md transition-all cursor-pointer group"
     >
       <div className="flex gap-4">
         {imageUrl ? (
@@ -727,13 +728,13 @@ function ArticleItem({ category, title, author, readTime, onClick }: { category:
 
 function HistoricalValue({ label, value, status, neutral }: { label: string; value: number; status: string; neutral?: boolean }) {
   return (
-    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+    <div className="flex items-center justify-between p-3 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg">
       <span className="text-gray-600">{label}</span>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between gap-3 w-[150px]">
+        <span className={`text-sm ${neutral ? 'text-gray-600' : 'text-green-600'}`}>{status}</span>
         <span className={`inline-block px-3 py-1 rounded-lg font-bold ${neutral ? 'bg-gray-200 text-gray-700' : 'bg-green-100 text-green-800'}`}>
           {value}
         </span>
-        <span className={`text-sm ${neutral ? 'text-gray-600' : 'text-green-600'}`}>{status}</span>
       </div>
     </div>
   );
@@ -741,7 +742,7 @@ function HistoricalValue({ label, value, status, neutral }: { label: string; val
 
 function IndicatorCard({ label, value, trend }: { label: string; value: string; trend: 'up' | 'down' }) {
   return (
-    <div className="bg-gray-50 rounded-lg p-3 flex flex-col justify-between h-32">
+    <div className="bg-white hover:bg-gray-50 border border-gray-200 rounded-lg p-3 flex flex-col justify-between h-32">
       <div className="flex items-center justify-between mb-2">
         <span className="text-xs text-gray-600">{label}</span>
         {trend === 'up' ? (
