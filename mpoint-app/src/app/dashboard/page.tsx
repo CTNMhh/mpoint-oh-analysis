@@ -14,13 +14,14 @@ ArrowUpRight,
   BarChart3,
   Plus,
   Users,
-
+  Timer,
   ArrowRight,
   Target,
   MapPin,
   BookOpen,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  UserRoundCog
 } from "lucide-react";
 import MatchingList from "./MatchingList";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -86,6 +87,7 @@ export default function DashboardPage() {
     updateCountdown();
     return () => clearInterval(interval);
   }, []);
+
   // Redirect wenn nicht eingeloggt
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -197,9 +199,8 @@ export default function DashboardPage() {
              <section className="bg-white rounded-xl p-6 shadow-sm">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-900">Aktuelle News</h2>
-            <BookOpen className="w-8 h-8 text-gray-400" />
+            <BookOpen className="w-6 h-6 text-[#e60000]" />
           </div>
-
           <div className="grid lg:grid-cols-3 gap-6">
             {isLoadingNews ? (
               <div className="lg:col-span-3 flex justify-center items-center py-12">
@@ -208,7 +209,7 @@ export default function DashboardPage() {
             ) : allNews.length > 0 ? (
               <>
                 {/* Lead Article */}
-                <article className="lg:col-span-2 bg-gray-50 rounded-lg border border-gray-200 hover:shadow-md transition-all cursor-pointer overflow-hidden group">
+                <article className="lg:col-span-2 bg-white hover:bg-gray-50 rounded-lg border border-gray-200 hover:shadow-md transition-all cursor-pointer overflow-hidden group">
                   <Link href={`/news/${allNews[0].id}`}>
                     <div className="h-64 relative overflow-hidden">
                       {allNews[0].imageUrl ? (
@@ -437,7 +438,10 @@ export default function DashboardPage() {
           <div className="space-y-6 mb-6">
             {/* Quick Actions Card */}
             <div className="bg-white rounded-xl shadow-sm p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Schnellaktionen</h2>
+              <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-gray-900">Schnellaktionen</h2>
+                <Timer className="w-6 h-6 text-[#e60000]" />
+              </div>
               <div className="space-y-3">
 
 
@@ -471,9 +475,10 @@ export default function DashboardPage() {
 
             {/* Profile Completion */}
             <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl shadow-sm p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                Profil
-              </h2>
+              <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-gray-900">Profil</h2>
+                <UserRoundCog className="w-6 h-6 text-[#e60000]" />
+              </div>
               <Link
                   href="/company"
                 >
@@ -491,7 +496,10 @@ export default function DashboardPage() {
 
             {/* Meine gebuchten Events */}
             <div className="bg-white rounded-xl shadow-sm p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Meine gebuchten Events</h2>
+              <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-gray-900">Meine gebuchten Events</h2>
+                <Calendar className="w-6 h-6 text-[#e60000]" />
+              </div>
               {bookedEvents.length === 0 ? (
                 <p className="text-gray-500">Keine Buchungen gefunden.</p>
               ) : (
@@ -519,7 +527,7 @@ export default function DashboardPage() {
    <section className="bg-white rounded-xl shadow-sm p-8">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl font-bold text-gray-900">Wirtschaftswetter</h2>
-            <BarChart3 className="w-8 h-8 text-gray-400" />
+            <BarChart3 className="w-6 h-6 text-[#e60000]" />
           </div>
 
           <div className="grid lg:grid-cols-3 gap-8">
@@ -647,7 +655,7 @@ function NewsItem({ date, title, imageUrl, onClick }: { date: string; title: str
   return (
     <article
       onClick={onClick}
-      className="bg-gray-50 rounded-lg border border-gray-200 hover:shadow-md transition-all cursor-pointer group"
+      className="bg-white hover:bg-gray-50 rounded-lg border border-gray-200 hover:shadow-md transition-all cursor-pointer group"
     >
       <div className="flex gap-4">
         {imageUrl ? (
@@ -727,13 +735,13 @@ function ArticleItem({ category, title, author, readTime, onClick }: { category:
 
 function HistoricalValue({ label, value, status, neutral }: { label: string; value: number; status: string; neutral?: boolean }) {
   return (
-    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+    <div className="flex items-center justify-between p-3 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg">
       <span className="text-gray-600">{label}</span>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between gap-3 w-[150px]">
+        <span className={`text-sm ${neutral ? 'text-gray-600' : 'text-green-600'}`}>{status}</span>
         <span className={`inline-block px-3 py-1 rounded-lg font-bold ${neutral ? 'bg-gray-200 text-gray-700' : 'bg-green-100 text-green-800'}`}>
           {value}
         </span>
-        <span className={`text-sm ${neutral ? 'text-gray-600' : 'text-green-600'}`}>{status}</span>
       </div>
     </div>
   );
@@ -741,7 +749,7 @@ function HistoricalValue({ label, value, status, neutral }: { label: string; val
 
 function IndicatorCard({ label, value, trend }: { label: string; value: string; trend: 'up' | 'down' }) {
   return (
-    <div className="bg-gray-50 rounded-lg p-3 flex flex-col justify-between h-32">
+    <div className="bg-white hover:bg-gray-50 border border-gray-200 rounded-lg p-3 flex flex-col justify-between h-32">
       <div className="flex items-center justify-between mb-2">
         <span className="text-xs text-gray-600">{label}</span>
         {trend === 'up' ? (
