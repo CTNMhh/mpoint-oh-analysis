@@ -1,10 +1,30 @@
+// src/app/api/marketplace/request.ts
+import { NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+
+const prisma = new PrismaClient();
+
 // GET: Hole die Anfrage des eingeloggten Nutzers für ein Projekt
 export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
+  const { searchParams } = new URL(req.url);
+  // NEU: Zähle Anfragen für ein Projekt, wenn countRequestId gesetzt ist
+  const countRequestId = searchParams.get("countRequestId");
+  if (countRequestId) {
+    try {
+      const count = await prisma.marketplaceRequest.count({
+        where: { projectId: countRequestId },
+      });
+      return NextResponse.json({ count });
+    } catch (error) {
+      return NextResponse.json({ error: "Fehler beim Zählen der Anfragen." }, { status: 500 });
+    }
+  }
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Nicht autorisiert" }, { status: 401 });
   }
-  const { searchParams } = new URL(req.url);
   const projectId = searchParams.get("projectId");
   if (!projectId) {
     return NextResponse.json({ error: "projectId fehlt" }, { status: 400 });
@@ -81,14 +101,8 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: "Fehler beim Löschen der Anfrage." }, { status: 500 });
   }
 }
-// src/app/api/marketplace/request.ts
-import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-const prisma = new PrismaClient();
-
+// POST: Sende eine neue Anfrage
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {

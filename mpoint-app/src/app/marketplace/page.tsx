@@ -125,6 +125,26 @@ export default function MarketplaceDummy() {
   // --- Eigene Projekte und angefragte Projekte ---
   const [myProjects, setMyProjects] = useState<any[]>([]);
   const [requestedProjects, setRequestedProjects] = useState<any[]>([]);
+  // Anfrage-Zähler für eigene Projekte
+  const [projectRequestCounts, setProjectRequestCounts] = useState<Record<string, number>>({});
+  // Hole die Anzahl der Anfragen für eigene Projekte
+  useEffect(() => {
+    async function fetchRequestCounts() {
+      if (!myProjects.length) return;
+      const counts: Record<string, number> = {};
+      await Promise.all(myProjects.map(async (entry) => {
+        try {
+          const res = await fetch(`/api/marketplace/request?countRequestId=${entry.id}`);
+          const data = await res.json();
+          counts[entry.id] = data.count ?? 0;
+        } catch {
+          counts[entry.id] = 0;
+        }
+      }));
+      setProjectRequestCounts(counts);
+    }
+    fetchRequestCounts();
+  }, [myProjects]);
 
   // Entfernen eines eigenen Projekts
   async function handleRemoveProject(projectId: string) {
@@ -713,6 +733,20 @@ export default function MarketplaceDummy() {
                       <li key={entry.id} className="flex items-center justify-between gap-2">
                         <a href={`/boerse/${entry.id}`} className="text-primary hover:underline font-medium">{entry.title}</a>
                         <div className="flex items-center gap-1">
+                          <button
+                            className="relative text-gray-500 hover:text-primary text-lg px-2"
+                            title="Mitteilungen"
+                            onClick={() => {/* TODO: Mitteilungsfunktion */}}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3.5h6m-6 3.5h3.75M21 12c0 4.418-4.03 8-9 8a9.77 9.77 0 0 1-4.5-1.07L3 21l1.07-4.5A8.96 8.96 0 0 1 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8Z" />
+                            </svg>
+                            {typeof projectRequestCounts[entry.id] === 'number' && projectRequestCounts[entry.id] > 0 && (
+                              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[18px] text-center font-bold">
+                                {projectRequestCounts[entry.id]}
+                              </span>
+                            )}
+                          </button>
                           <button
                             className="text-gray-500 hover:text-blue-600 text-lg px-2"
                             title="Projekt bearbeiten"
