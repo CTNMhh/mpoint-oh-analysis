@@ -137,15 +137,15 @@ const MarketplaceSection: React.FC = () => {
 
   return (
     <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-      <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-        <Briefcase className="w-5 h-5 text-[#e60000]" />
-        Börse
-      </h2>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-semibold text-gray-900">Börse</h2>
+        <Briefcase className="w-6 h-6 text-[#e60000]" />
+      </div>
       <div className="flex flex-col gap-3">
         {loading ? (
           <div className="text-gray-400 text-sm">Lädt...</div>
         ) : showEntries.length === 0 ? (
-          <div className="text-gray-400 text-sm">Keine Projekte gefunden.</div>
+          <div className="text-gray-500">Keine Projekte gefunden.</div>
         ) : (
           showEntries.map((entry: any) => (
             <ProjectCard
