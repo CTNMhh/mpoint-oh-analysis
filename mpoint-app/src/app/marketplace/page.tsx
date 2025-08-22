@@ -4,7 +4,7 @@
 // und bindet sie als React-Komponente in Next.js ein.
 // Tailwind wird über PostCSS eingebunden, nicht per CDN.
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 
@@ -120,7 +120,7 @@ async function getUserNameById(userId: string): Promise<string> {
   }
 }
 
-export default function MarketplaceDummy() {
+function MarketplaceContent() {
   // State für Projekt-Bearbeiten-Modal
   const [showEditModal, setShowEditModal] = useState(false);
   const [editProject, setEditProject] = useState<any>(null);
@@ -915,5 +915,13 @@ export default function MarketplaceDummy() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function MarketplacePage() {
+  return (
+    <Suspense fallback={<div className="py-12 text-center text-gray-500">Lädt...</div>}>
+      <MarketplaceContent />
+    </Suspense>
   );
 }
