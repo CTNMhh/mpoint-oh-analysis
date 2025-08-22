@@ -32,3 +32,10 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({ success: true, match: updated });
 }
+
+export async function DELETE(request: NextRequest) {
+  const { matchId } = await request.json();
+  if (!matchId) return NextResponse.json({ error: "matchId required" }, { status: 400 });
+  await prisma.match.delete({ where: { id: matchId } });
+  return NextResponse.json({ success: true });
+}

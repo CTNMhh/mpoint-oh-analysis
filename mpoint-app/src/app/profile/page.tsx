@@ -24,6 +24,7 @@ export default function ProfilePage() {
         const data = await res.json();
 
         if (!res.ok) {
+          console.log(data.error || "Fehler beim Abrufen der Benutzerdaten.");
           setError(data.error || "Fehler beim Abrufen der Benutzerdaten.");
           setLoading(false);
           return;

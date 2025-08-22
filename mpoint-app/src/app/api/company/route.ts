@@ -19,11 +19,11 @@ async function checkPrismaConnection() {
   try {
     await prisma.$connect();
     console.log("Prisma connected successfully");
-    
+
     // Verfügbare Modelle prüfen
     const models = Object.keys(prisma);
     console.log("Available Prisma models:", models.filter(m => !m.startsWith('$')));
-    
+
     return true;
   } catch (error) {
     console.error("Prisma connection error:", error);
@@ -31,8 +31,51 @@ async function checkPrismaConnection() {
   }
 }
 
-// GET - Unternehmensdaten laden
+
 export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const search = searchParams.get("search");
+  const id = searchParams.get("id");
+
+  // 1. Suche nach Unternehmen (search-Parameter)
+  if (search && search.length >= 2) {
+    const companies = await prisma.company.findMany({
+      where: {
+        OR: [
+          { name: { contains: search, mode: "insensitive" } },
+          { branchDescription: { contains: search, mode: "insensitive" } },
+
+        ]
+      },
+      include: {
+        user: true // <-- Das ist wichtig!
+      },
+      take: 20
+    });
+    return NextResponse.json(companies);
+  }
+
+  // 2. Einzelnes Unternehmen nach ID
+  if (id) {
+    const company = await prisma.company.findUnique({
+      where: { id },
+      include: {
+        locationAdvantages: true,
+        industryTags: true,
+        secondaryNaceCodes: true,
+        expansionPlans: true,
+        certifications: true,
+        complianceNeeds: true,
+        qualityStandards: true,
+        painPoints: true,
+        searchingFor: true,
+        offeringTo: true,
+      }
+    });
+    return NextResponse.json(company);
+  }
+
+  // 3. Default: eigenes Unternehmen (wie bisher)
   try {
     // Debug: Prisma-Verbindung prüfen
     const isConnected = await checkPrismaConnection();
@@ -41,7 +84,7 @@ export async function GET(request: NextRequest) {
     }
 
     const session = await getServerSession(authOptions);
-    
+
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -85,36 +128,36 @@ export async function GET(request: NextRequest) {
       legalForm: company.legalForm || "",
       foundedYear: company.foundedYear,
       registrationNumber: company.registrationNumber || "",
-      
+
       // Größenklasse
       employeeCount: company.employeeCount,
       employeeRange: company.employeeRange,
       annualRevenue: company.annualRevenue,
       revenueRange: company.revenueRange,
-      
+
       // Lokation
       street: company.street || "",
       zipCode: company.zipCode || "",
       district: company.district || "",
       locationAdvantages: company.locationAdvantages.map(la => la.value),
-      
+
       // Branchen
       secondaryNaceCodes: company.secondaryNaceCodes.map(nc => nc.code),
       industryTags: company.industryTags.map(it => it.value),
       branchDescription: company.branchDescription || "",
-      
+
       // Geschäftsmodell
       customerType: company.customerType,
       customerCount: company.customerCount,
       exportQuota: company.exportQuota,
       marketReach: company.marketReach,
       seasonality: company.seasonality,
-      
+
       // Führung
       leadershipStructure: company.leadershipStructure,
       decisionSpeed: company.decisionSpeed,
       decisionMakers: company.decisionMakers,
-      
+
       // Wachstum
       growthPhase: company.growthPhase,
       growthRate: company.growthRate,
@@ -123,12 +166,12 @@ export async function GET(request: NextRequest) {
       // NEU:
       digitalizationLevel: company.digitalizationLevel,
       itBudgetPercent: company.itBudgetPercent,
-      
+
       // Compliance
       certifications: company.certifications.map(c => c.name),
       complianceNeeds: company.complianceNeeds.map(cn => cn.type),
       qualityStandards: company.qualityStandards.map(qs => qs.standard),
-      
+
       // Matching
       painPoints: company.painPoints.map(pp => pp.point),
       currentChallenges: [], // Falls Sie das noch hinzufügen möchten
@@ -141,7 +184,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Error fetching company:", error);
     return NextResponse.json(
-      { 
+      {
         error: "Internal server error",
         details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
       },
@@ -160,13 +203,13 @@ export async function POST(request: NextRequest) {
     }
 
     const session = await getServerSession(authOptions);
-    
+
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await request.json();
-    
+
     // User finden
     const user = await prisma.user.findUnique({
       where: { email: session.user.email }
@@ -216,7 +259,7 @@ export async function POST(request: NextRequest) {
 
     if (existingCompany) {
       console.log("Updating existing company:", existingCompany.id);
-      
+
       // Zuerst alle alten Relations löschen
       await prisma.$transaction([
         prisma.locationAdvantage.deleteMany({ where: { companyId: existingCompany.id } }),
@@ -240,30 +283,30 @@ export async function POST(request: NextRequest) {
           legalForm: body.legalForm || null,
           foundedYear: body.foundedYear,
           registrationNumber: body.registrationNumber || null,
-          
+
           // Größenklasse
           employeeCount: body.employeeCount,
           employeeRange: employeeRange as any,
           annualRevenue: body.annualRevenue || 0,
           revenueRange: revenueRange as any,
-          
+
           // Lokation
           street: body.street || null,
           zipCode: body.zipCode || null,
           district: body.district || null,
-          
+
           // Geschäftsmodell
           customerType: body.customerType as any,
           customerCount: customerCount as any,
           exportQuota: body.exportQuota || 0,
           marketReach: body.marketReach as any,
           seasonality: body.seasonality as any,
-          
+
           // Führung
           leadershipStructure: body.leadershipStructure as any,
           decisionSpeed: body.decisionSpeed as any,
           decisionMakers: body.decisionMakers || 1,
-          
+
           // Wachstum
           growthPhase: body.growthPhase as any,
           growthRate: body.growthRate || 0,
@@ -271,12 +314,12 @@ export async function POST(request: NextRequest) {
           // NEU:
           digitalizationLevel: body.digitalizationLevel ?? 1,
           itBudgetPercent: body.itBudgetPercent ?? null,
-          
+
           // Beschreibungen
           branchDescription: body.branchDescription || null,
-          
+
           updatedAt: new Date(),
-          
+
           // Relations neu erstellen
           locationAdvantages: {
             create: body.locationAdvantages?.map((value: string) => ({ value })) || []
@@ -312,7 +355,7 @@ export async function POST(request: NextRequest) {
       });
     } else {
       console.log("Creating new company for user:", user.id);
-      
+
       // Vor dem prisma.company.create:
       const {
         primaryNaceCode, // <-- entfernen!
@@ -329,30 +372,30 @@ export async function POST(request: NextRequest) {
           legalForm: body.legalForm || null,
           foundedYear: body.foundedYear,
           registrationNumber: body.registrationNumber || null,
-          
+
           // Größenklasse
           employeeCount: body.employeeCount,
           employeeRange: employeeRange as any,
           annualRevenue: body.annualRevenue || 0,
           revenueRange: revenueRange as any,
-          
+
           // Lokation
           street: body.street || null,
           zipCode: body.zipCode || null,
           district: body.district || null,
-          
+
           // Geschäftsmodell
           customerType: body.customerType as any,
           customerCount: customerCount as any,
           exportQuota: body.exportQuota || 0,
           marketReach: body.marketReach as any,
           seasonality: body.seasonality as any,
-          
+
           // Führung
           leadershipStructure: body.leadershipStructure as any,
           decisionSpeed: body.decisionSpeed as any,
           decisionMakers: body.decisionMakers || 1,
-          
+
           // Wachstum
           growthPhase: body.growthPhase as any,
           growthRate: body.growthRate || 0,
@@ -360,10 +403,10 @@ export async function POST(request: NextRequest) {
           // NEU:
           digitalizationLevel: body.digitalizationLevel ?? 1,
           itBudgetPercent: body.itBudgetPercent ?? null,
-          
+
           // Beschreibungen
           branchDescription: body.branchDescription || null,
-          
+
           // Relations
           locationAdvantages: {
             create: body.locationAdvantages?.map((value: string) => ({ value })) || []
@@ -401,28 +444,28 @@ export async function POST(request: NextRequest) {
 
     console.log("Company saved successfully:", company.id);
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       message: "Unternehmensprofil erfolgreich gespeichert",
       companyId: company.id
     });
 
   } catch (error) {
     console.error("Fehler beim Speichern:", error);
-    
+
     // Detailliertere Fehlerinformationen
     if (error instanceof Error) {
       console.error("Error name:", error.name);
       console.error("Error message:", error.message);
       console.error("Error stack:", error.stack);
     }
-    
+
     return NextResponse.json(
-      { 
-        error: "Internal server error", 
+      {
+        error: "Internal server error",
         details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
         type: process.env.NODE_ENV === 'development' ? (error as Error).name : undefined
-      }, 
+      },
       { status: 500 }
     );
   }

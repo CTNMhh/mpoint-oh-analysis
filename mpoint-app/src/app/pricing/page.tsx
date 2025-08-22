@@ -119,7 +119,7 @@ const plans = [
 export default function PricingPage() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-gray-50 to-white py-16 pt-30 px-4">
-      <div className="max-w-5xl mx-auto text-center mb-12">
+      <div className="max-w-7xl mx-auto text-center mb-12">
         <h1 className="text-4xl font-extrabold text-gray-900 mb-4">Preise & Pakete</h1>
         <p className="text-lg text-gray-600">
           Wählen Sie das passende Paket für Ihr Unternehmen. Jederzeit kündbar. Keine versteckten Kosten.
@@ -128,7 +128,7 @@ export default function PricingPage() {
 
 
       {/* Karten-Ansicht */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
         {plans.map((plan) => (
           <div
             key={plan.name}

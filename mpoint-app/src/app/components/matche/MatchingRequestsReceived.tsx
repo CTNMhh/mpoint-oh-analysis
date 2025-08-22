@@ -43,9 +43,55 @@ export default function IncomingRequests() {
                         <Building2 className="w-6 h-6 text-gray-400" />
                         <span className="font-medium">{req.senderCompany?.name || "Unbekanntes Unternehmen"}</span>
                         <span className="text-xs text-gray-500 ml-auto">
+                            
                             {req.status === "PENDING" && "Wartet auf Ihre Bestätigung"}
                             {req.status === "ACCEPTED_BY_RECEIVER" && "Sie haben bereits bestätigt"}
                         </span>
+                        {req.status === "ACCEPTED_BY_SENDER" && (
+                            <>
+                                <button
+                                    onClick={async () => {
+                                        try {
+                                            const res = await fetch(`/api/matching/accept`, {
+                                                method: "POST",
+                                                headers: { "Content-Type": "application/json" },
+                                                body: JSON.stringify({ matchId: req.id, userId: session.user.id }),
+                                            });
+                                            if (res.ok) {
+                                                // UI sofort aktualisieren
+                                                setRequests(prev => prev.filter(r => r.id !== req.id));
+                                                // andere Widgets aktualisieren
+                                                window.dispatchEvent(new Event("matching-requests-updated"));
+                                                window.dispatchEvent(new Event("matches-updated"));
+                                            }
+                                        } catch {}
+                                    }}
+                                    className="ml-2 text-green-600 hover:underline text-xs"
+                                    title="Annehmen"
+                                >
+                                    Annehmen
+                                </button>
+                                <button
+                                    onClick={async () => {
+                                        try {
+                                            const res = await fetch(`/api/matching/accept`, {
+                                                method: "DELETE",
+                                                headers: { "Content-Type": "application/json" },
+                                                body: JSON.stringify({ matchId: req.id }),
+                                            });
+                                            if (res.ok) {
+                                                setRequests(prev => prev.filter(r => r.id !== req.id));
+                                                window.dispatchEvent(new Event("matching-requests-updated"));
+                                            }
+                                        } catch {}
+                                    }}
+                                    className="ml-2 text-red-600 hover:underline text-xs"
+                                    title="Ablehnen"
+                                >
+                                    Ablehnen
+                                </button>
+                            </>
+                        )}
                     </li>
                 ))}
             </ul>

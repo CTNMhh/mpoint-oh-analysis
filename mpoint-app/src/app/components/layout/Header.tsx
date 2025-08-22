@@ -101,7 +101,7 @@ const Header = () => {
               href="/marketplace"
               className="text-gray-700 hover:text-[rgb(228,25,31)] font-medium transition-colors"
             >
-              Marktplatz
+              Börse
             </Link>
             <Link
               href="/events"
