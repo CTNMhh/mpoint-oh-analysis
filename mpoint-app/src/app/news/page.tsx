@@ -130,7 +130,7 @@ export default function NewsPage() {
                     </div>
                     <p className="text-gray-600 line-clamp-3 mb-2">{n.shortText}</p>
                   </div>
-                  <div className="mt-2">
+                  <div className="mt-6 text-center">
                     <Link href={`/news/${n.id}`} className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all">
                       Mehr erfahren <ArrowRight className="w-4 h-4" />
                     </Link>
