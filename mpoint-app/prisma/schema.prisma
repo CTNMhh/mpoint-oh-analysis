@@ -80,18 +80,21 @@ model User {
   // Relations
   company             Company[]
   matchingPreferences MatchingPreferences?
-  sentMatches         Match[]              @relation("MatchSender")
-  receivedMatches     Match[]              @relation("MatchReceiver")
-  activities          Activity[]
-
+  sentMatches     Match[] @relation("MatchSender")
+  receivedMatches Match[] @relation("MatchReceiver")
+  activities      Activity[]
   // Relation zu MarketplaceRequests
   marketplaceRequests MarketplaceRequest[]
-  interactions        Interaction[]
-  bookings            Booking[] // <-- Opposite relation for Booking
-  events              Event[] // <-- Opposite relation for Event
-  eventActivityLogs   EventActivityLog[]   @relation("UserEventLogs")
+  interactions    Interaction[]
+  bookings       Booking[] // <-- Opposite relation for Booking
+  events         Event[]   // <-- Opposite relation for Event
+  eventActivityLogs   EventActivityLog[] @relation("UserEventLogs")
+  carts    Cart[]    // Ein User kann mehrere Warenkörbe haben
+  transactions Transaction[] // <--- Gegenrelation für Transaction
   MarketplaceEntry    MarketplaceEntry[]
 }
+
+
 
 enum UserRole {
   FREE
@@ -361,13 +364,31 @@ model Match {
   senderCompany   Company @relation("CompanySender", fields: [senderCompanyId], references: [id])
   receiverCompany Company @relation("CompanyReceiver", fields: [receiverCompanyId], references: [id])
 
-  interactions Interaction[]
+  interactions    Interaction[]
+  messages        Message[]   // <-- Opposite relation for Message
 
   @@unique([senderUserId, receiverUserId])
   @@index([status])
   @@index([matchScore])
   @@index([matchedAt])
   @@index([expiresAt])
+}
+
+model Message {
+  id                 String   @id @default(uuid())
+  matchId            String
+  match              Match    @relation(fields: [matchId], references: [id])
+
+  senderUserId       String
+  senderCompanyId    String
+  receiverUserId     String
+  receiverCompanyId  String
+
+  content            String
+  createdAt          DateTime @default(now())
+  readAt             DateTime?
+
+  @@index([matchId, createdAt])
 }
 
 model Event {
@@ -381,7 +402,8 @@ model Event {
   endTime         String?
   location        String
   ventType        String? // Veranstaltungstyp als Textfeld
-  price           Float     @default(0)
+  price           Float   @default(0)
+  chargeFree      Boolean @default(false)  // NEU: Kostenfrei-Flag
   maxParticipants Int?
   bookedCount     Int       @default(0)
   organizer       String?
@@ -391,12 +413,12 @@ model Event {
   updatedAt       DateTime  @updatedAt
 
   // EVENT STATUS FELDER:
-  status       EventStatus @default(DRAFT)
-  isPublished  Boolean     @default(false)
-  isActive     Boolean     @default(true)
-  publishedAt  DateTime?
-  cancelledAt  DateTime?
-  cancelReason String?
+  status          EventStatus @default(DRAFT)
+  isPublished     Boolean     @default(false)
+  isActive        Boolean     @default(false)
+  publishedAt     DateTime?
+  cancelledAt     DateTime?
+  cancelReason    String?
 
   // Relation zum User (Veranstalter)
   userId String
@@ -406,28 +428,43 @@ model Event {
   bookings Booking[]
 
   // Relation zu Activity Logs
-  activityLogs EventActivityLog[] @relation("EventActivityLogs")
+  activityLogs        EventActivityLog[] @relation("EventActivityLogs")
+
+  // Gegenrelation für CartItem
+  cartItems CartItem[]
 
   @@index([userId])
+  @@index([chargeFree])  // NEU: Index für Performance
 }
 
 model Booking {
-  id        String   @id @default(uuid())
-  eventId   String
-  userId    String?
-  name      String
-  email     String
-  spaces    Int      @default(1)
-  comment   String?
-  createdAt DateTime @default(now())
-
-  // Relationen
-  event        Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  User         User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
-  activityLogs EventActivityLog[] @relation("BookingActivityLogs")
-
+  id            String   @id @default(uuid())
+  eventId       String
+  userId        String?
+  name          String
+  email         String
+  spaces        Int      @default(1)
+  comment       String?
+  bookingStatus BookingStatus @default(PENDING)
+  pricePerSpace Float    @default(0)
+  totalAmount   Float    @default(0)
+  currency      String   @default("EUR")
+  paymentStatus PaymentStatus @default(PENDING)
+  paymentMethod String?
+  transactionId String?
+  refundedAmount  Float?
+  refundedAt      DateTime?
+  refundReason    String?
+  updatedAt     DateTime @default(now())
+  createdAt     DateTime @default(now())
+  event         Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  User          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  activityLogs  EventActivityLog[] @relation("BookingActivityLogs")
+  transaction   Transaction? @relation(fields: [transactionId], references: [id])
   @@index([eventId])
   @@index([userId])
+  @@index([paymentStatus])
+  @@index([email])
 }
 
 // ========== INTERACTION TRACKING ==========
@@ -472,6 +509,29 @@ model Activity {
   @@index([createdAt])
 }
 
+// ========== NEWS MODEL ==========
+model News {
+  id          String    @id @default(uuid())
+  title       String
+  subtitle    String?
+  shortText   String    @db.Text
+  longText    String    @db.Text
+  imageUrl    String?
+  author      String?
+  category    NewsCategory @default(ALLGEMEIN)
+  tags        String[]
+  publishDate DateTime  @default(now())
+  isPublished Boolean   @default(false)
+  viewCount   Int      @default(0)
+  readTime    String?  // Lesedauer z.B. "5 Min."
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+  @@index([publishDate])
+  @@index([isPublished])
+}
+
 // ========== ENUMS ==========
 enum EmployeeRange {
   SOLO // 1
@@ -488,7 +548,7 @@ model Admin {
   firstName String
   lastName  String
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now())
 }
 
 enum RevenueRange {
@@ -623,6 +683,20 @@ enum ActivityType {
   GROWTH_MILESTONE
 }
 
+enum NewsCategory {
+  ALLGEMEIN
+  WIRTSCHAFT
+  TECHNOLOGIE
+  DIGITALISIERUNG
+  NACHHALTIGKEIT
+  EVENTS
+  NETZWERK
+  FOERDERUNG
+  POLITIK
+}
+
+
+
 // ========== EVENT ACTIVITY LOGGING SYSTEM ==========
 
 // Event Activity Log - alle Event-bezogenen Aktionen
@@ -741,4 +815,59 @@ enum DeviceType {
   MOBILE
   TABLET
   UNKNOWN
+}
+
+enum PaymentStatus {
+  NOT_REQUIRED      // Kostenloses Event
+  PENDING          // Zahlung ausstehend
+  PAID             // Bezahlt
+  PARTIALLY_REFUNDED // Teilweise erstattet
+  REFUNDED         // Vollständig erstattet
+  FAILED           // Zahlung fehlgeschlagen
+  CANCELLED        // Storniert
+}
+
+enum PaymentMethod {
+  BANK_TRANSFER
+  INVOICE
+  PAYPAL
+}
+
+model Cart {
+  id        String     @id @default(uuid())
+  userId    String
+  user      User       @relation(fields: [userId], references: [id])
+  items     CartItem[] // NEU: Relation zu CartItem
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        String   @id @default(uuid())
+  cartId    String
+  cart      Cart     @relation(fields: [cartId], references: [id])
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id])
+  spaces    Int      // Anzahl Tickets
+  createdAt DateTime @default(now())
+}
+
+model Transaction {
+  id                    String   @id @default(uuid())
+  userId                String
+  user                  User     @relation(fields: [userId], references: [id])
+  amount                Float
+  currency              String   @default("EUR")
+  paymentMethod         String
+  paymentStatus         PaymentStatus
+  createdAt             DateTime @default(now())
+  bookings              Booking[]
+  externalTransactionId String?  @unique
+  paypalResponse        Json?    // NEU: PayPal-Antwort als JSON
+}
+
+enum BookingStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
 }

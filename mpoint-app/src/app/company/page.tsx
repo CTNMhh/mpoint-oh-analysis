@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import ProgressBar from "./ProgressBar";
 import ProfilePage from "../profile/page";
+import BookedEventsTab from "./BookedEventsTab";
 
 interface CompanyData {
   // Allow dynamic string keys for flexible field access
@@ -352,6 +353,7 @@ export default function CompanyProfilePage() {
     { id: "business", label: "Geschäftsmodell", icon: Target },
     { id: "growth", label: "Wachstum", icon: TrendingUp },
     { id: "matching", label: "Matching", icon: Users },
+    { id: "booked-events", label: "Gebuchte Events", icon: Save }, // NEU
   ];
 
   return (
@@ -450,6 +452,13 @@ export default function CompanyProfilePage() {
               />
             )}
 
+            {activeTab === "booked-events" && session?.user?.id && (
+              <BookedEventsTab userId={session.user.id} />
+            )}
+            {activeTab === "booked-events" && !session?.user?.id && (
+              <div className="py-8 text-center text-gray-500">Benutzerdaten werden geladen...</div>
+            )}
+
             {activeTab === "profile" && (
               profileLoading ? (
                 <div className="text-center py-8">Lädt...</div>
@@ -465,32 +474,34 @@ export default function CompanyProfilePage() {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex justify-end gap-4">
-            <button
-              type="button"
-              onClick={() => router.push("/dashboard")}
-              className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              Abbrechen
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="px-6 py-3 bg-[rgb(228,25,31)] text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2 disabled:opacity-50"
-            >
-              {saving ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Speichern...
-                </>
-              ) : (
-                <>
-                  <Save className="w-4 h-4" />
-                  Speichern
-                </>
-              )}
-            </button>
-          </div>
+          {activeTab !== "booked-events" && (
+            <div className="flex justify-end gap-4">
+              <button
+                type="button"
+                onClick={() => router.push("/dashboard")}
+                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Abbrechen
+              </button>
+              <button
+                type="submit"
+                disabled={saving}
+                className="px-6 py-3 bg-[rgb(228,25,31)] text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+              >
+                {saving ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Speichern...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" />
+                    Speichern
+                  </>
+                )}
+              </button>
+            </div>
+          )}
         </form>
 
       </div>

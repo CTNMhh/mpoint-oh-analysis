@@ -5,6 +5,8 @@ import MatchingList from "../../dashboard/MatchingList";
 import MarketplaceSection from "../../components/marketplace/MarketplaceSection";
 import OutgoingRequests from "../../components/matche/MatchingRequests";
 import IncomingRequests from "../../components/matche/MatchingRequestsReceived";
+import ConnectedCompanies from "../../components/matche/ConnectedCompanies";
+import CompanySearch from "../../components/matche/CompanySearch";
 
 export default function MatchingMarketplacePage() {
  
@@ -40,61 +42,7 @@ export default function MatchingMarketplacePage() {
           
             </section>
 
-            {/* All Members */}
-            <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                  <Users className="w-5 h-5 text-gray-400" />
-                  Mitglieder & Unternehmen finden
-                </h2>
-                <button className="text-sm text-[#e60000] font-medium hover:underline">
-                  Alle anzeigen
-                </button>
-              </div>
-              
-              <div className="grid sm:grid-cols-2 gap-4">
-                <MemberCard 
-                  category="Wissenstransfer"
-                  company="frauenschmidt AG"
-                  location="München"
-                  size="11-20 Mitarbeiter"
-                  matchPercentage={74}
-                  tags={["Nachhaltigkeit", "Innovation"]}
-                  matchId="1"
-                  userId="currentUser"
-                />
-                <MemberCard 
-                  category="Networking"
-                  company="bauer.tech"
-                  location="Frankfurt"
-                  size="21-50 Mitarbeiter"
-                  matchPercentage={68}
-                  tags={["Digitalisierung", "KI"]}
-                  matchId="2"
-                  userId="currentUser"
-                />
-                <MemberCard 
-                  category="Produktion"
-                  company="weber industries"
-                  location="Stuttgart"
-                  size="50+ Mitarbeiter"
-                  matchPercentage={65}
-                  tags={["Industrie 4.0", "Export"]}
-                  matchId="3"
-                  userId="currentUser"
-                />
-                <MemberCard 
-                  category="E-Commerce"
-                  company="digital.shop24"
-                  location="Köln"
-                  size="10-20 Mitarbeiter"
-                  matchPercentage={62}
-                  tags={["Online-Handel", "B2C"]}
-                  matchId="4"
-                  userId="currentUser"
-                />
-              </div>
-            </section>
+        <CompanySearch />
           </div>
 
           {/* Right Column - Communication & Marketplace */}
@@ -102,6 +50,8 @@ export default function MatchingMarketplacePage() {
               <IncomingRequests />
 
                  <OutgoingRequests />
+
+                 <ConnectedCompanies />
 
 
             {/* Marketplace */}
