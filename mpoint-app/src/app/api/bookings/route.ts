@@ -61,17 +61,24 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const eventId = searchParams.get("eventId");
+  const userId = searchParams.get("userId");
 
-  if (!eventId) {
-    return NextResponse.json({ error: "eventId fehlt" }, { status: 400 });
+  if (!userId) {
+    return NextResponse.json({ error: "userId fehlt" }, { status: 400 });
   }
 
   try {
+    const where: any = { userId };
+    if (eventId) {
+      where.eventId = eventId;
+    }
+
     const bookings = await prisma.booking.findMany({
-      where: { eventId },
+      where,
       orderBy: { createdAt: "asc" },
+      include: { event: true }
     });
-    return NextResponse.json(bookings, { status: 200 });
+    return NextResponse.json({ bookings }, { status: 200 });
   } catch (error) {
     return NextResponse.json({ error: "Fehler beim Laden der Buchungen" }, { status: 500 });
   }

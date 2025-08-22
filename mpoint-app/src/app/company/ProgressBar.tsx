@@ -34,7 +34,7 @@ export default function ProgressBar({
 
   if (loading) {
     return (
-      <div className={`${bgClassName} rounded-lg p-4 shadow-sm mb-4`}>
+      <div className={`${bgClassName} border border-gray-200 rounded-lg p-4 hover:shadow-md mb-4`}>
         <div className="animate-pulse h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
         <div className="w-full bg-gray-200 rounded-full h-2 mb-2"></div>
       </div>
@@ -42,7 +42,7 @@ export default function ProgressBar({
   }
 
   return (
-    <div className={`${bgClassName} rounded-lg p-4 shadow-sm mb-4`}>
+    <div className={`${bgClassName} border border-gray-200 rounded-lg p-4 hover:shadow-md mb-4`}>
       <div className="flex items-center justify-between text-sm mb-2">
         <span className="text-gray-600">Profil-Vollständigkeit</span>
         <span className="font-medium text-[rgb(228,25,31)]">

@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Menu, X, ChevronDown, Bell, User, Search } from "lucide-react";
+import { Menu, X, ChevronDown, Bell, User, Search, ShoppingCart } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 import NotificationsDropdown from "../notifications/NotificationsDropdown";
 
@@ -99,10 +99,10 @@ const Header = () => {
               News
             </Link>
             <Link
-              href="/marketplace"
+              href="/boerse"
               className="text-gray-700 hover:text-[rgb(228,25,31)] font-medium transition-colors"
             >
-              Marktplatz
+              Börse
             </Link>
             <Link
               href="/events"
@@ -192,7 +192,17 @@ const Header = () => {
                   <Search className="w-5 h-5 text-gray-600" />
                 </button>
                 {/* Notifications */}
-                <NotificationsDropdown />
+                                <NotificationsDropdown />
+                {/* Warenkorb-Icon */}
+                <Link href="/cart" className="relative group">
+                  <ShoppingCart className="w-6 h-6 text-gray-600 hover:text-[rgb(228,25,31)] transition-colors" />
+                  {/* Beispiel: cartCount aus State oder Props */}
+                  {typeof cartCount === "number" && cartCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full px-2 py-0.5">
+                      {cartCount}
+                    </span>
+                  )}
+                </Link>
                 {/* Profile Dropdown */}
                 <div className="relative" ref={profileRef}>
                   <button

@@ -21,7 +21,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     return NextResponse.json({ error: "Buchung nicht gefunden" }, { status: 404 });
   }
 
-  // Nur eigene Buchung löschen
+  // Nur eigene Buchung stornieren
   if (booking.userId !== session.user.id) {
     return NextResponse.json({ error: "Keine Berechtigung" }, { status: 403 });
   }
@@ -32,8 +32,14 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     // await refundPayment(booking.paymentId);
   }
 
-  // Buchung löschen
-  await prisma.booking.delete({ where: { id: params.id } });
+  // Buchung stornieren (Status ändern)
+  await prisma.booking.update({
+    where: { id: params.id },
+    data: {
+      bookingStatus: "CANCELLED",
+      paymentStatus: "CANCELLED" // ← Status auch hier setzen!
+    }
+  });
 
   // Teilnehmerzahl im Event verringern
   await prisma.event.update({

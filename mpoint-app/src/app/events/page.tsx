@@ -96,10 +96,25 @@ async function handlePayment(bookingId: string) {
   alert('Payment-Integration kommt bald!');
 }
 
+function enrichEventWithBookingInfo(event: EventType) {
+  const bookedSpaces = event.bookedCount || 0;
+  const maxParticipants = event.maxParticipants || 0;
+  const availableSpaces = maxParticipants > 0 ? Math.max(0, maxParticipants - bookedSpaces) : 0;
+  const bookingPercentage = maxParticipants > 0 ? (bookedSpaces / maxParticipants) * 100 : 0;
+  const isFullyBooked = availableSpaces === 0 && maxParticipants > 0;
+  return {
+    ...event,
+    bookedSpaces,
+    maxParticipants,
+    availableSpaces,
+    bookingPercentage,
+    isFullyBooked,
+  };
+}
+
 export default function EventsPage() {
   const { status, data: session } = useSession();
-  const [events, setEvents] = useState<EventWithBookingInfo[]>([]);
-  const [bookings, setBookings] = useState<BookingType[]>([]);
+  const [events, setEvents] = useState<EventType[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'calendar' | 'list'>('grid');
@@ -133,38 +148,12 @@ export default function EventsPage() {
       const res = await fetch("/api/events");
       if (res.ok) {
         const data = await res.json();
-        // Ergänze Events mit Buchungsinformationen unter Verwendung der Helper-Funktion
-        const eventsWithBookings: EventWithBookingInfo[] = data.map((event: EventType) => {
-          // Aktualisiere bookedCount mit den tatsächlichen Buchungszahlen
-          const updatedEvent = {
-            ...event,
-            bookedCount: eventBookingCounts[event.id] || event.bookedCount || 0
-          };
-          // Verwende Helper-Funktion für erweiterte Informationen
-          return getEventAvailability(updatedEvent);
-        });
-        setEvents(eventsWithBookings);
+        setEvents(data);
       }
       setLoading(false);
     }
-    if (status === "authenticated") {
-      fetchEvents();
-    }
-  }, [status, eventBookingCounts]);
-
-  // Lade alle Buchungen des Users
-  useEffect(() => {
-    async function fetchBookings() {
-      const res = await fetch("/api/my-bookings");
-      if (res.ok) {
-        const data = await res.json();
-        setBookings(data);
-      }
-    }
-    if (status === "authenticated") {
-      fetchBookings();
-    }
-  }, [status]);
+    fetchEvents();
+  }, []); // <--- nach Buchung hier erneut aufrufen
 
   // Click-Handler um Jahr-Picker zu schließen
   useEffect(() => {
@@ -308,16 +297,6 @@ export default function EventsPage() {
     return days;
   };
 
-  // Handler für das Löschen einer Buchung
-  const handleDeleteBooking = async (bookingId: string) => {
-    await fetch(`/api/bookings/${bookingId}`, { method: "DELETE" });
-    const res = await fetch("/api/my-bookings");
-    if (res.ok) {
-      const data = await res.json();
-      setBookings(data);
-    }
-  };
-
   const visibleEvents = events.filter(
     (event) => event.isActive && event.status !== EventStatus.DRAFT
   );
@@ -459,59 +438,62 @@ export default function EventsPage() {
                     Keine Events verfügbar.
                   </div>
                 ) : (
-                  visibleEvents.map((event) => (
-                    <div key={event.id} className="p-6 border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h2 className="text-xl font-bold mb-2">
-                            {event.title}
-                            {(
-                              event.user.email === session?.user?.email
-                                ? <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-semibold">{event.status}</span>
-                                : (event.status === EventStatus.FULL || event.status === EventStatus.CANCELLED)
+                  visibleEvents.map((event) => {
+                    const enrichedEvent = enrichEventWithBookingInfo(event);
+                    return (
+                      <div key={event.id} className="p-6 border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <h2 className="text-xl font-bold mb-2">
+                              {event.title}
+                              {(
+                                event.user.email === session?.user?.email
                                   ? <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-semibold">{event.status}</span>
-                                  : null
-                            )}
-                          </h2>
-
-                          {/* NEU: Platz-Verfügbarkeit in Listen-Ansicht */}
-                          <div className="mb-3">
-                            <PlaceAvailability event={event} />
-                          </div>
-
-                          <div className="flex flex-wrap gap-4 text-sm text-gray-600 mb-2">
-                            <span>
-                              📅 {new Date(event.startDate).toLocaleString()}
-                              {event.endDate && (
-                                <> – {new Date(event.endDate).toLocaleString()}</>
+                                  : (event.status === EventStatus.FULL || event.status === EventStatus.CANCELLED)
+                                    ? <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-semibold">{event.status}</span>
+                                    : null
                               )}
-                              {" "}– {event.location}
-                            </span>
-                            {event.chargeFree ? (
-                              <span className="text-green-700 font-semibold">✓ Kostenfrei</span>
-                            ) : event.price > 0 ? (
-                              <span>💰 {event.price} €</span>
-                            ) : null}
-                            <span>👤 {event.user.firstName} {event.user.lastName}</span>
-                          </div>
-                          <p className="text-gray-700 line-clamp-2">{event.description}</p>
-                          <div className="flex flex-wrap gap-2 mt-2">
-                            {event.categories.map((cat) => (
-                              <span key={cat} className="bg-gray-100 text-xs px-2 py-1 rounded">
-                                {cat}
+                            </h2>
+
+                            {/* NEU: Platz-Verfügbarkeit in Listen-Ansicht */}
+                            <div className="mb-3">
+                              <PlaceAvailability event={enrichedEvent} />
+                            </div>
+
+                            <div className="flex flex-wrap gap-4 text-sm text-gray-600 mb-2">
+                              <span>
+                                📅 {new Date(event.startDate).toLocaleString()}
+                                {event.endDate && (
+                                  <> – {new Date(event.endDate).toLocaleString()}</>
+                                )}
+                                {" "}– {event.location}
                               </span>
-                            ))}
+                              {event.chargeFree ? (
+                                <span className="text-green-700 font-semibold">✓ Kostenfrei</span>
+                              ) : event.price > 0 ? (
+                                <span>💰 {event.price} €</span>
+                              ) : null}
+                              <span>👤 {event.user.firstName} {event.user.lastName}</span>
+                            </div>
+                            <p className="text-gray-700 line-clamp-2">{event.description}</p>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {event.categories.map((cat) => (
+                                <span key={cat} className="bg-gray-100 text-xs px-2 py-1 rounded">
+                                  {cat}
+                                </span>
+                              ))}
+                            </div>
                           </div>
+                          <Link
+                            href={`/events/${event.id}`}
+                            className="ml-4 bg-[rgb(228,25,31)] text-white px-4 py-2 rounded hover:bg-red-700 transition-colors text-sm font-semibold"
+                          >
+                            Details
+                          </Link>
                         </div>
-                        <Link
-                          href={`/events/${event.id}`}
-                          className="ml-4 bg-[rgb(228,25,31)] text-white px-4 py-2 rounded hover:bg-red-700 transition-colors text-sm font-semibold"
-                        >
-                          Details
-                        </Link>
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
             </div>
@@ -531,78 +513,81 @@ export default function EventsPage() {
               </p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-                {myEvents.map((event) => (
-                  <div key={event.id} className="bg-white rounded-xl shadow p-6 flex flex-col">
-                    {event.imageUrl && (
-                      <img
-                        src={event.imageUrl}
-                        alt={event.title}
-                        className="rounded-lg mb-4 h-40 object-cover"
-                      />
-                    )}
-                    <h2 className="text-xl font-bold mb-2">
-                      {event.title}
-                      {(
-                        event.user.email === session?.user?.email
-                          ? <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-semibold">{event.status}</span>
-                          : (event.status === EventStatus.FULL || event.status === EventStatus.CANCELLED)
+                {myEvents.map((event) => {
+                  const enrichedEvent = enrichEventWithBookingInfo(event);
+                  return (
+                    <div key={event.id} className="bg-white rounded-xl shadow p-6 flex flex-col">
+                      {event.imageUrl && (
+                        <img
+                          src={event.imageUrl}
+                          alt={event.title}
+                          className="rounded-lg mb-4 h-40 object-cover"
+                        />
+                      )}
+                      <h2 className="text-xl font-bold mb-2">
+                        {event.title}
+                        {(
+                          event.user.email === session?.user?.email
                             ? <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-semibold">{event.status}</span>
-                            : null
-                      )}
-                    </h2>
+                            : (event.status === EventStatus.FULL || event.status === EventStatus.CANCELLED)
+                              ? <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-semibold">{event.status}</span>
+                              : null
+                        )}
+                      </h2>
 
-                    {/* NEU: Platz-Verfügbarkeit in Grid-Ansicht */}
-                    <div className="mb-3">
-                      <PlaceAvailability event={event} />
-                    </div>
+                      {/* NEU: Platz-Verfügbarkeit in Grid-Ansicht */}
+                      <div className="mb-3">
+                        <PlaceAvailability event={enrichedEvent} />
+                      </div>
 
-                    <div className="text-gray-600 mb-2">
-                      {new Date(event.startDate).toLocaleString()}
-                      {event.endDate && (
-                        <> – {new Date(event.endDate).toLocaleString()}</>
-                      )}
-                      {" "}– {event.location}
-                    </div>
-                    {!event.chargeFree && event.price > 0 ? (
-                      <div className="text-gray-700 font-medium mb-2">
-                        Preis: <span className="font-semibold">{event.price} €</span>
+                      <div className="text-gray-600 mb-2">
+                        {new Date(event.startDate).toLocaleString()}
+                        {event.endDate && (
+                          <> – {new Date(event.endDate).toLocaleString()}</>
+                        )}
+                        {" "}– {event.location}
                       </div>
-                    ) : event.chargeFree ? (
-                      <div className="text-green-700 font-bold mb-2">
-                        ✓ Kostenfrei
+                      {!event.chargeFree && event.price > 0 ? (
+                        <div className="text-gray-700 font-medium mb-2">
+                          Preis: <span className="font-semibold">{event.price} €</span>
+                        </div>
+                      ) : event.chargeFree ? (
+                        <div className="text-green-700 font-bold mb-2">
+                          ✓ Kostenfrei
+                        </div>
+                      ) : null}
+                      <div className="text-gray-500 text-sm mb-2">
+                        Veranstalter:{" "}
+                        <span className="font-semibold">{event.ventType}</span>
                       </div>
-                    ) : null}
-                    <div className="text-gray-500 text-sm mb-2">
-                      Veranstalter:{" "}
-                      <span className="font-semibold">{event.ventType}</span>
-                    </div>
-                    <div className="mb-4 line-clamp-3">{event.description}</div>
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      {event.categories.map((cat) => (
-                        <span
-                          key={cat}
-                          className="bg-gray-100 text-xs px-2 py-1 rounded"
+                      <div className="mb-4 line-clamp-3">{event.description}</div>
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {event.categories.map((cat) => (
+                          <span
+                            key={cat}
+                            className="bg-gray-100 text-xs px-2 py-1 rounded"
+                          >
+                            {cat}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="mt-auto space-y-2">
+                        <Link
+                          href={`/events/${event.id}`}
+                          className="bg-[rgb(228,25,31)] text-white px-4 py-2 rounded hover:bg-red-700 transition-colors text-center block"
                         >
-                          {cat}
-                        </span>
-                      ))}
+                          Details & Anmeldung
+                        </Link>
+                        <Link
+                          href={`/events/${event.id}/edit`}
+                          className="px-4 py-2 bg-yellow-400 text-gray-900 font-semibold shadow hover:bg-yellow-500 transition-colors text-center block"
+                        >
+                          Event bearbeiten
+                        </Link>
+                      </div>
                     </div>
-                    <div className="mt-auto space-y-2">
-                      <Link
-                        href={`/events/${event.id}`}
-                        className="bg-[rgb(228,25,31)] text-white px-4 py-2 rounded hover:bg-red-700 transition-colors text-center block"
-                      >
-                        Details & Anmeldung
-                      </Link>
-                      <Link
-                        href={`/events/${event.id}/edit`}
-                        className="px-4 py-2 bg-yellow-400 text-gray-900 font-semibold shadow hover:bg-yellow-500 transition-colors text-center block"
-                      >
-                        Event bearbeiten
-                      </Link>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
 
@@ -616,178 +601,81 @@ export default function EventsPage() {
               </p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-                {availableEvents.map((event) => (
-                  <div key={event.id} className="bg-white rounded-xl shadow p-6 flex flex-col">
-                    {event.imageUrl && (
-                      <img
-                        src={event.imageUrl}
-                        alt={event.title}
-                        className="rounded-lg mb-4 h-40 object-cover"
-                      />
-                    )}
-                    <h2 className="text-xl font-bold mb-2">
-                      {event.title}
-                      {(event.status === EventStatus.FULL || event.status === EventStatus.CANCELLED) && (
-                        <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-semibold">
-                          {event.status}
-                        </span>
+                {availableEvents.map((event) => {
+                  const enrichedEvent = enrichEventWithBookingInfo(event);
+                  return (
+                    <div key={event.id} className="bg-white rounded-xl shadow p-6 flex flex-col">
+                      {event.imageUrl && (
+                        <img
+                          src={event.imageUrl}
+                          alt={event.title}
+                          className="rounded-lg mb-4 h-40 object-cover"
+                        />
                       )}
-                    </h2>
+                      <h2 className="text-xl font-bold mb-2">
+                        {event.title}
+                        {(event.status === EventStatus.FULL || event.status === EventStatus.CANCELLED) && (
+                          <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-semibold">
+                            {event.status}
+                          </span>
+                        )}
+                      </h2>
 
-                    {/* NEU: Platz-Verfügbarkeit für verfügbare Events */}
-                    <div className="mb-3">
-                      <PlaceAvailability event={event} />
-                    </div>
+                      {/* NEU: Platz-Verfügbarkeit für verfügbare Events */}
+                      <div className="mb-3">
+                        <PlaceAvailability event={enrichedEvent} />
+                      </div>
 
-                    <div className="text-gray-600 mb-2">
-                      {new Date(event.startDate).toLocaleString()}
-                      {event.endDate && (
-                        <> – {new Date(event.endDate).toLocaleString()}</>
-                      )}
-                      {" "}– {event.location}
-                    </div>
-                    <div className="text-gray-700 font-medium mb-2">
-                      Preis:{" "}
-                      {event.price === 0 ? (
-                        <span className="text-green-700 font-semibold">Kostenlos</span>
-                      ) : (
-                        <span className="font-semibold">{event.price} €</span>
-                      )}
-                    </div>
-                    <div className="text-gray-500 text-sm mb-2">
-                      Veranstalter:{" "}
-                      <span className="font-semibold">{event.ventType}</span>
-                    </div>
-                    <div className="mb-4 line-clamp-3">{event.description}</div>
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      {event.categories.map((cat) => (
-                        <span
-                          key={cat}
-                          className="bg-gray-100 text-xs px-2 py-1 rounded"
+                      <div className="text-gray-600 mb-2">
+                        {new Date(event.startDate).toLocaleString()}
+                        {event.endDate && (
+                          <> – {new Date(event.endDate).toLocaleString()}</>
+                        )}
+                        {" "}– {event.location}
+                      </div>
+                      <div className="text-gray-700 font-medium mb-2">
+                        Preis:{" "}
+                        {event.price === 0 ? (
+                          <span className="text-green-700 font-semibold">Kostenlos</span>
+                        ) : (
+                          <span className="font-semibold">{event.price} €</span>
+                        )}
+                      </div>
+                      <div className="text-gray-500 text-sm mb-2">
+                        Veranstalter:{" "}
+                        <span className="font-semibold">{event.ventType}</span>
+                      </div>
+                      <div className="mb-4 line-clamp-3">{event.description}</div>
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {event.categories.map((cat) => (
+                          <span
+                            key={cat}
+                            className="bg-gray-100 text-xs px-2 py-1 rounded"
+                          >
+                            {cat}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="mt-auto">
+                        <Link
+                          href={`/events/${event.id}`}
+                          className={`${
+                            event.isFullyBooked
+                              ? 'bg-gray-400 cursor-not-allowed'
+                              : 'bg-[rgb(228,25,31)] hover:bg-red-700'
+                          } text-white px-4 py-2 rounded transition-colors text-center block`}
                         >
-                          {cat}
-                        </span>
-                      ))}
+                          {event.isFullyBooked ? 'Ausgebucht' : 'Details & Anmeldung'}
+                        </Link>
+                      </div>
                     </div>
-                    <div className="mt-auto">
-                      <Link
-                        href={`/events/${event.id}`}
-                        className={`${
-                          event.isFullyBooked
-                            ? 'bg-gray-400 cursor-not-allowed'
-                            : 'bg-[rgb(228,25,31)] hover:bg-red-700'
-                        } text-white px-4 py-2 rounded transition-colors text-center block`}
-                      >
-                        {event.isFullyBooked ? 'Ausgebucht' : 'Details & Anmeldung'}
-                      </Link>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </>
         )}
 
-        {/* Meine gebuchten Events - Tabelle bleibt unverändert */}
-        <h2 className="text-2xl font-bold mb-6 text-gray-900">
-          Meine gebuchten Events
-        </h2>
-        {bookings.length === 0 ? (
-          <div className="text-gray-500 mb-12">Du hast noch keine Events gebucht.</div>
-        ) : (
-          <div className="mb-12">
-            <table className="w-full border rounded-xl overflow-hidden shadow bg-white">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="py-3 px-4 text-left font-semibold text-gray-700">Titel</th>
-                  <th className="py-3 px-4 text-left font-semibold text-gray-700">Datum</th>
-                  <th className="py-3 px-4 text-left font-semibold text-gray-700">Ort</th>
-                  <th className="py-3 px-4 text-left font-semibold text-gray-700">Plätze</th>
-                  <th className="py-3 px-4 text-left font-semibold text-gray-700">Preis/Platz</th>
-                  <th className="py-3 px-4 text-left font-semibold text-gray-700">Gesamt</th>
-                  <th className="py-3 px-4 text-left font-semibold text-gray-700">Status</th>
-                  <th className="py-3 px-4 text-left font-semibold text-gray-700">Aktionen</th>
-                </tr>
-              </thead>
-              <tbody>
-                {bookings.map((booking) => (
-                  <tr key={booking.id} className="border-t hover:bg-gray-50">
-                    <td className="py-2 px-4">{booking.event.title}</td>
-                    <td className="py-2 px-4">
-                      {new Date(booking.event.startDate).toLocaleString()}
-                    </td>
-                    <td className="py-2 px-4">{booking.event.location}</td>
-                    <td className="py-2 px-4 text-center">{booking.spaces}</td>
-                    <td className="py-2 px-4">
-                      {booking.pricePerSpace === 0 ? (
-                        <span className="text-green-700 font-semibold">Kostenfrei</span>
-                      ) : (
-                        <span>{booking.pricePerSpace.toFixed(2)} €</span>
-                      )}
-                    </td>
-                    <td className="py-2 px-4 font-semibold">
-                      {booking.totalAmount === 0 ? (
-                        <span className="text-green-700">Kostenfrei</span>
-                      ) : (
-                        <span>{booking.totalAmount.toFixed(2)} €</span>
-                      )}
-                    </td>
-                    <td className="py-2 px-4">
-                      <PaymentStatusBadge status={booking.paymentStatus} />
-                    </td>
-                    <td className="py-2 px-4">
-                      <div className="flex gap-2">
-                        <Link
-                          href={`/events/${booking.event.id}`}
-                          className="text-blue-600 underline text-sm"
-                        >
-                          Details
-                        </Link>
-                        {booking.paymentStatus === 'PENDING' && booking.totalAmount > 0 && (
-                          <button
-                            onClick={() => handlePayment(booking.id)}
-                            className="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600"
-                          >
-                            Bezahlen
-                          </button>
-                        )}
-                        {(booking.paymentStatus === 'NOT_REQUIRED' ||
-                          booking.paymentStatus === 'PAID') && (
-                          <button
-                            onClick={() => handleDeleteBooking(booking.id)}
-                            className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-700"
-                          >
-                            Stornieren
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot className="bg-gray-100 font-semibold">
-                <tr>
-                  <td colSpan={3} className="py-3 px-4">Gesamt</td>
-                  <td className="py-3 px-4 text-center">
-                    {bookings.reduce((sum, b) => sum + b.spaces, 0)}
-                  </td>
-                  <td className="py-3 px-4"></td>
-                  <td className="py-3 px-4">
-                    {bookings.reduce((sum, b) => sum + b.totalAmount, 0).toFixed(2)} €
-                  </td>
-                  <td colSpan={2} className="py-3 px-4 text-sm text-gray-600">
-                    Davon bezahlt: {
-                      bookings
-                        .filter(b => b.paymentStatus === 'PAID')
-                        .reduce((sum, b) => sum + b.totalAmount, 0)
-                        .toFixed(2)
-                    } €
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-        )}
       </div>
     </main>
   );
