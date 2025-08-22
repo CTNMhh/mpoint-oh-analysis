@@ -9,8 +9,8 @@ import MarketplaceSection from "../components/marketplace/MarketplaceSection"; /
 import {
   Activity,
   Calendar,
-ArrowDownRight,
-ArrowUpRight,
+  ArrowDownRight,
+  ArrowUpRight,
   BarChart3,
   Plus,
   Users,
@@ -21,14 +21,15 @@ ArrowUpRight,
   BookOpen,
   ChevronLeft,
   ChevronRight,
-  UserRoundCog
+  UserRoundCog,
+  House,
 } from "lucide-react";
 import MatchingList from "./MatchingList";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
-import Image from 'next/image';
+import Image from "next/image";
 
 type UserType = {
   anrede: string;
@@ -44,7 +45,6 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [gaugeValue, setGaugeValue] = useState(0);
   const [countdown, setCountdown] = useState("");
-
 
   type BookingType = {
     id: string | number;
@@ -68,7 +68,7 @@ export default function DashboardPage() {
     setTimeout(() => setGaugeValue(74), 500);
   }, []);
 
-    useEffect(() => {
+  useEffect(() => {
     const updateCountdown = () => {
       const now = new Date();
       const tomorrow = new Date(now);
@@ -80,7 +80,11 @@ export default function DashboardPage() {
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-      setCountdown(`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+      setCountdown(
+        `${hours.toString().padStart(2, "0")}:${minutes
+          .toString()
+          .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
+      );
     };
 
     const interval = setInterval(updateCountdown, 1000);
@@ -147,9 +151,13 @@ export default function DashboardPage() {
         const data = await res.json();
         console.log("API Response:", data);
         if (res.ok) {
-          setAllNews(data.sort((a: any, b: any) =>
-            new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime()
-          ));
+          setAllNews(
+            data.sort(
+              (a: any, b: any) =>
+                new Date(b.publishDate).getTime() -
+                new Date(a.publishDate).getTime()
+            )
+          );
         }
       } catch (error) {
         console.error("Fehler beim Laden der News:", error);
@@ -182,191 +190,212 @@ export default function DashboardPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         {/* Welcome Header */}
         <div className="bg-white rounded-xl shadow-sm p-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Willkommen zurück{user ? `, ${user.anrede} ${user.firstName} ${user.lastName}` : ''}!
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3 mb-4">
+            <House className="w-8 h-8 text-[#e60000]" />
+            Willkommen zurück
+            {user ? `, ${user.anrede} ${user.firstName} ${user.lastName}` : ""}!
           </h1>
           <p className="text-gray-600">
-            Hier ist Ihr persönliches Dashboard mit allen wichtigen Informationen und Aktivitäten.
+            Hier ist Ihr persönliches Dashboard mit allen wichtigen
+            Informationen und Aktivitäten.
           </p>
         </div>
-
-
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Recent Activities */}
           <div className="lg:col-span-2 space-y-6 mb-6">
-             <section className="bg-white rounded-xl p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Aktuelle News</h2>
-            <BookOpen className="w-6 h-6 text-[#e60000]" />
-          </div>
-          <div className="grid lg:grid-cols-3 gap-6">
-            {isLoadingNews ? (
-              <div className="lg:col-span-3 flex justify-center items-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#e60000]"></div>
+            <section className="bg-white rounded-xl p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Aktuelle News
+                </h2>
+                <BookOpen className="w-6 h-6 text-[#e60000]" />
               </div>
-            ) : allNews.length > 0 ? (
-              <>
-                {/* Lead Article */}
-                <article className="lg:col-span-2 bg-white hover:bg-gray-50 rounded-lg border border-gray-200 hover:shadow-md transition-all cursor-pointer overflow-hidden group">
-                  <Link href={`/news/${allNews[0].id}`}>
-                    <div className="h-64 relative overflow-hidden">
-                      {allNews[0].imageUrl ? (
-                        <img
-                          src={allNews[0].imageUrl}
-                          alt={allNews[0].title}
-                          className="absolute inset-0 w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div
-                          className="absolute inset-0 w-full h-full"
-                          style={{
-                            background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
-                          }}
-                        ></div>
-                      )}
-                      <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity bg-black"></div>
-                    </div>
-                    <div className="p-6">
-                      <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-[#e60000] transition-colors">
-                        {allNews[0].title}
-                      </h3>
-                      <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
-                        <span>{new Date(allNews[0].publishDate).toLocaleDateString('de-DE', {
-                          day: '2-digit',
-                          month: 'long',
-                          year: 'numeric'
-                        })}</span>
-                        {allNews[0].author && (
-                          <>
-                            <span>•</span>
-                            <span>Von {allNews[0].author}</span>
-                          </>
-                        )}
-                        {allNews[0].readTime && (
-                          <>
-                            <span>•</span>
-                            <span>{allNews[0].readTime} Lesezeit</span>
-                          </>
-                        )}
-                      </div>
-                      <p className="text-gray-600 line-clamp-3">
-                        {allNews[0].shortText}
-                      </p>
-                    </div>
-                  </Link>
-                </article>
+              <div className="grid lg:grid-cols-3 gap-6">
+                {isLoadingNews ? (
+                  <div className="lg:col-span-3 flex justify-center items-center py-12">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#e60000]"></div>
+                  </div>
+                ) : allNews.length > 0 ? (
+                  <>
+                    {/* Lead Article */}
+                    <article className="lg:col-span-2 bg-white hover:bg-gray-50 rounded-lg border border-gray-200 hover:shadow-md transition-all cursor-pointer overflow-hidden group">
+                      <Link href={`/news/${allNews[0].id}`}>
+                        <div className="h-64 relative overflow-hidden">
+                          {allNews[0].imageUrl ? (
+                            <img
+                              src={allNews[0].imageUrl}
+                              alt={allNews[0].title}
+                              className="absolute inset-0 w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div
+                              className="absolute inset-0 w-full h-full"
+                              style={{
+                                background:
+                                  "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+                              }}
+                            ></div>
+                          )}
+                          <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity bg-black"></div>
+                        </div>
+                        <div className="p-6">
+                          <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-[#e60000] transition-colors">
+                            {allNews[0].title}
+                          </h3>
+                          <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
+                            <span>
+                              {new Date(
+                                allNews[0].publishDate
+                              ).toLocaleDateString("de-DE", {
+                                day: "2-digit",
+                                month: "long",
+                                year: "numeric",
+                              })}
+                            </span>
+                            {allNews[0].author && (
+                              <>
+                                <span>•</span>
+                                <span>Von {allNews[0].author}</span>
+                              </>
+                            )}
+                            {allNews[0].readTime && (
+                              <>
+                                <span>•</span>
+                                <span>{allNews[0].readTime} Lesezeit</span>
+                              </>
+                            )}
+                          </div>
+                          <p className="text-gray-600 line-clamp-3">
+                            {allNews[0].shortText}
+                          </p>
+                        </div>
+                      </Link>
+                    </article>
 
-                {/* Regular Articles */}
+                    {/* Regular Articles */}
+                    <div className="space-y-4">
+                      {allNews.slice(1, 5).map((news) => (
+                        <NewsItem
+                          key={news.id}
+                          date={new Date(news.publishDate).toLocaleDateString(
+                            "de-DE",
+                            {
+                              day: "2-digit",
+                              month: "long",
+                              year: "numeric",
+                            }
+                          )}
+                          title={news.title}
+                          imageUrl={news.imageUrl}
+                          onClick={() => router.push(`/news/${news.id}`)}
+                        />
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <div className="lg:col-span-3 text-center py-12 text-gray-500">
+                    Keine News verfügbar.
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-6 text-center">
+                <Link
+                  href="/news"
+                  className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all"
+                >
+                  Alle News anzeigen <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </section>
+
+            <div className="grid lg:grid-cols-2 gap-6 mb-10">
+              {/* Events Card */}
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-bold text-gray-900">
+                    Kommende Events
+                  </h3>
+                  <Calendar className="w-6 h-6 text-[#e60000]" />
+                </div>
+
                 <div className="space-y-4">
-                  {allNews.slice(1, 5).map((news) => (
-                    <NewsItem
-                      key={news.id}
-                      date={new Date(news.publishDate).toLocaleDateString('de-DE', {
-                        day: '2-digit',
-                        month: 'long',
-                        year: 'numeric'
-                      })}
-                      title={news.title}
-                      imageUrl={news.imageUrl}
-                      onClick={() => router.push(`/news/${news.id}`)}
-                    />
+                  {allEvents.slice(0, 4).map((event) => (
+                    <Link
+                      key={event.id}
+                      href={`/events/${event.id}`}
+                      className="block"
+                    >
+                      <EventItem
+                        day={new Date(event.startDate)
+                          .getDate()
+                          .toString()
+                          .padStart(2, "0")}
+                        month={new Date(event.startDate)
+                          .toLocaleString("de-DE", { month: "short" })
+                          .toUpperCase()}
+                        title={event.title}
+                        location={event.location || ""}
+                      />
+                    </Link>
                   ))}
                 </div>
-              </>
-            ) : (
-              <div className="lg:col-span-3 text-center py-12 text-gray-500">
-                Keine News verfügbar.
+
+                <div className="mt-6 text-center">
+                  <a
+                    href="#events"
+                    className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all"
+                  >
+                    Alle Events anzeigen <ArrowRight className="w-4 h-4" />
+                  </a>
+                </div>
               </div>
-            )}
-          </div>
 
-          <div className="mt-6 text-center">
-            <Link
-              href="/news"
-              className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all"
-            >
-              Alle News anzeigen <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-        </section>
+              {/* Articles Card */}
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-bold text-gray-900">
+                    Neue Fachartikel
+                  </h3>
+                  <BookOpen className="w-6 h-6 text-[#e60000]" />
+                </div>
 
-
-
-              <div className="grid lg:grid-cols-2 gap-6 mb-10">
-          {/* Events Card */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-gray-900">Kommende Events</h3>
-              <Calendar className="w-6 h-6 text-[#e60000]" />
-            </div>
-
-            <div className="space-y-4">
-              {(allEvents.slice(0, 4)).map(event => (
-                <Link
-                  key={event.id}
-                  href={`/events/${event.id}`}
-                  className="block"
-                >
-                  <EventItem
-                    day={new Date(event.startDate).getDate().toString().padStart(2, "0")}
-                    month={new Date(event.startDate).toLocaleString("de-DE", { month: "short" }).toUpperCase()}
-                    title={event.title}
-                    location={event.location || ""}
+                <div className="space-y-4">
+                  <ArticleItem
+                    category="Digitalisierung"
+                    title="KI-Einsatz im deutschen Mittelstand: Chancen und Herausforderungen"
+                    author="Dr. Thomas Schmidt"
+                    readTime="5 Min."
+                    onClick={() => alert("Artikel: KI im Mittelstand")}
                   />
-                </Link>
-              ))}
+                  <ArticleItem
+                    category="Nachhaltigkeit"
+                    title="Nachhaltige Lieferketten aufbauen: Ein Leitfaden"
+                    author="Prof. Julia Müller"
+                    readTime="8 Min."
+                    onClick={() => alert("Artikel: Nachhaltige Lieferketten")}
+                  />
+                  <ArticleItem
+                    category="Management"
+                    title="Remote Leadership: Best Practices für hybride Teams"
+                    author="Lisa Weber"
+                    readTime="6 Min."
+                    onClick={() => alert("Artikel: Remote Leadership")}
+                  />
+                </div>
+
+                <div className="mt-6 text-center">
+                  <a
+                    href="#articles"
+                    className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all"
+                  >
+                    Alle Artikel anzeigen <ArrowRight className="w-4 h-4" />
+                  </a>
+                </div>
+              </div>
             </div>
-
-            <div className="mt-6 text-center">
-              <a href="#events" className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all">
-                Alle Events anzeigen <ArrowRight className="w-4 h-4" />
-              </a>
-            </div>
-          </div>
-
-          {/* Articles Card */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-gray-900">Neue Fachartikel</h3>
-              <BookOpen className="w-6 h-6 text-[#e60000]" />
-            </div>
-
-            <div className="space-y-4">
-              <ArticleItem
-                category="Digitalisierung"
-                title="KI-Einsatz im deutschen Mittelstand: Chancen und Herausforderungen"
-                author="Dr. Thomas Schmidt"
-                readTime="5 Min."
-                onClick={() => alert('Artikel: KI im Mittelstand')}
-              />
-              <ArticleItem
-                category="Nachhaltigkeit"
-                title="Nachhaltige Lieferketten aufbauen: Ein Leitfaden"
-                author="Prof. Julia Müller"
-                readTime="8 Min."
-                onClick={() => alert('Artikel: Nachhaltige Lieferketten')}
-              />
-              <ArticleItem
-                category="Management"
-                title="Remote Leadership: Best Practices für hybride Teams"
-                author="Lisa Weber"
-                readTime="6 Min."
-                onClick={() => alert('Artikel: Remote Leadership')}
-              />
-            </div>
-
-            <div className="mt-6 text-center">
-              <a href="#articles" className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all">
-                Alle Artikel anzeigen <ArrowRight className="w-4 h-4" />
-              </a>
-            </div>
-          </div>
-        </div>
-
-
-
 
             {/* Alle Events als Slider
             <div className="mt-8">
@@ -433,18 +462,17 @@ export default function DashboardPage() {
             */}
           </div>
 
-
           {/* Quick Actions */}
           <div className="space-y-6 mb-6">
             {/* Quick Actions Card */}
             <div className="bg-white rounded-xl shadow-sm p-6">
               <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">Schnellaktionen</h2>
+                <h2 className="text-xl font-semibold text-gray-900">
+                  Schnellaktionen
+                </h2>
                 <Timer className="w-6 h-6 text-[#e60000]" />
               </div>
               <div className="space-y-3">
-
-
                 <Link
                   href="/company"
                   className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 hover:shadow-md transition-all"
@@ -471,18 +499,17 @@ export default function DashboardPage() {
               </div>
             </div>
 
-
-
             {/* Profile Completion */}
             <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl shadow-sm p-6">
               <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">Profil</h2>
+                <h2 className="text-xl font-semibold text-gray-900">Profil</h2>
                 <UserRoundCog className="w-6 h-6 text-[#e60000]" />
               </div>
-              <Link
-                  href="/company"
-                >
-              <ProgressBar bgClassName="bg-white hover:bg-gray-50" showSuggestions={false} />
+              <Link href="/company">
+                <ProgressBar
+                  bgClassName="bg-white hover:bg-gray-50"
+                  showSuggestions={false}
+                />
               </Link>
               <div className="mt-8 text-center">
                 <Link
@@ -497,7 +524,9 @@ export default function DashboardPage() {
             {/* Meine gebuchten Events */}
             <div className="bg-white rounded-xl shadow-sm p-6">
               <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">Meine gebuchten Events</h2>
+                <h2 className="text-xl font-semibold text-gray-900">
+                  Meine gebuchten Events
+                </h2>
                 <Calendar className="w-6 h-6 text-[#e60000]" />
               </div>
               {bookedEvents.length === 0 ? (
@@ -505,28 +534,28 @@ export default function DashboardPage() {
               ) : (
                 <ul className="space-y-2">
                   {bookedEvents.map((booking) => (
-                    <li key={booking.id} className="border-l-4 border-green-500 pl-3">
+                    <li
+                      key={booking.id}
+                      className="border-l-4 border-green-500 pl-3"
+                    >
                       <span className="font-bold">{booking.event.title}</span>
-                      <span className="ml-2 text-gray-500">{new Date(booking.event.startDate).toLocaleString()}</span>
+                      <span className="ml-2 text-gray-500">
+                        {new Date(booking.event.startDate).toLocaleString()}
+                      </span>
                     </li>
                   ))}
                 </ul>
               )}
             </div>
 
-
-
-
-              <MarketplaceSection />
-
-
+            <MarketplaceSection />
           </div>
-
-
         </div>
-   <section className="bg-white rounded-xl shadow-sm p-8">
+        <section className="bg-white rounded-xl shadow-sm p-8">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-bold text-gray-900">Wirtschaftswetter</h2>
+            <h2 className="text-2xl font-bold text-gray-900">
+              Wirtschaftswetter
+            </h2>
             <BarChart3 className="w-6 h-6 text-[#e60000]" />
           </div>
 
@@ -537,10 +566,17 @@ export default function DashboardPage() {
                 <Activity className="w-5 h-5 text-orange-500" />
                 Wirtschaftsstimmung Index
               </h3>
-              <p className="text-sm text-gray-500 mb-6">Multifaktorielle Analyse der Wirtschaftslage</p>
+              <p className="text-sm text-gray-500 mb-6">
+                Multifaktorielle Analyse der Wirtschaftslage
+              </p>
 
               <div className="relative">
-                <svg width="200" height="120" viewBox="0 0 200 120" className="mx-auto">
+                <svg
+                  width="200"
+                  height="120"
+                  viewBox="0 0 200 120"
+                  className="mx-auto"
+                >
                   {/* Background arc */}
                   <path
                     d="M 20 100 A 80 80 0 0 1 180 100"
@@ -560,7 +596,12 @@ export default function DashboardPage() {
                     className="transition-all duration-1000 ease-out"
                   />
                   {/* Center text */}
-                  <text x="100" y="90" textAnchor="middle" className="fill-gray-900 text-3xl font-bold">
+                  <text
+                    x="100"
+                    y="90"
+                    textAnchor="middle"
+                    className="fill-gray-900 text-3xl font-bold"
+                  >
                     {gaugeValue}
                   </text>
                 </svg>
@@ -583,19 +624,42 @@ export default function DashboardPage() {
 
             {/* Historical Values */}
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-6">Historische Werte</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-6">
+                Historische Werte
+              </h3>
 
               <div className="space-y-4 mb-6">
-                <HistoricalValue label="Jetzt" value={74} status="Optimistisch" />
-                <HistoricalValue label="Gestern" value={72} status="Optimistisch" />
-                <HistoricalValue label="Letzte Woche" value={70} status="Optimistisch" />
-                <HistoricalValue label="Letzter Monat" value={47} status="Neutral" neutral />
+                <HistoricalValue
+                  label="Jetzt"
+                  value={74}
+                  status="Optimistisch"
+                />
+                <HistoricalValue
+                  label="Gestern"
+                  value={72}
+                  status="Optimistisch"
+                />
+                <HistoricalValue
+                  label="Letzte Woche"
+                  value={70}
+                  status="Optimistisch"
+                />
+                <HistoricalValue
+                  label="Letzter Monat"
+                  value={47}
+                  status="Neutral"
+                  neutral
+                />
               </div>
 
               {/* Economic Indicators */}
               <div className="grid grid-cols-2 gap-3">
                 <IndicatorCard label="BIP-Prognose" value="+2,3%" trend="up" />
-                <IndicatorCard label="Geschäftsklima" value="108,5" trend="up" />
+                <IndicatorCard
+                  label="Geschäftsklima"
+                  value="108,5"
+                  trend="up"
+                />
                 <IndicatorCard label="Export-Index" value="+4,7%" trend="up" />
                 <IndicatorCard label="Inflation" value="2,1%" trend="down" />
               </div>
@@ -603,14 +667,20 @@ export default function DashboardPage() {
 
             {/* Next Update */}
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-6">Nächstes Update</h3>
-              <p className="text-gray-600 mb-4">Das nächste Update erfolgt in:</p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-6">
+                Nächstes Update
+              </h3>
+              <p className="text-gray-600 mb-4">
+                Das nächste Update erfolgt in:
+              </p>
               <div className="text-3xl font-bold text-[#e60000] font-mono mb-8">
                 {countdown}
               </div>
 
               <div className="border-t pt-6">
-                <h4 className="font-medium text-gray-900 mb-3">Faktoren im Index:</h4>
+                <h4 className="font-medium text-gray-900 mb-3">
+                  Faktoren im Index:
+                </h4>
                 <ul className="space-y-2 text-sm text-gray-600">
                   <li className="flex items-center gap-2">
                     <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>
@@ -642,146 +712,218 @@ export default function DashboardPage() {
           </div>
 
           <div className="mt-8 text-center">
-            <a href="#wirtschaftsanalyse" className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all">
+            <a
+              href="#wirtschaftsanalyse"
+              className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all"
+            >
               Detaillierte Wirtschaftsanalyse <ArrowRight className="w-4 h-4" />
             </a>
           </div>
         </section>
-
       </div>
     </main>
   );
-function NewsItem({ date, title, imageUrl, onClick }: { date: string; title: string; imageUrl?: string; onClick: () => void }) {
-  return (
-    <article
-      onClick={onClick}
-      className="bg-white hover:bg-gray-50 rounded-lg border border-gray-200 hover:shadow-md transition-all cursor-pointer group"
-    >
-      <div className="flex gap-4">
-        {imageUrl ? (
-          <div className="relative w-20 rounded-l-lg overflow-hidden flex-shrink-0">
-            <img
-              src={imageUrl}
-              alt={title}
-              className="w-full h-full object-cover rounded-l-lg"
-            />
+  function NewsItem({
+    date,
+    title,
+    imageUrl,
+    onClick,
+  }: {
+    date: string;
+    title: string;
+    imageUrl?: string;
+    onClick: () => void;
+  }) {
+    return (
+      <article
+        onClick={onClick}
+        className="bg-white hover:bg-gray-50 rounded-lg border border-gray-200 hover:shadow-md transition-all cursor-pointer group"
+      >
+        <div className="flex gap-4">
+          {imageUrl ? (
+            <div className="relative w-20 rounded-l-lg overflow-hidden flex-shrink-0">
+              <img
+                src={imageUrl}
+                alt={title}
+                className="w-full h-full object-cover rounded-l-lg"
+              />
+            </div>
+          ) : (
+            <div
+              className="w-20 h-20 flex-shrink-0"
+              style={{
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              }}
+            ></div>
+          )}
+          <div className="py-2 pr-2">
+            <div className="text-sm text-gray-500 mb-1">{date}</div>
+            <h4 className="font-semibold text-gray-900 group-hover:text-[#e60000] transition-colors line-clamp-2">
+              {title}
+            </h4>
           </div>
-        ) : (
-          <div
-            className="w-20 h-20 flex-shrink-0"
-            style={{
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-            }}
-          ></div>
-        )}
-        <div className="py-2 pr-2">
-          <div className="text-sm text-gray-500 mb-1">{date}</div>
-          <h4 className="font-semibold text-gray-900 group-hover:text-[#e60000] transition-colors line-clamp-2">
+        </div>
+      </article>
+    );
+  }
+
+  function EventItem({
+    day,
+    month,
+    title,
+    location,
+  }: {
+    day: string;
+    month: string;
+    title: string;
+    location: string;
+  }) {
+    return (
+      <div className="flex gap-4 p-4 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer group">
+        <div className="bg-[#e60000] text-white rounded-lg p-3 text-center flex-shrink-0">
+          <div className="text-2xl font-bold">{day}</div>
+          <div className="text-xs uppercase">{month}</div>
+        </div>
+        <div className="flex-1">
+          <h4 className="font-semibold text-gray-900 group-hover:text-[#e60000] transition-colors">
             {title}
           </h4>
+          <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
+            <MapPin className="w-3 h-3" />
+            {location}
+          </div>
         </div>
       </div>
-    </article>
-  );
-}
+    );
+  }
 
+  function ArticleItem({
+    category,
+    title,
+    author,
+    readTime,
+    onClick,
+  }: {
+    category: string;
+    title: string;
+    author: string;
+    readTime: string;
+    onClick: () => void;
+  }) {
+    const getCategoryColor = (cat: string) => {
+      switch (cat) {
+        case "Digitalisierung":
+          return "bg-blue-100 text-blue-800";
+        case "Nachhaltigkeit":
+          return "bg-green-100 text-green-800";
+        case "Management":
+          return "bg-purple-100 text-purple-800";
+        default:
+          return "bg-gray-100 text-gray-800";
+      }
+    };
 
-function EventItem({ day, month, title, location }: { day: string; month: string; title: string; location: string; }) {
-  return (
-    <div
-
-      className="flex gap-4 p-4 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer group"
-    >
-      <div className="bg-[#e60000] text-white rounded-lg p-3 text-center flex-shrink-0">
-        <div className="text-2xl font-bold">{day}</div>
-        <div className="text-xs uppercase">{month}</div>
-      </div>
-      <div className="flex-1">
-        <h4 className="font-semibold text-gray-900 group-hover:text-[#e60000] transition-colors">{title}</h4>
-        <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
-          <MapPin className="w-3 h-3" />
-          {location}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ArticleItem({ category, title, author, readTime, onClick }: { category: string; title: string; author: string; readTime: string; onClick: () => void }) {
-  const getCategoryColor = (cat: string) => {
-    switch(cat) {
-      case 'Digitalisierung': return 'bg-blue-100 text-blue-800';
-      case 'Nachhaltigkeit': return 'bg-green-100 text-green-800';
-      case 'Management': return 'bg-purple-100 text-purple-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  return (
-    <div
-      onClick={onClick}
-      className="rounded-lg bg-white hover:bg-gray-50 cursor-pointer group border border-gray-200 hover:shadow-md p-4 transition-all"
-    >
-      <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${getCategoryColor(category)} mb-2`}>
-        {category}
-      </span>
-      <h4 className="font-semibold text-gray-900 group-hover:text-[#e60000] transition-colors mb-2">{title}</h4>
-      <div className="text-sm text-gray-500">
-        Von {author} • {readTime} Lesezeit
-      </div>
-    </div>
-  );
-}
-
-function HistoricalValue({ label, value, status, neutral }: { label: string; value: number; status: string; neutral?: boolean }) {
-  return (
-    <div className="flex items-center justify-between p-3 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg">
-      <span className="text-gray-600">{label}</span>
-      <div className="flex items-center justify-between gap-3 w-[150px]">
-        <span className={`text-sm ${neutral ? 'text-gray-600' : 'text-green-600'}`}>{status}</span>
-        <span className={`inline-block px-3 py-1 rounded-lg font-bold ${neutral ? 'bg-gray-200 text-gray-700' : 'bg-green-100 text-green-800'}`}>
-          {value}
+    return (
+      <div
+        onClick={onClick}
+        className="rounded-lg bg-white hover:bg-gray-50 cursor-pointer group border border-gray-200 hover:shadow-md p-4 transition-all"
+      >
+        <span
+          className={`inline-block px-2 py-1 rounded text-xs font-medium ${getCategoryColor(
+            category
+          )} mb-2`}
+        >
+          {category}
         </span>
+        <h4 className="font-semibold text-gray-900 group-hover:text-[#e60000] transition-colors mb-2">
+          {title}
+        </h4>
+        <div className="text-sm text-gray-500">
+          Von {author} • {readTime} Lesezeit
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
-function IndicatorCard({ label, value, trend }: { label: string; value: string; trend: 'up' | 'down' }) {
-  return (
-    <div className="bg-white hover:bg-gray-50 border border-gray-200 rounded-lg p-3 flex flex-col justify-between h-32">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs text-gray-600">{label}</span>
-        {trend === 'up' ? (
-          <ArrowUpRight className="w-4 h-4 text-green-600" />
-        ) : (
-          <ArrowDownRight className="w-4 h-4 text-red-600" />
-        )}
+  function HistoricalValue({
+    label,
+    value,
+    status,
+    neutral,
+  }: {
+    label: string;
+    value: number;
+    status: string;
+    neutral?: boolean;
+  }) {
+    return (
+      <div className="flex items-center justify-between p-3 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg">
+        <span className="text-gray-600">{label}</span>
+        <div className="flex items-center justify-between gap-3 w-[150px]">
+          <span
+            className={`text-sm ${
+              neutral ? "text-gray-600" : "text-green-600"
+            }`}
+          >
+            {status}
+          </span>
+          <span
+            className={`inline-block px-3 py-1 rounded-lg font-bold ${
+              neutral
+                ? "bg-gray-200 text-gray-700"
+                : "bg-green-100 text-green-800"
+            }`}
+          >
+            {value}
+          </span>
+        </div>
       </div>
-      <div className="font-bold text-gray-900 text-xl">{value}</div>
-      <div className="mt-2">
-        {/* Trendlinie */}
-        {trend === "up" ? (
-          <svg width="80" height="24" viewBox="0 0 80 24" fill="none">
-            <polyline
-              points="0,20 20,16 40,18 60,12 80,8"
-              stroke="green"
-              strokeWidth="2"
-              fill="none"
-            />
-          </svg>
-        ) : (
-          <svg width="80" height="24" viewBox="0 0 80 24" fill="none">
-            <polyline
-              points="0,8 20,12 40,16 60,18 80,20"
-              stroke="red"
-              strokeWidth="2"
-              fill="none"
-            />
-          </svg>
-        )}
+    );
+  }
+
+  function IndicatorCard({
+    label,
+    value,
+    trend,
+  }: {
+    label: string;
+    value: string;
+    trend: "up" | "down";
+  }) {
+    return (
+      <div className="bg-white hover:bg-gray-50 border border-gray-200 rounded-lg p-3 flex flex-col justify-between h-32">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs text-gray-600">{label}</span>
+          {trend === "up" ? (
+            <ArrowUpRight className="w-4 h-4 text-green-600" />
+          ) : (
+            <ArrowDownRight className="w-4 h-4 text-red-600" />
+          )}
+        </div>
+        <div className="font-bold text-gray-900 text-xl">{value}</div>
+        <div className="mt-2">
+          {/* Trendlinie */}
+          {trend === "up" ? (
+            <svg width="80" height="24" viewBox="0 0 80 24" fill="none">
+              <polyline
+                points="0,20 20,16 40,18 60,12 80,8"
+                stroke="green"
+                strokeWidth="2"
+                fill="none"
+              />
+            </svg>
+          ) : (
+            <svg width="80" height="24" viewBox="0 0 80 24" fill="none">
+              <polyline
+                points="0,8 20,12 40,16 60,18 80,20"
+                stroke="red"
+                strokeWidth="2"
+                fill="none"
+              />
+            </svg>
+          )}
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 }
