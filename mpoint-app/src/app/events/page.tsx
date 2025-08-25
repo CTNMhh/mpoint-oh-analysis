@@ -495,23 +495,116 @@ export default function EventsPage() {
 
         {/* Listen-Ansicht */}
         {viewMode === "list" && (
-          <div className="mb-12">
-            <div className="bg-white rounded-xl shadow overflow-hidden">
-              <div className="p-6 border-b border-gray-200">
-                <h2 className="text-xl font-bold text-gray-900">Alle Events</h2>
+          <div className="flex flex-row gap-6">
+            <div className="bg-white rounded-xl shadow-sm p-6 basis-1/2">
+              <div className="flex items-start justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  Meine erstellten Events
+                </h2>
+                <Calendar className="w-6 h-6 text-[#e60000]" />
               </div>
-              <div className="space-y-0">
-                {events.length === 0 ? (
-                  <div className="p-6 text-center text-gray-500">
+              <div className="space-y-4">
+                {myEvents.length === 0 ? (
+                  <div className="text-center text-gray-500">
                     Keine Events verfügbar.
                   </div>
                 ) : (
-                  visibleEvents.map((event) => {
+                  myEvents.map((event) => {
                     const enrichedEvent = enrichEventWithBookingInfo(event);
                     return (
                       <div
                         key={event.id}
-                        className="p-6 border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                        className="flex flex-col rounded-lg bg-white border border-gray-200 hover:bg-gray-50 hover:shadow-md transition-all p-4"
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <h2 className="text-xl font-bold mb-2">
+                              {event.title}
+                              {event.user.email === session?.user?.email ? (
+                                <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-semibold">
+                                  {event.status}
+                                </span>
+                              ) : event.status === EventStatus.FULL ||
+                                event.status === EventStatus.CANCELLED ? (
+                                <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-semibold">
+                                  {event.status}
+                                </span>
+                              ) : null}
+                            </h2>
+
+                            {/* NEU: Platz-Verfügbarkeit in Listen-Ansicht */}
+                            <div className="mb-3">
+                              <PlaceAvailability event={enrichedEvent} />
+                            </div>
+
+                            <div className="flex flex-wrap gap-4 text-sm text-gray-600 mb-2">
+                              <span>
+                                📅 {new Date(event.startDate).toLocaleString()}
+                                {event.endDate && (
+                                  <>
+                                    {" "}
+                                    – {new Date(event.endDate).toLocaleString()}
+                                  </>
+                                )}{" "}
+                                – {event.location}
+                              </span>
+                              {event.chargeFree ? (
+                                <span className="text-green-700 font-semibold">
+                                  ✓ Kostenfrei
+                                </span>
+                              ) : event.price > 0 ? (
+                                <span>💰 {event.price} €</span>
+                              ) : null}
+                              <span>
+                                👤 {event.user.firstName} {event.user.lastName}
+                              </span>
+                            </div>
+                            <p className="text-gray-700 line-clamp-2">
+                              {event.description}
+                            </p>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {event.categories.map((cat) => (
+                                <span
+                                  key={cat}
+                                  className="bg-gray-100 text-xs px-2 py-1 rounded"
+                                >
+                                  {cat}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                          <Link
+                            href={`/events/${event.id}`}
+                            className="ml-4 bg-[rgb(228,25,31)] text-white px-4 py-2 rounded hover:bg-red-700 transition-colors text-sm font-semibold"
+                          >
+                            Details
+                          </Link>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+            <div className="bg-white rounded-xl shadow-sm p-6 basis-1/2">
+              <div className="flex items-start justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  Verfügbare Events
+                </h2>
+                <Calendar className="w-6 h-6 text-[#e60000]" />
+              </div>
+              <div className="space-y-4">
+                {availableEvents.length === 0 ? (
+                  <div className="text-center text-gray-500">
+                    Es gibt aktuell keine verfügbaren Events anderer Nutzer..
+                  </div>
+                ) : (
+                  availableEvents.map((event) => {
+                    const enrichedEvent = enrichEventWithBookingInfo(event);
+                    return (
+                      <div
+                        key={event.id}
+                        className="flex flex-col rounded-lg bg-white border border-gray-200 hover:bg-gray-50 hover:shadow-md transition-all p-4"
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
