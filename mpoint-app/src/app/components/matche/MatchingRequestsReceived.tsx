@@ -24,7 +24,7 @@ export default function IncomingRequests() {
   if (!session?.user?.id) return null;
 
   return (
-    <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+    <section className="bg-white rounded-xl shadow-sm p-6">
       <div className="flex items-start justify-between mb-6">
         <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
           Erhaltene Vernetzungsanfragen
