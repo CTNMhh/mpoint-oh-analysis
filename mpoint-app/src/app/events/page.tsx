@@ -311,14 +311,13 @@ export default function EventsPage() {
           </h1>
           <p className="text-gray-600">Hier finden Sie alle Informationen zu Ihren Events.</p>
         </div>
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-extrabold text-gray-900">Events</h1>
+        <div className="flex justify-end items-center mb-8">
           <div className="flex items-center gap-4">
             {/* View Mode Toggle */}
             <div className="flex bg-gray-100 rounded-lg p-1">
               <button
                 onClick={() => setViewMode('grid')}
-                className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
                   viewMode === 'grid' ? 'bg-white text-gray-900 shadow' : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
@@ -326,27 +325,27 @@ export default function EventsPage() {
                 Grid
               </button>
               <button
-                onClick={() => setViewMode('calendar')}
-                className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  viewMode === 'calendar' ? 'bg-white text-gray-900 shadow' : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                <Calendar size={16} />
-                Kalender
-              </button>
-              <button
                 onClick={() => setViewMode('list')}
-                className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
                   viewMode === 'list' ? 'bg-white text-gray-900 shadow' : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
                 <List size={16} />
                 Liste
               </button>
+              <button
+                onClick={() => setViewMode('calendar')}
+                className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
+                  viewMode === 'calendar' ? 'bg-white text-gray-900 shadow' : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <Calendar size={16} />
+                Kalender
+              </button>
             </div>
 
             <button
-              className="bg-[rgb(228,25,31)] text-white px-4 py-2 rounded hover:bg-red-700 transition-colors font-semibold"
+              className="bg-[#e60000] text-white px-4 py-2 rounded-xl hover:bg-red-700 transition-all font-medium cursor-pointer"
               onClick={() => setShowForm((v) => !v)}
             >
               {showForm ? "Abbrechen" : "Event erstellen"}
@@ -511,14 +510,15 @@ export default function EventsPage() {
         {viewMode === 'grid' && (
           <>
             {/* Meine erstellten Events */}
-            <h1 className="text-3xl font-extrabold text-gray-900 mb-8">
-              Meine erstellten Events
-            </h1>
-            {myEvents.length === 0 ? (
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h2 className="text-xl font-semibold text-gray-900">
+                Meine erstellten Events
+              </h2>
+              {myEvents.length === 0 ? (
               <p className="text-center text-gray-500 mb-12">
                 Du hast noch keine Events erstellt.
               </p>
-            ) : (
+              ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
                 {myEvents.map((event) => {
                   const enrichedEvent = enrichEventWithBookingInfo(event);
@@ -596,12 +596,14 @@ export default function EventsPage() {
                   );
                 })}
               </div>
-            )}
+              )}
+            </div>
 
             {/* Verfügbare Events anderer User */}
-            <h1 className="text-3xl font-extrabold text-gray-900 mb-8">
+            <div className="bg-white rounded-xl shadow-sm p-6">
+            <h2 className="text-xl font-semibold text-gray-900">
               Verfügbare Events
-            </h1>
+            </h2>
             {availableEvents.length === 0 ? (
               <p className="text-center text-gray-500">
                 Es gibt aktuell keine verfügbaren Events anderer Nutzer.
@@ -680,6 +682,7 @@ export default function EventsPage() {
                 })}
               </div>
             )}
+            </div>
           </>
         )}
 
