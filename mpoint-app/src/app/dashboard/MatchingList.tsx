@@ -92,7 +92,7 @@ export default function MatchingList({ companyId: propCompanyId, limit = 15 }: {
   const [expandedMatch, setExpandedMatch] = useState<string | null>(null);
   const [filter, setFilter] = useState<string>("all");
   const [companyId, setCompanyId] = useState<string | undefined>(propCompanyId);
-
+  const [hasCompany, setHasCompany] = useState<boolean | null>(null); // Neuer State
 
   useEffect(() => {
     if (!propCompanyId) {
@@ -101,17 +101,24 @@ export default function MatchingList({ companyId: propCompanyId, limit = 15 }: {
           const res = await fetch("/api/company");
           if (res.ok) {
             const data = await res.json();
-            console.log("Company datayyy:", data);
-            if (data?.id) setCompanyId(data.id);
+            console.log("Company data:", data);
+            if (data?.id) {
+              setCompanyId(data.id);
+              setHasCompany(true); // Unternehmen vorhanden
+            } else {
+              setHasCompany(false); // Kein Unternehmen
+            }
           }
         } catch (e) {
           console.error("Fehler beim Laden der companyId:", e);
+          setHasCompany(false); // Fehler beim Abrufen
         }
       }
       fetchCompany();
+    } else {
+      setHasCompany(true); // Unternehmen über propCompanyId vorhanden
     }
   }, [propCompanyId]);
-
 
   useEffect(() => {
     async function fetchMatches() {
@@ -134,6 +141,22 @@ export default function MatchingList({ companyId: propCompanyId, limit = 15 }: {
     if (companyId) fetchMatches();
   }, [companyId, limit]);
 
+  // Nachricht anzeigen, wenn kein Unternehmen vorhanden ist
+  if (hasCompany === false) {
+    return (
+      <div className="text-center py-12">
+        <Building2 className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+        <p className="text-gray-500">Sie haben noch kein Unternehmen.</p>
+        <p className="text-sm text-gray-400 mt-2">Bitte erstellen Sie ein Unternehmen, um Matches zu sehen.</p>
+        <a
+          href="/company"
+          className="inline-block px-6 py-3 bg-[rgb(228,25,31)] text-white rounded-lg font-semibold hover:bg-red-700 transition-colors mt-4"
+        >
+          Unternehmen erstellen
+        </a>
+      </div>
+    );
+  }
 
   const filteredMatches = filter === "all"
     ? matches
