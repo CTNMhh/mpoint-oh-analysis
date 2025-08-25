@@ -34,7 +34,7 @@ export default function IncomingRequests() {
       <div className="flex flex-col gap-3">
       {loading ? (
         <div className="flex items-center justify-center py-3">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[rgb(228,25,31)]"></div>
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#e60000]"></div>
         </div>
       ) : requests.length === 0 ? (
         <div className="text-gray-500">Keine Anfragen gefunden.</div>

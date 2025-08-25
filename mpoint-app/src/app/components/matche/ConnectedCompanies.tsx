@@ -47,7 +47,7 @@ export default function ConnectedCompanies() {
   if (!session?.user?.id) return null;
 
   return (
-    <section className="bg-white rounded-xl shadow-sm border p-6">
+    <section className="bg-white rounded-xl shadow-sm p-6">
       <div className="flex items-start justify-between mb-6">
         <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
           Vernetzte Unternehmen
@@ -57,7 +57,7 @@ export default function ConnectedCompanies() {
       <div className="flex flex-col gap-3">
       {loading ? (
         <div className="flex items-center justify-center py-3">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[rgb(228,25,31)]"></div>
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#e60000]"></div>
         </div>
       ) : matches.length === 0 ? (
         <div className="text-gray-500">Noch keine Vernetzungen.</div>
