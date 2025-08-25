@@ -60,7 +60,7 @@ function ProjectCard({ id, type, title, description, category, entryType, price,
   const typeClass = entryType ? typeColors[entryType] || "bg-gray-100 text-gray-800" : "bg-gray-100 text-gray-800";
 
   return (
-    <Link href={`/boerse/${id}`} className="border border-gray-200 rounded-xl bg-gray-50 p-4 hover:shadow-md transition-all group cursor-pointer block">
+    <Link href={`/boerse/${id}`} className="border border-gray-200 rounded-xl bg-white hover:bg-gray-50 p-4 hover:shadow-md transition-all group cursor-pointer block">
       <div className="flex items-start justify-between mb-2">
         <div className="flex items-center gap-2">
           <div className="text-gray-500">{getTypeIcon()}</div>
