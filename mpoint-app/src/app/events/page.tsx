@@ -773,13 +773,13 @@ export default function EventsPage() {
                           <div className="flex flex-col mt-8 space-y-2 px-4 pb-2 justify-center">
                             <Link
                               href={`/events/${event.id}`}
-                              className="bg-[#e60000] hover:bg-red-700 text-white px-4 py-2 rounded-xl transition-all font-medium mb-2 py-4 w-full text-center"
+                              className="bg-[#e60000] hover:bg-red-700 text-white px-4 rounded-xl transition-all font-medium mb-2 py-4 w-full text-center"
                             >
                               Details & Anmeldung
                             </Link>
                             <Link
                               href={`/events/${event.id}/edit`}
-                              className="bg-sky-700 hover:bg-sky-500 text-white px-4 py-2 rounded-xl transition-all font-medium mb-2 py-4 w-full text-center"
+                              className="bg-sky-700 hover:bg-sky-500 text-white px-4 rounded-xl transition-all font-medium mb-2 py-4 w-full text-center"
                             >
                               Event bearbeiten
                             </Link>
