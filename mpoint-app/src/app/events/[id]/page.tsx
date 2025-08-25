@@ -8,6 +8,7 @@ import { Calendar } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { EventType, EventStatus } from "../types";
+import { useCart } from "@/context/CartContext";
 
 export default function EventDetailPage({
   params
@@ -23,6 +24,7 @@ export default function EventDetailPage({
   const [error, setError] = useState<string | null>(null);
   const [spaces, setSpaces] = useState(1); // NEU: State für Anzahl Plätze
   const { data: session, status } = useSession();
+  const { refreshCart } = useCart();
 
   useEffect(() => {
     async function fetchEvent() {
@@ -76,20 +78,34 @@ export default function EventDetailPage({
   const userEmail = session?.user?.email || "";
 
   async function handleAddToCart(eventId: string, spaces: number = 1) {
+    setSuccess(null);
+    setError(null);
     const res = await fetch("/api/cart/add", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ eventId, spaces }),
     });
     if (res.ok) {
-      alert("Event wurde dem Warenkorb hinzugefügt!");
+      setSuccess("Event wurde dem Warenkorb hinzugefügt!");
+      refreshCart();
     } else {
-      alert("Fehler beim Hinzufügen zum Warenkorb.");
+      setError("Fehler beim Hinzufügen zum Warenkorb.");
     }
   }
 
   return (
     <main className="min-h-screen pt-30 bg-gradient-to-br from-gray-50 to-white py-12 px-4">
+      {/* ...vor <div className="max-w-3xl mx-auto ..."> */}
+      {success && (
+        <div className="mb-6 px-4 py-3 rounded-lg bg-green-100 text-green-800 font-semibold text-center shadow">
+          {success}
+        </div>
+      )}
+      {error && (
+        <div className="mb-6 px-4 py-3 rounded-lg bg-red-100 text-red-800 font-semibold text-center shadow">
+          {error}
+        </div>
+      )}
       <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-2xl p-8">
         {/* Zurück zu Events & Event exportieren */}
         <div className="flex gap-7 mb-8">

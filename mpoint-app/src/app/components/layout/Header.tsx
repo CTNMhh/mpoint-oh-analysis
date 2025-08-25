@@ -5,10 +5,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Menu, X, ChevronDown, Bell, User, Search, ShoppingCart } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
+import { useCart } from "@/context/CartContext";
 
 const Header = () => {
   const { data: session, status } = useSession();
   const user = session?.user; // NextAuth User-Objekt
+  const { cartCount } = useCart();
 
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -197,9 +199,8 @@ const Header = () => {
                 </button>
                 {/* Warenkorb-Icon */}
                 <Link href="/cart" className="relative group">
-                  <ShoppingCart className="w-6 h-6 text-gray-600 hover:text-[rgb(228,25,31)] transition-colors" />
-                  {/* Beispiel: cartCount aus State oder Props */}
-                  {typeof cartCount === "number" && cartCount > 0 && (
+                  <ShoppingCart className="w-6 h-6 text-gray-600" />
+                  {cartCount > 0 && (
                     <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full px-2 py-0.5">
                       {cartCount}
                     </span>

@@ -18,7 +18,10 @@ export async function GET(request: NextRequest) {
         }
       }
     });
-    return NextResponse.json({ cart }, { status: 200 });
+    return NextResponse.json({
+      cart,
+      count: cart.items.length
+    }, { status: 200 });
   } catch (error) {
     console.error("Fehler in /api/cart:", error);
     return NextResponse.json({ error: "Interner Serverfehler" }, { status: 500 });
