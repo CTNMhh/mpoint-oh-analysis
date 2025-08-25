@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Users, MapPin, TrendingUp, Handshake, ChevronRight, Briefcase, Target, Award, Calendar, Globe } from "lucide-react";
+import { Users, MapPin, TrendingUp, Handshake, ChevronRight, Briefcase, Target, Award, Calendar, Globe, Search, ArrowRight } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 
@@ -133,28 +133,30 @@ export default function CompanySearch() {
     }, [query, companyId]);
 
     return (
-        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                    <Users className="w-5 h-5 text-gray-400" />
-                    Unternehmen suchen
-                </h2>
-                <Link
-                    href="/Matches"
-                    className="text-[#e60000] font-medium hover:underline"
-                >
-                    Alle Unternehmen anzeigen
-                </Link>
+                <h2 className="text-xl font-semibold text-gray-900">Unternehmen</h2>
+                <Users className="w-5 h-5 text-[#e60000]" />
             </div>
-            <div className="mb-4 flex items-center gap-2">
+            <div className="flex-1 flex items-center bg-white rounded-lg shadow-sm px-4 py-2">
+                <Search className="w-5 h-5 text-gray-400 mr-2" />
                 <input
                     type="text"
-                    className="border rounded-lg px-3 py-2 w-full"
+                    className="flex-1 outline-none bg-transparent text-gray-900"
                     placeholder="Firmenname, Branche, Ort..."
                     value={query}
                     onChange={e => setQuery(e.target.value)}
                 />
             </div>
+            <div className="mt-6 text-center">
+                <Link
+                    href="/Matches"
+                    className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all"
+                >
+                    Alle Unternehmen anzeigen <ArrowRight className="w-4 h-4" />
+                </Link>
+            </div>
+
             {loading && (
                 <div className="flex items-center justify-center py-12">
                     <div className="text-center">

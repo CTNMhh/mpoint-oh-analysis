@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient, MatchStatus } from "@prisma/client";
+import { createNotification } from "../../../../lib/notifications";
+import { NotificationType } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -29,6 +31,48 @@ export async function POST(request: NextRequest) {
     where: { id: matchId },
     data: { status: newStatus, respondedAt: new Date() },
   });
+
+  // Notification nach erfolgreichem Update
+  try {
+    // Hole die User-Daten für den Namen
+    const sender = await prisma.user.findUnique({ where: { id: match.senderUserId } });
+    const receiver = await prisma.user.findUnique({ where: { id: match.receiverUserId } });
+    const accepter =
+      userId === match.senderUserId ? sender : receiver;
+    const accepterDisplayName =
+      [accepter?.firstName, accepter?.lastName].filter(Boolean).join(" ") ||
+      accepter?.name ||
+      accepter?.email ||
+      "Ihr Kontakt";
+
+    // Benachrichtige die andere Partei
+    const notifyUserId =
+      userId === match.senderUserId ? match.receiverUserId : match.senderUserId;
+
+    let title = "";
+    let body = "";
+
+    if (userId === match.receiverUserId) {
+      // Receiver akzeptiert: Sender bekommt Notification
+      title = "Ihre Match-Anfrage wurde angenommen";
+      body = `${accepterDisplayName} hat Ihre Match-Anfrage angenommen.`;
+    } else if (userId === match.senderUserId) {
+      // Sender akzeptiert: Receiver bekommt Notification
+      title = "Neue Match-Anfrage";
+      body = `${accepterDisplayName} möchte sich mit Ihnen vernetzen.`;
+    }
+
+    await createNotification({
+      userId: notifyUserId,
+      type: NotificationType.MATCH_ACCEPTED,
+      title,
+      body,
+      url: `/Matches/search`
+    });
+  } catch (e) {
+    // Fehler ignorieren, damit die Funktion nicht gestört wird
+    console.error("Notification error:", e);
+  }
 
   return NextResponse.json({ success: true, match: updated });
 }

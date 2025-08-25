@@ -112,7 +112,7 @@ export default function NewsPage() {
         ) : (
           <div className="flex flex-col gap-8">
             {news.map(n => (
-              <article key={n.id} className="bg-white hover:bg-gray-50 rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-pointer overflow-hidden group flex md:flex-row flex-col h-64 md:h-64 min-h-0">
+              <article key={n.id} className="bg-white hover:bg-gray-50 rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-pointer overflow-hidden group flex md:flex-row flex-col h-auto md:h-64 min-h-0">
                 {n.imageUrl && (
                   <div className="md:w-48 w-full h-64 relative flex-shrink-0">
                     <img src={n.imageUrl} alt={n.title} className="object-cover w-full h-full" />
@@ -130,7 +130,7 @@ export default function NewsPage() {
                     </div>
                     <p className="text-gray-600 line-clamp-3 mb-2">{n.shortText}</p>
                   </div>
-                  <div className="mt-2">
+                  <div className="mt-6 text-center">
                     <Link href={`/news/${n.id}`} className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all">
                       Mehr erfahren <ArrowRight className="w-4 h-4" />
                     </Link>

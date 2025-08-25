@@ -23,6 +23,8 @@ import {
   ChevronRight,
   UserRoundCog,
   House,
+  Network,
+  ThumbsUp
 } from "lucide-react";
 import MatchingList from "./MatchingList";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -477,7 +479,7 @@ export default function DashboardPage() {
                   href="/company"
                   className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 hover:shadow-md transition-all"
                 >
-                  <Users className="w-5 h-5 text-gray-600" />
+                  <UserRoundCog className="w-5 h-5 text-gray-600" />
                   <span>Unternehmensprofil</span>
                 </Link>
 
@@ -485,7 +487,7 @@ export default function DashboardPage() {
                   href="/netzwerk"
                   className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 hover:shadow-md transition-all"
                 >
-                  <Users className="w-5 h-5 text-blue-600" />
+                  <Network className="w-5 h-5 text-blue-600" />
                   <span>Netzwerk</span>
                 </Link>
 
@@ -493,7 +495,7 @@ export default function DashboardPage() {
                   href="/Matches"
                   className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 hover:shadow-md transition-all"
                 >
-                  <Users className="w-5 h-5 text-green-600" />
+                  <ThumbsUp className="w-5 h-5 text-green-600" />
                   <span>Matches</span>
                 </Link>
               </div>

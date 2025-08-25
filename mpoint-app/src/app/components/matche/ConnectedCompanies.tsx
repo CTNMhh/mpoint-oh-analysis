@@ -14,8 +14,8 @@ export default function ConnectedCompanies() {
   useEffect(() => {
     if (!session?.user?.id) return;
     fetch(`/api/company?userId=${session.user.id}`)
-      .then(r => r.json())
-      .then(d => {
+      .then((r) => r.json())
+      .then((d) => {
         const id = Array.isArray(d) ? d[0]?.id : d?.id;
         setMyCompanyId(id ?? null);
       })
@@ -29,7 +29,7 @@ export default function ConnectedCompanies() {
     const fetchMatches = () => {
       setLoading(true);
       fetch(`/api/matching/connected?userId=${session.user.id}`)
-        .then(res => res.json())
+        .then((res) => res.json())
         .then(setMatches)
         .finally(() => setLoading(false));
     };
@@ -45,23 +45,37 @@ export default function ConnectedCompanies() {
   }, [session?.user?.id]);
 
   if (!session?.user?.id) return null;
-  if (loading) return <div>Lade vernetzte Unternehmen...</div>;
-  if (!myCompanyId) return <div className="text-gray-400 text-sm">Kein Unternehmen für deinen User gefunden.</div>;
-  if (matches.length === 0) return <div className="text-gray-400 text-sm">Noch keine Vernetzungen.</div>;
 
   return (
-    <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-      <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-        <Building2 className="w-5 h-5 text-[#e60000]" />
-        Vernetzte Unternehmen
-      </h2>
-      <ul className="space-y-3">
-        {matches.map(match => {
-          const partner = match.senderCompany?.id === myCompanyId ? match.receiverCompany : match.senderCompany;
+    <section className="bg-white rounded-xl shadow-sm p-6">
+      <div className="flex items-start justify-between mb-6">
+        <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+          Vernetzte Unternehmen
+        </h2>
+        <Building2 className="w-6 h-6 text-[#e60000]" />
+      </div>
+      <div className="flex flex-col gap-3">
+      {loading ? (
+        <div className="flex items-center justify-center py-3">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#e60000]"></div>
+        </div>
+      ) : matches.length === 0 ? (
+        <div className="text-gray-500">Noch keine Vernetzungen.</div>
+      ) : !myCompanyId ? (
+        <div className="text-gray-500">Kein Unternehmen für diesen User gefunden.</div>
+      ) : (
+        <ul className="space-y-3">
+        {matches.map((match) => {
+          const partner =
+            match.senderCompany?.id === myCompanyId
+              ? match.receiverCompany
+              : match.senderCompany;
           return (
             <li key={match.id} className="flex items-center gap-3">
               <Building2 className="w-6 h-6 text-gray-400" />
-              <span className="font-medium">{partner?.name || "Unbekanntes Unternehmen"}</span>
+              <span className="font-medium">
+                {partner?.name || "Unbekanntes Unternehmen"}
+              </span>
               <button
                 className="ml-auto flex items-center gap-1 text-[#e60000] hover:underline text-xs"
                 onClick={() => router.push(`/chat/${match.id}`)}
@@ -74,6 +88,8 @@ export default function ConnectedCompanies() {
           );
         })}
       </ul>
+      )}
+      </div>
     </section>
   );
 }
