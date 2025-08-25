@@ -506,7 +506,7 @@ export default function EventsPage() {
               <div className="space-y-4">
                 {myEvents.length === 0 ? (
                   <div className="text-center text-gray-500">
-                    Keine Events verfügbar.
+                    Du hast noch keine Events erstellt.
                   </div>
                 ) : (
                   myEvents.map((event) => {
@@ -575,7 +575,7 @@ export default function EventsPage() {
                           </div>
                           <Link
                             href={`/events/${event.id}`}
-                            className="ml-4 bg-[rgb(228,25,31)] text-white px-4 py-2 rounded hover:bg-red-700 transition-colors text-sm font-semibold"
+                            className="ml-4 bg-[rgb(228,25,31)] text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm font-semibold"
                           >
                             Details
                           </Link>
@@ -596,7 +596,7 @@ export default function EventsPage() {
               <div className="space-y-4">
                 {availableEvents.length === 0 ? (
                   <div className="text-center text-gray-500">
-                    Es gibt aktuell keine verfügbaren Events anderer Nutzer..
+                    Es gibt aktuell keine verfügbaren Events anderer Nutzer.
                   </div>
                 ) : (
                   availableEvents.map((event) => {
@@ -681,8 +681,10 @@ export default function EventsPage() {
 
         {/* Grid-Ansicht */}
         {viewMode === "grid" && (
+
           <div className="flex flex-row gap-6">
             {/* Meine erstellten Events */}
+
             <div className="bg-white rounded-xl shadow-sm p-6 basis-1/2">
               <div className="flex items-start justify-between mb-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
@@ -692,7 +694,7 @@ export default function EventsPage() {
               </div>
               <div className="space-y-4">
                 {myEvents.length === 0 ? (
-                  <p className="text-center text-gray-500 mb-12">
+                  <p className="text-center text-gray-500">
                     Du hast noch keine Events erstellt.
                   </p>
                 ) : (

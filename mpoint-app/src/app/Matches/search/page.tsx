@@ -49,7 +49,7 @@ export default function MatchingMarketplacePage() {
           {/* Left Column - Matches */}
           <div className="lg:col-span-2 space-y-6">
             {/* Top Matches */}
-            <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <section className="bg-white rounded-xl shadow-sm p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold text-gray-900">
                   Ihre Top-Matches
@@ -86,7 +86,7 @@ export default function MatchingMarketplacePage() {
             <MarketplaceSection />
 
             {/* Stats Widget */}
-            <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <section className="bg-white rounded-xl shadow-sm p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold text-gray-900">
                   Ihre Aktivität
