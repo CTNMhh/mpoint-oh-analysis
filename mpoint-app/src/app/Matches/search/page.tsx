@@ -22,6 +22,7 @@ import {
   FileText,
   Menu,
   X,
+  Activity
 } from "lucide-react";
 import MatchingList from "../../dashboard/MatchingList";
 import MarketplaceSection from "../../components/marketplace/MarketplaceSection";
@@ -32,80 +33,90 @@ import CompanySearch from "../../components/matche/CompanySearch";
 
 export default function MatchingMarketplacePage() {
   return (
-      <main className="min-h-screen bg-gray-50 pt-20">
-    {/* Main Content */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-					<div className="bg-white rounded-xl shadow-sm p-6">
-						<h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3 mb-4">
-							<Star className="w-8 h-8 text-[#e60000]" />
-							Matching
-						</h1>
-						<p className="text-gray-600">Hier finden Sie alle Informationen zum Business-Matching.</p>
-					</div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left Column - Matches */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Top Matches */}
-              <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-semibold text-gray-900">Ihre Top-Matches</h2>
-                  <span className="text-sm text-gray-500">
-                    KI-basierte Empfehlungen
-                  </span>
-                  <Sparkles className="w-5 h-5 text-[#e60000]" />
-                </div>
-
-                <MatchingList limit={3} />
-                <div className="mt-6 text-center">
-                  <Link href="/Matches" className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all">
-                    Alle Matches anzeigen <ArrowRight className="w-4 h-4" />
-                  </Link>
-                </div>
-              </section>
-
-              <CompanySearch />
-            </div>
-
-            {/* Right Column - Communication & Marketplace */}
-            <aside className="space-y-6">
-              <IncomingRequests />
-
-              <OutgoingRequests />
-
-              <ConnectedCompanies />
-
-              {/* Marketplace */}
-              <MarketplaceSection />
-
-              {/* Stats Widget */}
-              <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <h3 className="font-semibold text-gray-900 mb-4">
-                  Ihre Aktivität
-                </h3>
-                <div className="space-y-3">
-                  <StatItem
-                    icon={<TrendingUp className="w-4 h-4" />}
-                    label="Match-Rate"
-                    value="73%"
-                    trend="+5%"
-                  />
-                  <StatItem
-                    icon={<Users className="w-4 h-4" />}
-                    label="Neue Kontakte"
-                    value="12"
-                    subtext="diese Woche"
-                  />
-                  <StatItem
-                    icon={<Briefcase className="w-4 h-4" />}
-                    label="Aktive Projekte"
-                    value="3"
-                  />
-                </div>
-              </section>
-            </aside>
-          </div>
+    <main className="min-h-screen bg-gray-50 pt-20">
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3 mb-4">
+            <Star className="w-8 h-8 text-[#e60000]" />
+            Matching
+          </h1>
+          <p className="text-gray-600">
+            Hier finden Sie alle Informationen zum Business-Matching.
+          </p>
         </div>
-      </main>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Column - Matches */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Top Matches */}
+            <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-gray-900">
+                  Ihre Top-Matches
+                </h2>
+                <span className="text-sm text-gray-500">
+                  KI-basierte Empfehlungen
+                </span>
+                <Sparkles className="w-5 h-5 text-[#e60000]" />
+              </div>
+
+              <MatchingList limit={3} />
+              <div className="mt-6 text-center">
+                <Link
+                  href="/Matches"
+                  className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all"
+                >
+                  Alle Matches anzeigen <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </section>
+
+            <CompanySearch />
+          </div>
+
+          {/* Right Column - Communication & Marketplace */}
+          <aside className="space-y-6">
+            <IncomingRequests />
+
+            <OutgoingRequests />
+
+            <ConnectedCompanies />
+
+            {/* Marketplace */}
+            <MarketplaceSection />
+
+            {/* Stats Widget */}
+            <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-gray-900">
+                  Ihre Aktivität
+                </h2>
+                <Activity className="w-6 h-6 text-[#e60000]" />
+              </div>
+              <div className="space-y-4">
+                <StatItem
+                  icon={<TrendingUp className="w-4 h-4" />}
+                  label="Match-Rate"
+                  value="73%"
+                  trend="+5%"
+                />
+                <StatItem
+                  icon={<Users className="w-4 h-4" />}
+                  label="Neue Kontakte"
+                  value="12"
+                  subtext="diese Woche"
+                />
+                <StatItem
+                  icon={<Briefcase className="w-4 h-4" />}
+                  label="Aktive Projekte"
+                  value="3"
+                />
+              </div>
+            </section>
+          </aside>
+        </div>
+      </div>
+    </main>
   );
 }
 
@@ -329,18 +340,16 @@ function StatItem({
   subtext?: string;
 }) {
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between p-4 rounded-lg bg-white border border-gray-200 hover:bg-gray-50 hover:shadow-md transition-all">
       <div className="flex items-center gap-3">
         <div className="p-2 bg-gray-100 rounded-lg text-gray-600">{icon}</div>
         <span className="text-sm text-gray-600">{label}</span>
       </div>
       <div className="text-right">
         <div className="font-bold text-gray-900">
-          {value}
+          <span className="font-bold text-lg text-gray-900">{value}</span>
           {trend && (
-            <span className="ml-1 text-xs text-green-600 font-normal">
-              {trend}
-            </span>
+            <div className=" text-xs text-green-600 font-normal">{trend}</div>
           )}
         </div>
         {subtext && <div className="text-xs text-gray-500">{subtext}</div>}

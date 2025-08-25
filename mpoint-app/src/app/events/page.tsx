@@ -325,15 +325,6 @@ export default function EventsPage() {
                 Grid
               </button>
               <button
-                onClick={() => setViewMode('calendar')}
-                className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
-                  viewMode === 'calendar' ? 'bg-white text-gray-900 shadow' : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                <Calendar size={16} />
-                Kalender
-              </button>
-              <button
                 onClick={() => setViewMode('list')}
                 className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
                   viewMode === 'list' ? 'bg-white text-gray-900 shadow' : 'text-gray-600 hover:text-gray-900'
@@ -341,6 +332,15 @@ export default function EventsPage() {
               >
                 <List size={16} />
                 Liste
+              </button>
+              <button
+                onClick={() => setViewMode('calendar')}
+                className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
+                  viewMode === 'calendar' ? 'bg-white text-gray-900 shadow' : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <Calendar size={16} />
+                Kalender
               </button>
             </div>
 
