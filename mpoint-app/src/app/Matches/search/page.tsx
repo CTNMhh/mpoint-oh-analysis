@@ -1,6 +1,8 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
+
 import {
   Search,
   Filter,
@@ -30,8 +32,14 @@ import OutgoingRequests from "../../components/matche/MatchingRequests";
 import IncomingRequests from "../../components/matche/MatchingRequestsReceived";
 import ConnectedCompanies from "../../components/matche/ConnectedCompanies";
 import CompanySearch from "../../components/matche/CompanySearch";
+import RequireLogin from "../../components/auth/RequireLogin";
 
 export default function MatchingMarketplacePage() {
+    const { status } = useSession();
+
+  if (status === "unauthenticated") {
+    return <RequireLogin />;
+  }
   return (
     <main className="min-h-screen bg-gray-50 pt-20">
       {/* Main Content */}
