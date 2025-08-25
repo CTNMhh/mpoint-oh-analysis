@@ -8,17 +8,34 @@ import {
   BookingType,
   EventWithBookingInfo,
   getEventAvailability,
-  getAvailabilityColor
+  getAvailabilityColor,
 } from "./types";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import EventCreateForm from "./EventCreateForm";
-import { ChevronLeft, ChevronRight, Calendar, Grid3X3, List, Users } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Calendar,
+  Grid3X3,
+  List,
+  Users,
+} from "lucide-react";
 
 const MONTHS = [
-  "Januar", "Februar", "März", "April", "Mai", "Juni",
-  "Juli", "August", "September", "Oktober", "November", "Dezember"
+  "Januar",
+  "Februar",
+  "März",
+  "April",
+  "Mai",
+  "Juni",
+  "Juli",
+  "August",
+  "September",
+  "Oktober",
+  "November",
+  "Dezember",
 ];
 
 const WEEKDAYS = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
@@ -26,23 +43,27 @@ const WEEKDAYS = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
 // Payment Status Badge Komponente
 function PaymentStatusBadge({ status }: { status: string }) {
   const styles = {
-    NOT_REQUIRED: 'bg-gray-100 text-gray-700',
-    PENDING: 'bg-yellow-100 text-yellow-700',
-    PAID: 'bg-green-100 text-green-700',
-    REFUNDED: 'bg-blue-100 text-blue-700',
-    FAILED: 'bg-red-100 text-red-700',
+    NOT_REQUIRED: "bg-gray-100 text-gray-700",
+    PENDING: "bg-yellow-100 text-yellow-700",
+    PAID: "bg-green-100 text-green-700",
+    REFUNDED: "bg-blue-100 text-blue-700",
+    FAILED: "bg-red-100 text-red-700",
   };
 
   const labels = {
-    NOT_REQUIRED: 'Kostenfrei',
-    PENDING: 'Offen',
-    PAID: 'Bezahlt',
-    REFUNDED: 'Erstattet',
-    FAILED: 'Fehlgeschlagen',
+    NOT_REQUIRED: "Kostenfrei",
+    PENDING: "Offen",
+    PAID: "Bezahlt",
+    REFUNDED: "Erstattet",
+    FAILED: "Fehlgeschlagen",
   };
 
   return (
-    <span className={`px-2 py-1 rounded text-xs font-semibold ${styles[status] || styles.PENDING}`}>
+    <span
+      className={`px-2 py-1 rounded text-xs font-semibold ${
+        styles[status] || styles.PENDING
+      }`}
+    >
       {labels[status] || status}
     </span>
   );
@@ -67,9 +88,13 @@ function PlaceAvailability({ event }: { event: EventWithBookingInfo }) {
   return (
     <div className="space-y-2">
       {/* Badge mit Zahlen */}
-      <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${colorClass}`}>
+      <div
+        className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${colorClass}`}
+      >
         <Users size={14} />
-        <span>{bookedSpaces} von {maxParticipants} Plätzen</span>
+        <span>
+          {bookedSpaces} von {maxParticipants} Plätzen
+        </span>
         {availableSpaces <= 0 && <span className="ml-1">🔴 AUSGEBUCHT</span>}
       </div>
 
@@ -84,7 +109,8 @@ function PlaceAvailability({ event }: { event: EventWithBookingInfo }) {
       {/* Verfügbarkeits-Text */}
       {availableSpaces > 0 && availableSpaces <= 5 && (
         <p className="text-xs text-orange-600 font-semibold">
-          ⚠️ Nur noch {availableSpaces} {availableSpaces === 1 ? 'Platz' : 'Plätze'} verfügbar!
+          ⚠️ Nur noch {availableSpaces}{" "}
+          {availableSpaces === 1 ? "Platz" : "Plätze"} verfügbar!
         </p>
       )}
     </div>
@@ -93,14 +119,16 @@ function PlaceAvailability({ event }: { event: EventWithBookingInfo }) {
 
 // Payment Handler (Placeholder)
 async function handlePayment(bookingId: string) {
-  alert('Payment-Integration kommt bald!');
+  alert("Payment-Integration kommt bald!");
 }
 
 function enrichEventWithBookingInfo(event: EventType) {
   const bookedSpaces = event.bookedCount || 0;
   const maxParticipants = event.maxParticipants || 0;
-  const availableSpaces = maxParticipants > 0 ? Math.max(0, maxParticipants - bookedSpaces) : 0;
-  const bookingPercentage = maxParticipants > 0 ? (bookedSpaces / maxParticipants) * 100 : 0;
+  const availableSpaces =
+    maxParticipants > 0 ? Math.max(0, maxParticipants - bookedSpaces) : 0;
+  const bookingPercentage =
+    maxParticipants > 0 ? (bookedSpaces / maxParticipants) * 100 : 0;
   const isFullyBooked = availableSpaces === 0 && maxParticipants > 0;
   return {
     ...event,
@@ -117,10 +145,14 @@ export default function EventsPage() {
   const [events, setEvents] = useState<EventType[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [viewMode, setViewMode] = useState<'grid' | 'calendar' | 'list'>('grid');
+  const [viewMode, setViewMode] = useState<"grid" | "calendar" | "list">(
+    "grid"
+  );
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showYearPicker, setShowYearPicker] = useState(false);
-  const [eventBookingCounts, setEventBookingCounts] = useState<Record<string, number>>({});
+  const [eventBookingCounts, setEventBookingCounts] = useState<
+    Record<string, number>
+  >({});
 
   // NEU: Lade Buchungszahlen für alle Events
   useEffect(() => {
@@ -160,14 +192,14 @@ export default function EventsPage() {
     const handleClickOutside = (event: MouseEvent) => {
       if (showYearPicker) {
         const target = event.target as HTMLElement;
-        if (!target.closest('.year-picker-container')) {
+        if (!target.closest(".year-picker-container")) {
           setShowYearPicker(false);
         }
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showYearPicker]);
 
   useEffect(() => {
@@ -216,18 +248,20 @@ export default function EventsPage() {
     const targetMonth = date.getMonth();
     const targetDay = date.getDate();
 
-    return events.filter(event => {
+    return events.filter((event) => {
       const eventDate = new Date(event.startDate);
-      return eventDate.getFullYear() === targetYear &&
-             eventDate.getMonth() === targetMonth &&
-             eventDate.getDate() === targetDay;
+      return (
+        eventDate.getFullYear() === targetYear &&
+        eventDate.getMonth() === targetMonth &&
+        eventDate.getDate() === targetDay
+      );
     });
   };
 
-  const navigateMonth = (direction: 'prev' | 'next') => {
-    setCurrentDate(prev => {
+  const navigateMonth = (direction: "prev" | "next") => {
+    setCurrentDate((prev) => {
       const newDate = new Date(prev);
-      if (direction === 'prev') {
+      if (direction === "prev") {
         newDate.setMonth(prev.getMonth() - 1);
       } else {
         newDate.setMonth(prev.getMonth() + 1);
@@ -237,7 +271,7 @@ export default function EventsPage() {
   };
 
   const selectYear = (year: number) => {
-    setCurrentDate(prev => {
+    setCurrentDate((prev) => {
       const newDate = new Date(prev);
       newDate.setFullYear(year);
       return newDate;
@@ -260,28 +294,45 @@ export default function EventsPage() {
     const days = [];
 
     for (let i = 0; i < firstDay; i++) {
-      days.push(<div key={`empty-${i}`} className="h-14 border border-gray-200"></div>);
+      days.push(
+        <div key={`empty-${i}`} className="h-14 border border-gray-200"></div>
+      );
     }
 
     for (let day = 1; day <= daysInMonth; day++) {
-      const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+      const date = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth(),
+        day
+      );
       const dayEvents = getEventsForDate(date);
       const isToday = date.toDateString() === new Date().toDateString();
 
       days.push(
-        <div key={day} className={`h-14 border border-gray-200 p-0.5 overflow-hidden ${isToday ? 'bg-blue-50 border-blue-300' : 'bg-white'}`}>
-          <div className={`text-xs font-medium mb-0.5 ${isToday ? 'text-blue-600' : 'text-gray-900'}`}>
+        <div
+          key={day}
+          className={`h-14 border border-gray-200 p-0.5 overflow-hidden ${
+            isToday ? "bg-blue-50 border-blue-300" : "bg-white"
+          }`}
+        >
+          <div
+            className={`text-xs font-medium mb-0.5 ${
+              isToday ? "text-blue-600" : "text-gray-900"
+            }`}
+          >
             {day}
           </div>
           <div className="space-y-0.5">
-            {dayEvents.slice(0, 1).map(event => (
+            {dayEvents.slice(0, 1).map((event) => (
               <Link
                 key={event.id}
                 href={`/events/${event.id}`}
                 className="block text-xs px-1 py-0.5 bg-red-100 text-red-800 rounded truncate hover:bg-red-200 transition-colors leading-tight"
                 title={event.title}
               >
-                {event.title.length > 12 ? event.title.substring(0, 12) + '...' : event.title}
+                {event.title.length > 12
+                  ? event.title.substring(0, 12) + "..."
+                  : event.title}
               </Link>
             ))}
             {dayEvents.length > 1 && (
@@ -309,34 +360,42 @@ export default function EventsPage() {
             <Calendar className="w-8 h-8 text-[#e60000]" />
             Events
           </h1>
-          <p className="text-gray-600">Hier finden Sie alle Informationen zu Ihren Events.</p>
+          <p className="text-gray-600">
+            Hier finden Sie alle Informationen zu Ihren Events.
+          </p>
         </div>
         <div className="flex justify-end items-center mb-8">
           <div className="flex items-center gap-4">
             {/* View Mode Toggle */}
             <div className="flex bg-gray-100 rounded-lg p-1">
               <button
-                onClick={() => setViewMode('grid')}
+                onClick={() => setViewMode("grid")}
                 className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
-                  viewMode === 'grid' ? 'bg-white text-gray-900 shadow' : 'text-gray-600 hover:text-gray-900'
+                  viewMode === "grid"
+                    ? "bg-white text-gray-900 shadow"
+                    : "text-gray-600 hover:text-gray-900"
                 }`}
               >
                 <Grid3X3 size={16} />
                 Grid
               </button>
               <button
-                onClick={() => setViewMode('list')}
+                onClick={() => setViewMode("list")}
                 className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
-                  viewMode === 'list' ? 'bg-white text-gray-900 shadow' : 'text-gray-600 hover:text-gray-900'
+                  viewMode === "list"
+                    ? "bg-white text-gray-900 shadow"
+                    : "text-gray-600 hover:text-gray-900"
                 }`}
               >
                 <List size={16} />
                 Liste
               </button>
               <button
-                onClick={() => setViewMode('calendar')}
+                onClick={() => setViewMode("calendar")}
                 className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
-                  viewMode === 'calendar' ? 'bg-white text-gray-900 shadow' : 'text-gray-600 hover:text-gray-900'
+                  viewMode === "calendar"
+                    ? "bg-white text-gray-900 shadow"
+                    : "text-gray-600 hover:text-gray-900"
                 }`}
               >
                 <Calendar size={16} />
@@ -364,13 +423,13 @@ export default function EventsPage() {
         )}
 
         {/* Kalender-Ansicht */}
-        {viewMode === 'calendar' && (
+        {viewMode === "calendar" && (
           <div className="mb-12">
             <div className="bg-white rounded-xl shadow p-3 max-w-4xl mx-auto">
               {/* Kalender Header */}
               <div className="flex items-center justify-between mb-3">
                 <button
-                  onClick={() => navigateMonth('prev')}
+                  onClick={() => navigateMonth("prev")}
                   className="p-1 hover:bg-gray-100 rounded transition-colors"
                 >
                   <ChevronLeft size={16} />
@@ -390,12 +449,14 @@ export default function EventsPage() {
 
                     {showYearPicker && (
                       <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto min-w-[80px]">
-                        {generateYearOptions().map(year => (
+                        {generateYearOptions().map((year) => (
                           <button
                             key={year}
                             onClick={() => selectYear(year)}
                             className={`block w-full px-3 py-2 text-sm text-left hover:bg-gray-100 transition-colors ${
-                              year === currentDate.getFullYear() ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-900'
+                              year === currentDate.getFullYear()
+                                ? "bg-blue-50 text-blue-600 font-semibold"
+                                : "text-gray-900"
                             }`}
                           >
                             {year}
@@ -407,7 +468,7 @@ export default function EventsPage() {
                 </div>
 
                 <button
-                  onClick={() => navigateMonth('next')}
+                  onClick={() => navigateMonth("next")}
                   className="p-1 hover:bg-gray-100 rounded transition-colors"
                 >
                   <ChevronRight size={16} />
@@ -416,23 +477,24 @@ export default function EventsPage() {
 
               {/* Wochentage */}
               <div className="grid grid-cols-7 gap-0 mb-1">
-                {WEEKDAYS.map(day => (
-                  <div key={day} className="p-1 text-center text-xs font-medium text-gray-600 border-b">
+                {WEEKDAYS.map((day) => (
+                  <div
+                    key={day}
+                    className="p-1 text-center text-xs font-medium text-gray-600 border-b"
+                  >
                     {day}
                   </div>
                 ))}
               </div>
 
               {/* Kalendertage */}
-              <div className="grid grid-cols-7 gap-0">
-                {renderCalendar()}
-              </div>
+              <div className="grid grid-cols-7 gap-0">{renderCalendar()}</div>
             </div>
           </div>
         )}
 
         {/* Listen-Ansicht */}
-        {viewMode === 'list' && (
+        {viewMode === "list" && (
           <div className="mb-12">
             <div className="bg-white rounded-xl shadow overflow-hidden">
               <div className="p-6 border-b border-gray-200">
@@ -447,18 +509,24 @@ export default function EventsPage() {
                   visibleEvents.map((event) => {
                     const enrichedEvent = enrichEventWithBookingInfo(event);
                     return (
-                      <div key={event.id} className="p-6 border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                      <div
+                        key={event.id}
+                        className="p-6 border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                      >
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <h2 className="text-xl font-bold mb-2">
                               {event.title}
-                              {(
-                                event.user.email === session?.user?.email
-                                  ? <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-semibold">{event.status}</span>
-                                  : (event.status === EventStatus.FULL || event.status === EventStatus.CANCELLED)
-                                    ? <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-semibold">{event.status}</span>
-                                    : null
-                              )}
+                              {event.user.email === session?.user?.email ? (
+                                <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-semibold">
+                                  {event.status}
+                                </span>
+                              ) : event.status === EventStatus.FULL ||
+                                event.status === EventStatus.CANCELLED ? (
+                                <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-semibold">
+                                  {event.status}
+                                </span>
+                              ) : null}
                             </h2>
 
                             {/* NEU: Platz-Verfügbarkeit in Listen-Ansicht */}
@@ -470,21 +538,33 @@ export default function EventsPage() {
                               <span>
                                 📅 {new Date(event.startDate).toLocaleString()}
                                 {event.endDate && (
-                                  <> – {new Date(event.endDate).toLocaleString()}</>
-                                )}
-                                {" "}– {event.location}
+                                  <>
+                                    {" "}
+                                    – {new Date(event.endDate).toLocaleString()}
+                                  </>
+                                )}{" "}
+                                – {event.location}
                               </span>
                               {event.chargeFree ? (
-                                <span className="text-green-700 font-semibold">✓ Kostenfrei</span>
+                                <span className="text-green-700 font-semibold">
+                                  ✓ Kostenfrei
+                                </span>
                               ) : event.price > 0 ? (
                                 <span>💰 {event.price} €</span>
                               ) : null}
-                              <span>👤 {event.user.firstName} {event.user.lastName}</span>
+                              <span>
+                                👤 {event.user.firstName} {event.user.lastName}
+                              </span>
                             </div>
-                            <p className="text-gray-700 line-clamp-2">{event.description}</p>
+                            <p className="text-gray-700 line-clamp-2">
+                              {event.description}
+                            </p>
                             <div className="flex flex-wrap gap-2 mt-2">
                               {event.categories.map((cat) => (
-                                <span key={cat} className="bg-gray-100 text-xs px-2 py-1 rounded">
+                                <span
+                                  key={cat}
+                                  className="bg-gray-100 text-xs px-2 py-1 rounded"
+                                >
                                   {cat}
                                 </span>
                               ))}
@@ -507,185 +587,219 @@ export default function EventsPage() {
         )}
 
         {/* Grid-Ansicht */}
-        {viewMode === 'grid' && (
-          <>
+        {viewMode === "grid" && (
+          <div className="flex flex-row gap-6">
             {/* Meine erstellten Events */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h2 className="text-xl font-semibold text-gray-900">
-                Meine erstellten Events
-              </h2>
-              {myEvents.length === 0 ? (
-              <p className="text-center text-gray-500 mb-12">
-                Du hast noch keine Events erstellt.
-              </p>
-              ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-                {myEvents.map((event) => {
-                  const enrichedEvent = enrichEventWithBookingInfo(event);
-                  return (
-                    <div key={event.id} className="bg-white rounded-xl shadow p-6 flex flex-col">
-                      {event.imageUrl && (
-                        <img
-                          src={event.imageUrl}
-                          alt={event.title}
-                          className="rounded-lg mb-4 h-40 object-cover"
-                        />
-                      )}
-                      <h2 className="text-xl font-bold mb-2">
-                        {event.title}
-                        {(
-                          event.user.email === session?.user?.email
-                            ? <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-semibold">{event.status}</span>
-                            : (event.status === EventStatus.FULL || event.status === EventStatus.CANCELLED)
-                              ? <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-semibold">{event.status}</span>
-                              : null
-                        )}
-                      </h2>
-
-                      {/* NEU: Platz-Verfügbarkeit in Grid-Ansicht */}
-                      <div className="mb-3">
-                        <PlaceAvailability event={enrichedEvent} />
-                      </div>
-
-                      <div className="text-gray-600 mb-2">
-                        {new Date(event.startDate).toLocaleString()}
-                        {event.endDate && (
-                          <> – {new Date(event.endDate).toLocaleString()}</>
-                        )}
-                        {" "}– {event.location}
-                      </div>
-                      {!event.chargeFree && event.price > 0 ? (
-                        <div className="text-gray-700 font-medium mb-2">
-                          Preis: <span className="font-semibold">{event.price} €</span>
-                        </div>
-                      ) : event.chargeFree ? (
-                        <div className="text-green-700 font-bold mb-2">
-                          ✓ Kostenfrei
-                        </div>
-                      ) : null}
-                      <div className="text-gray-500 text-sm mb-2">
-                        Veranstalter:{" "}
-                        <span className="font-semibold">{event.ventType}</span>
-                      </div>
-                      <div className="mb-4 line-clamp-3">{event.description}</div>
-                      <div className="flex flex-wrap gap-2 mb-2">
-                        {event.categories.map((cat) => (
-                          <span
-                            key={cat}
-                            className="bg-gray-100 text-xs px-2 py-1 rounded"
-                          >
-                            {cat}
-                          </span>
-                        ))}
-                      </div>
-                      <div className="mt-auto space-y-2">
-                        <Link
-                          href={`/events/${event.id}`}
-                          className="bg-[rgb(228,25,31)] text-white px-4 py-2 rounded hover:bg-red-700 transition-colors text-center block"
-                        >
-                          Details & Anmeldung
-                        </Link>
-                        <Link
-                          href={`/events/${event.id}/edit`}
-                          className="px-4 py-2 bg-yellow-400 text-gray-900 font-semibold shadow hover:bg-yellow-500 transition-colors text-center block"
-                        >
-                          Event bearbeiten
-                        </Link>
-                      </div>
-                    </div>
-                  );
-                })}
+            <div className="bg-white rounded-xl shadow-sm p-6 basis-1/2">
+              <div className="flex items-start justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  Meine erstellten Events
+                </h2>
+                <Calendar className="w-6 h-6 text-[#e60000]" />
               </div>
-              )}
+              <div className="space-y-4">
+                {myEvents.length === 0 ? (
+                  <p className="text-center text-gray-500 mb-12">
+                    Du hast noch keine Events erstellt.
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                    {myEvents.map((event) => {
+                      const enrichedEvent = enrichEventWithBookingInfo(event);
+                      return (
+                        <div
+                          key={event.id}
+                          className="flex flex-col rounded-lg bg-white border border-gray-200 hover:bg-gray-50 hover:shadow-md transition-all"
+                        >
+                          {event.imageUrl && (
+                            <img
+                              src={event.imageUrl}
+                              alt={event.title}
+                              className="mb-4 h-40 object-cover w-full rounded-t-lg"
+                            />
+                          )}
+                          <h2 className="text-xl font-bold mb-2 px-4">
+                            {event.title}
+                            {event.user.email === session?.user?.email ? (
+                              <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-semibold">
+                                {event.status}
+                              </span>
+                            ) : event.status === EventStatus.FULL ||
+                              event.status === EventStatus.CANCELLED ? (
+                              <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-semibold">
+                                {event.status}
+                              </span>
+                            ) : null}
+                          </h2>
+
+                          {/* NEU: Platz-Verfügbarkeit in Grid-Ansicht */}
+                          <div className="mb-3 px-4">
+                            <PlaceAvailability event={enrichedEvent} />
+                          </div>
+
+                          <div className="text-gray-600 mb-2 px-4">
+                            {new Date(event.startDate).toLocaleString()}
+                            {event.endDate && (
+                              <> – {new Date(event.endDate).toLocaleString()}</>
+                            )}{" "}
+                            – {event.location}
+                          </div>
+                          {!event.chargeFree && event.price > 0 ? (
+                            <div className="text-gray-700 font-medium mb-2 px-4">
+                              Preis:{" "}
+                              <span className="font-semibold">
+                                {event.price} €
+                              </span>
+                            </div>
+                          ) : event.chargeFree ? (
+                            <div className="text-green-700 font-bold mb-2 px-4">
+                              ✓ Kostenfrei
+                            </div>
+                          ) : null}
+                          <div className="text-gray-500 text-sm mb-2 px-4">
+                            Veranstalter:{" "}
+                            <span className="font-semibold">
+                              {event.ventType}
+                            </span>
+                          </div>
+                          <div className="mb-4 line-clamp-3 px-4">
+                            {event.description}
+                          </div>
+                          <div className="flex flex-wrap gap-2 mb-2 px-4">
+                            {event.categories.map((cat) => (
+                              <span
+                                key={cat}
+                                className="bg-gray-100 text-xs px-2 py-1 rounded"
+                              >
+                                {cat}
+                              </span>
+                            ))}
+                          </div>
+                          <div className="flex flex-col mt-8 space-y-2 px-4 pb-2 justify-center">
+                            <Link
+                              href={`/events/${event.id}`}
+                              className="bg-[#e60000] hover:bg-red-700 text-white px-4 py-2 rounded-xl transition-all font-medium mb-2 py-4 w-full text-center"
+                            >
+                              Details & Anmeldung
+                            </Link>
+                            <Link
+                              href={`/events/${event.id}/edit`}
+                              className="bg-sky-700 hover:bg-sky-500 text-white px-4 py-2 rounded-xl transition-all font-medium mb-2 py-4 w-full text-center"
+                            >
+                              Event bearbeiten
+                            </Link>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Verfügbare Events anderer User */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-900">
-              Verfügbare Events
-            </h2>
-            {availableEvents.length === 0 ? (
-              <p className="text-center text-gray-500">
-                Es gibt aktuell keine verfügbaren Events anderer Nutzer.
-              </p>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-                {availableEvents.map((event) => {
-                  const enrichedEvent = enrichEventWithBookingInfo(event);
-                  return (
-                    <div key={event.id} className="bg-white rounded-xl shadow p-6 flex flex-col">
-                      {event.imageUrl && (
-                        <img
-                          src={event.imageUrl}
-                          alt={event.title}
-                          className="rounded-lg mb-4 h-40 object-cover"
-                        />
-                      )}
-                      <h2 className="text-xl font-bold mb-2">
-                        {event.title}
-                        {(event.status === EventStatus.FULL || event.status === EventStatus.CANCELLED) && (
-                          <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-semibold">
-                            {event.status}
-                          </span>
-                        )}
-                      </h2>
-
-                      {/* NEU: Platz-Verfügbarkeit für verfügbare Events */}
-                      <div className="mb-3">
-                        <PlaceAvailability event={enrichedEvent} />
-                      </div>
-
-                      <div className="text-gray-600 mb-2">
-                        {new Date(event.startDate).toLocaleString()}
-                        {event.endDate && (
-                          <> – {new Date(event.endDate).toLocaleString()}</>
-                        )}
-                        {" "}– {event.location}
-                      </div>
-                      <div className="text-gray-700 font-medium mb-2">
-                        Preis:{" "}
-                        {event.price === 0 ? (
-                          <span className="text-green-700 font-semibold">Kostenlos</span>
-                        ) : (
-                          <span className="font-semibold">{event.price} €</span>
-                        )}
-                      </div>
-                      <div className="text-gray-500 text-sm mb-2">
-                        Veranstalter:{" "}
-                        <span className="font-semibold">{event.ventType}</span>
-                      </div>
-                      <div className="mb-4 line-clamp-3">{event.description}</div>
-                      <div className="flex flex-wrap gap-2 mb-2">
-                        {event.categories.map((cat) => (
-                          <span
-                            key={cat}
-                            className="bg-gray-100 text-xs px-2 py-1 rounded"
-                          >
-                            {cat}
-                          </span>
-                        ))}
-                      </div>
-                      <div className="mt-auto">
-                        <Link
-                          href={`/events/${event.id}`}
-                          className={`${
-                            event.isFullyBooked
-                              ? 'bg-gray-400 cursor-not-allowed'
-                              : 'bg-[rgb(228,25,31)] hover:bg-red-700'
-                          } text-white px-4 py-2 rounded transition-colors text-center block`}
-                        >
-                          {event.isFullyBooked ? 'Ausgebucht' : 'Details & Anmeldung'}
-                        </Link>
-                      </div>
-                    </div>
-                  );
-                })}
+            <div className="bg-white rounded-xl shadow-sm p-6 basis-1/2">
+              <div className="flex items-start justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  Verfügbare Events
+                </h2>
+                <Calendar className="w-6 h-6 text-[#e60000]" />
               </div>
-            )}
-            </div>
-          </>
-        )}
+              {availableEvents.length === 0 ? (
+                <p className="text-center text-gray-500">
+                  Es gibt aktuell keine verfügbaren Events anderer Nutzer.
+                </p>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                  {availableEvents.map((event) => {
+                    const enrichedEvent = enrichEventWithBookingInfo(event);
+                    return (
+                      <div
+                        key={event.id}
+                        className="bg-white rounded-xl shadow p-6 flex flex-col"
+                      >
+                        {event.imageUrl && (
+                          <img
+                            src={event.imageUrl}
+                            alt={event.title}
+                            className="rounded-lg mb-4 h-40 object-cover"
+                          />
+                        )}
+                        <h2 className="text-xl font-bold mb-2">
+                          {event.title}
+                          {(event.status === EventStatus.FULL ||
+                            event.status === EventStatus.CANCELLED) && (
+                            <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-semibold">
+                              {event.status}
+                            </span>
+                          )}
+                        </h2>
 
+                        {/* NEU: Platz-Verfügbarkeit für verfügbare Events */}
+                        <div className="mb-3">
+                          <PlaceAvailability event={enrichedEvent} />
+                        </div>
+
+                        <div className="text-gray-600 mb-2">
+                          {new Date(event.startDate).toLocaleString()}
+                          {event.endDate && (
+                            <> – {new Date(event.endDate).toLocaleString()}</>
+                          )}{" "}
+                          – {event.location}
+                        </div>
+                        <div className="text-gray-700 font-medium mb-2">
+                          Preis:{" "}
+                          {event.price === 0 ? (
+                            <span className="text-green-700 font-semibold">
+                              Kostenlos
+                            </span>
+                          ) : (
+                            <span className="font-semibold">
+                              {event.price} €
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-gray-500 text-sm mb-2">
+                          Veranstalter:{" "}
+                          <span className="font-semibold">
+                            {event.ventType}
+                          </span>
+                        </div>
+                        <div className="mb-4 line-clamp-3">
+                          {event.description}
+                        </div>
+                        <div className="flex flex-wrap gap-2 mb-2">
+                          {event.categories.map((cat) => (
+                            <span
+                              key={cat}
+                              className="bg-gray-100 text-xs px-2 py-1 rounded"
+                            >
+                              {cat}
+                            </span>
+                          ))}
+                        </div>
+                        <div className="mt-auto">
+                          <Link
+                            href={`/events/${event.id}`}
+                            className={`${
+                              event.isFullyBooked
+                                ? "bg-gray-400 cursor-not-allowed"
+                                : "bg-[rgb(228,25,31)] hover:bg-red-700"
+                            } text-white px-4 py-2 rounded transition-colors text-center block`}
+                          >
+                            {event.isFullyBooked
+                              ? "Ausgebucht"
+                              : "Details & Anmeldung"}
+                          </Link>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </main>
   );
