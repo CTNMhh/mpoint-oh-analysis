@@ -3,34 +3,33 @@
 "use client";
 
 import { notFound } from "next/navigation";
-import { useEffect, useState, use } from "react"; // NEU: use importieren
-import { Calendar } from "lucide-react";
+import { useEffect, useState, use } from "react";
+import { Calendar, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { EventType, EventStatus } from "../types";
 import { useCart } from "@/context/CartContext";
 import { useRouter } from "next/navigation";
 
-export default function EventDetailPage({
-  params
-}: {
-  params: Promise<{ id: string }> // NEU: Promise type
-}) {
-  // NEU: params unwrappen
-  const resolvedParams = use(params);
+export default function EventDetailPage({ params }: { params: Promise<{ id: string }> | { id: string } }) {
+  // React 19+ unwrap (falls Promise), sonst direkt nutzen
+  const resolvedParams =
+    typeof (params as any)?.then === "function" ? use(params as Promise<{ id: string }>) : (params as { id: string });
   const eventId = resolvedParams.id;
+
   const [event, setEvent] = useState<EventType | null>(null);
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [spaces, setSpaces] = useState(1); // NEU: State für Anzahl Plätze
+  const [spaces, setSpaces] = useState(1);
+  const router = useRouter();
   const { data: session, status } = useSession();
   const { refreshCart } = useCart();
 
   useEffect(() => {
     async function fetchEvent() {
       setLoading(true);
-      const res = await fetch(`/api/events/${eventId}`); // statt params.id
+      const res = await fetch(`/api/events/${eventId}`);
       if (res.ok) {
         const data = await res.json();
         setEvent(data);
@@ -40,9 +39,9 @@ export default function EventDetailPage({
       setLoading(false);
     }
     fetchEvent();
-  }, [eventId]); // statt [params.id]
+  }, [eventId]);
 
-  // Nicht eingeloggt: Hinweis & Login-Button
+  // Frühzeitige Returns NACH allen Hooks:
   if (status === "unauthenticated") {
     return (
       <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-white">
@@ -80,8 +79,6 @@ export default function EventDetailPage({
     : "";
   const userEmail = session?.user?.email || "";
 
-  const router = useRouter();
-
   async function handleAddToCart(eventId: string, spaces: number = 1) {
     setSuccess(null);
     setError(null);
@@ -93,7 +90,7 @@ export default function EventDetailPage({
     if (res.ok) {
       setSuccess("Event wurde dem Warenkorb hinzugefügt!");
       refreshCart();
-      router.push("/cart"); // <-- Weiterleitung zu /cart
+      router.push("/cart");
     } else {
       setError("Fehler beim Hinzufügen zum Warenkorb.");
     }
