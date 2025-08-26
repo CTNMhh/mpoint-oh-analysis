@@ -241,7 +241,7 @@ export default function EventDetailPage({
         {/* Nur noch EIN Button für alle Events */}
         <button
           type="button"
-          className="bg-[#e60000] text-white px-4 py-2 rounded-xl font-medium hover:bg-[#c01a1f] transition-colors shadow  cursor-pointer w-full md:w-auto"
+          className="bg-[#e60000] text-white px-4 py-2 rounded-xl font-medium hover:bg-[#c01a1f] transition-colors shadow  cursor-pointer w-full"
           onClick={() => handleAddToCart(event.id, spaces)}
         >
           In den Warenkorb
