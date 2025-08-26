@@ -887,43 +887,9 @@ function MarketplaceContent() {
             </p>
           </div>
           {/* Project Bar */}
+          {/*
           <div className="flex justify-end items-center mb-8">
             <div className="flex items-center gap-4">
-              <div className="flex bg-gray-100 rounded-lg p-1">
-                <button
-                  onClick={() => setViewMode("grid")}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
-                    viewMode === "grid"
-                      ? "bg-white text-gray-900 shadow"
-                      : "text-gray-600 hover:text-gray-900"
-                  }`}
-                >
-                  <Grid3X3 size={16} />
-                  Grid
-                </button>
-                <button
-                  onClick={() => setViewMode("list")}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
-                    viewMode === "list"
-                      ? "bg-white text-gray-900 shadow"
-                      : "text-gray-600 hover:text-gray-900"
-                  }`}
-                >
-                  <List size={16} />
-                  Liste
-                </button>
-                <button
-                  onClick={() => setViewMode("calendar")}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
-                    viewMode === "calendar"
-                      ? "bg-white text-gray-900 shadow"
-                      : "text-gray-600 hover:text-gray-900"
-                  }`}
-                >
-                  <Calendar size={16} />
-                  Kalender
-                </button>
-              </div>
               <button class="bg-[#e60000] text-white px-4 py-2 rounded-xl hover:bg-red-700 transition-all font-medium cursor-pointer"
               onClick={() => setShowModal(true)}
               >
@@ -931,6 +897,7 @@ function MarketplaceContent() {
               </button>
             </div>
           </div>
+          */}
           {/* Meine Projekte & Angefragte Projekte als Komponente */}
           {session?.user?.id && (
             <>
@@ -1019,7 +986,7 @@ function MarketplaceContent() {
               <div className="flex gap-2 items-center">
                 <button
                   type="button"
-                  className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
+                  className={`px-4 py-2 rounded-xl text-sm font-medium border transition-colors cursor-pointer ${
                     typeFilter === "Beide"
                       ? "bg-primary text-white border-primary"
                       : "bg-white text-gray-700 border-gray-300 hover:border-primary"
@@ -1030,10 +997,10 @@ function MarketplaceContent() {
                 </button>
                 <button
                   type="button"
-                  className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
+                  className={`px-4 py-2 rounded-xl text-sm font-medium border transition-colors cursor-pointer ${
                     typeFilter === "Anfrage"
                       ? "bg-yellow-50 text-yellow-700 border-yellow-200"
-                      : "bg-white text-gray-700 border-gray-300 hover:border-yellow-200"
+                      : "bg-white text-gray-700 border-yellow-300 hover:border-yellow-200"
                   }`}
                   onClick={() => handleTypeChange("Anfrage")}
                 >
@@ -1041,10 +1008,10 @@ function MarketplaceContent() {
                 </button>
                 <button
                   type="button"
-                  className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
+                  className={`px-4 py-2 rounded-xl text-sm font-medium border transition-colors cursor-pointer ${
                     typeFilter === "Angebot"
                       ? "bg-blue-50 text-blue-700 border-blue-200"
-                      : "bg-white text-gray-700 border-gray-300 hover:border-blue-200"
+                      : "bg-white text-gray-700 border-blue-300 hover:border-blue-200"
                   }`}
                   onClick={() => handleTypeChange("Angebot")}
                 >
@@ -1110,7 +1077,7 @@ function MarketplaceContent() {
                   <div className="p-4 border-b border-gray-100 flex-1 flex flex-col">
                     <div className="flex justify-between items-start mb-2">
                       <span
-                        className={`card-category px-3 py-1 rounded-full text-xs font-medium ${
+                        className={`card-category px-3 py-1 rounded-xl text-xs font-medium ${
                           categoryColorClasses[entry.category] ||
                           "bg-gray-50 text-gray-700"
                         }`}
@@ -1118,7 +1085,7 @@ function MarketplaceContent() {
                         {entry.category}
                       </span>
                       <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        className={`px-2 py-1 rounded-xl text-xs font-medium ${
                           typeColors[entry.type] || "bg-gray-50 text-gray-700"
                         }`}
                       >

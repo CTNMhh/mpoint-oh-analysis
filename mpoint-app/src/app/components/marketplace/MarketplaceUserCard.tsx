@@ -243,9 +243,9 @@ const MarketplaceUserCard: React.FC<Props> = ({ session, entries, userRequests, 
   return (
     <div className="bg-white rounded-lg shadow-sm mb-8 p-6 flex flex-col md:flex-row gap-8">
       <div className="flex-1">
-        <h2 className="text-lg font-bold mb-3">Meine Projekte</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-4">Meine Projekte</h2>
         {myProjects.length === 0 ? (
-          <div className="text-gray-500 text-sm">Keine eigenen Projekte.</div>
+          <div className="text-gray-600">Keine eigenen Projekte.</div>
         ) : (
           <ul className="space-y-2">
             {myProjects.map(entry => (
@@ -253,7 +253,7 @@ const MarketplaceUserCard: React.FC<Props> = ({ session, entries, userRequests, 
                 <a href={`/boerse/${entry.id}`} className="text-primary hover:underline font-medium">{entry.title}</a>
                 <div className="flex items-center gap-1 relative">
                   <button
-                    className="relative text-gray-500 hover:text-primary text-lg px-2"
+                    className="relative text-gray-900 hover:text-primary text-lg px-2"
                     title="Mitteilungen"
                     onClick={e => { e.preventDefault(); /* TODO: Mitteilungsfunktion */ }}
                   >
@@ -267,7 +267,7 @@ const MarketplaceUserCard: React.FC<Props> = ({ session, entries, userRequests, 
                     )}
                   </button>
                   <button
-                    className="text-gray-500 hover:text-blue-600 text-lg px-2"
+                    className="text-gray-900 hover:text-blue-600 text-lg px-2"
                     title="Projekt bearbeiten"
                     onClick={e => { e.preventDefault(); onEditProject ? onEditProject(entry) : (setEditProject(entry), setShowEditModal(true)); }}
                   >
@@ -285,9 +285,9 @@ const MarketplaceUserCard: React.FC<Props> = ({ session, entries, userRequests, 
         )}
       </div>
       <div className="flex-1">
-        <h2 className="text-lg font-bold mb-3">Angefragte Projekte</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-4">Angefragte Projekte</h2>
         {requestedProjects.length === 0 ? (
-          <div className="text-gray-500 text-sm">Keine Anfragen gestellt.</div>
+          <div className="text-gray-600">Keine Anfragen gestellt.</div>
         ) : (
           <ul className="space-y-2">
             {requestedProjects.map(entry => (
@@ -295,7 +295,7 @@ const MarketplaceUserCard: React.FC<Props> = ({ session, entries, userRequests, 
                 <a href={`/boerse/${entry.id}`} className="text-primary hover:underline font-medium">{entry.title}</a>
                 <div className="flex items-center gap-1">
                   <button
-                    className="text-gray-500 hover:text-blue-600 text-lg px-2"
+                    className="text-gray-900 hover:text-blue-600 text-lg px-2"
                     title="Anfrage bearbeiten"
                     onClick={e => { e.preventDefault(); handleEditRequest(entry); }}
                   >
