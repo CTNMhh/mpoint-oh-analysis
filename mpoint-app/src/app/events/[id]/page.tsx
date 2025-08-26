@@ -112,7 +112,7 @@ export default function EventDetailPage({
           <div className="w-1/2 flex items-center">
             <Link
               href="/events"
-              className="inline-flex items-center px-3 py-1.5 rounded-full bg-gray-100 text-gray-700 hover:bg-[rgb(228,25,31)] hover:text-white transition-colors font-semibold shadow text-sm"
+              className="inline-flex items-center px-4 py-2 rounded-xl bg-gray-100 text-gray-700 hover:bg-[rgb(228,25,31)] hover:text-white transition-colors font-semibold shadow text-sm"
             >
               <span className="text-xl">&larr;</span> <span className="ml-1">Zurück zu Events</span>
             </Link>
