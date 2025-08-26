@@ -404,13 +404,38 @@ export default function EventsPage() {
             </div>
 
             {session?.user?.role === "ENTERPRISE" && (
-              <button
-                id="create-event-btn"
-                className="bg-[#e60000] text-white px-4 py-2 rounded-xl hover:bg-red-700 transition-all font-medium cursor-pointer"
-                onClick={() => setShowForm((v) => !v)}
+              <div
+                id="my-events-block"
+                className="bg-white rounded-xl shadow-sm p-6 basis-1/2"
               >
-                {showForm ? "Abbrechen" : "Event erstellen"}
-              </button>
+                <div className="flex items-start justify-between mb-6">
+                  <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    Meine erstellten Events
+                  </h2>
+                  <Calendar className="w-6 h-6 text-[#e60000]" />
+                </div>
+                <div className="space-y-4">
+                  {myEvents.length === 0 ? (
+                    <p className="text-center text-gray-500">
+                      Du hast noch keine Events erstellt.
+                    </p>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                      {myEvents.map((event) => {
+                        const enrichedEvent = enrichEventWithBookingInfo(event);
+                        return (
+                          <div
+                            key={event.id}
+                            className="flex flex-col rounded-lg bg-white border border-gray-200 hover:bg-gray-50 hover:shadow-md transition-all"
+                          >
+                            {/* ...Event-Content... */}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
             )}
           </div>
         </div>
@@ -688,6 +713,7 @@ export default function EventsPage() {
           <div className="flex flex-row gap-6">
             {/* Meine erstellten Events */}
 
+            {session?.user?.role === "ENTERPRISE" && (
             <div
               id="my-events-block"
               className="bg-white rounded-xl shadow-sm p-6 basis-1/2"
@@ -797,6 +823,7 @@ export default function EventsPage() {
                 )}
               </div>
             </div>
+            )}
 
             {/* Verfügbare Events anderer User */}
             <div
