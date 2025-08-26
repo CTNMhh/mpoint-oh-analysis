@@ -3,6 +3,31 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 
+// Status-Badge Styles und Labels für Nutzer-Anfragen (konsistent zur Listenansicht)
+const requestStatusStyles: Record<string, string> = {
+  PENDING: "bg-amber-50 text-amber-700 border-amber-200",
+  DECLINED: "bg-red-50 text-red-700 border-red-200",
+  APPROVED: "bg-green-50 text-green-700 border-green-200",
+  ACCEPTED: "bg-green-50 text-green-700 border-green-200",
+  CONFIRMED: "bg-green-50 text-green-700 border-green-200",
+  CANCELED: "bg-gray-50 text-gray-700 border-gray-200",
+  CANCELLED: "bg-gray-50 text-gray-700 border-gray-200",
+};
+
+function requestStatusLabel(status?: string): string {
+  const map: Record<string, string> = {
+    PENDING: "Offen",
+    DECLINED: "Abgelehnt",
+    APPROVED: "Angenommen",
+    ACCEPTED: "Angenommen",
+    CONFIRMED: "Bestätigt",
+    CANCELED: "Storniert",
+    CANCELLED: "Storniert",
+  };
+  if (!status) return "Gesendet";
+  return map[status] || status;
+}
+
 export default function MarketplaceDetailPage() {
   const params = useParams();
   const id = typeof params.id === "string" ? params.id : Array.isArray(params.id) ? params.id[0] : "";
@@ -120,8 +145,19 @@ export default function MarketplaceDetailPage() {
   }
 
   // Button: Bearbeiten oder Anfragen
+  const statusBadge = userRequest ? (
+    <span
+      className={`border text-xs font-medium px-2.5 py-1 rounded-full ${
+        requestStatusStyles[userRequest.status] ||
+        "bg-blue-50 text-blue-700 border-blue-200"
+      }`}
+      title={`Status deiner Anfrage: ${requestStatusLabel(userRequest.status)}`}
+    >
+      {requestStatusLabel(userRequest.status)}
+    </span>
+  ) : null;
   const requestButton = userRequest ? (
-    <button className="px-5 py-2 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 hover:shadow transition-colors" onClick={() => { setShowRequestModal(true); setRequestMessage(userRequest.message || ""); }}>
+    <button className="px-5 py-2 bg-red-600 text-white rounded text-sm font-medium hover:bg-red-700 hover:shadow transition-colors" onClick={() => { setShowRequestModal(true); setRequestMessage(userRequest.message || ""); }}>
       Bearbeiten
     </button>
   ) : (
@@ -158,13 +194,16 @@ export default function MarketplaceDetailPage() {
               "-"
             )}
           </div>
-          {requestButton}
+          <div className="flex items-center gap-2">
+            {statusBadge}
+            {requestButton}
+          </div>
         </div>
       </div>
       {/* Anfrage Modal */}
       {showRequestModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-xl p-8 max-w-sm w-full">
+          <div className="bg-white rounded-xl shadow-xl p-8 max-w-lg w-full">
             <h2 className="text-lg font-bold mb-4">{userRequest ? "Anfrage bearbeiten" : "Projekt anfragen"}</h2>
             <textarea
               className="w-full border rounded p-2 mb-4"
@@ -181,7 +220,7 @@ export default function MarketplaceDetailPage() {
                 <button className="px-5 py-2 rounded bg-gray-100 text-gray-700 hover:bg-gray-200" onClick={handleDeleteRequest} disabled={deleteLoading || requestLoading}>Löschen</button>
               )}
               <button className="px-5 py-2 rounded bg-gray-100 text-gray-700 hover:bg-gray-200" onClick={() => setShowRequestModal(false)} disabled={requestLoading || deleteLoading}>Abbrechen</button>
-              <button className={`px-5 py-2 rounded ${userRequest ? "bg-blue-600 hover:bg-blue-700" : "bg-[#e31e24] hover:bg-[#c01a1f]"} text-white font-medium hover:shadow transition-colors`} onClick={handleRequestSubmit} disabled={requestLoading || deleteLoading || !requestMessage.trim()}>
+              <button className={`px-5 py-2 rounded ${userRequest ? "bg-red-600 hover:bg-red-700" : "bg-[#e31e24] hover:bg-[#c01a1f]"} text-white font-medium hover:shadow transition-colors`} onClick={handleRequestSubmit} disabled={requestLoading || deleteLoading || !requestMessage.trim()}>
                 {userRequest ? "Speichern" : "Anfrage senden"}
               </button>
             </div>
