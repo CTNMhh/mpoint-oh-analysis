@@ -9,6 +9,7 @@ import AdminFooter from "./components/layout/AdminFooter";
 import { AuthProvider } from "./context/AuthContext";
 import { SessionProvider } from "next-auth/react";
 import { usePathname } from "next/navigation";
+import { CartProvider } from "@/context/CartContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,9 +36,11 @@ export default function RootLayout({
       >
         <SessionProvider>
           <AuthProvider>
-            {isAdmin ? <AdminHeader /> : <Header />}
-            {children}
-            {isAdmin ? <AdminFooter /> : <Footer />}
+            <CartProvider>
+              {isAdmin ? <AdminHeader /> : <Header />}
+              {children}
+              {isAdmin ? <AdminFooter /> : <Footer />}
+            </CartProvider>
           </AuthProvider>
         </SessionProvider>
       </body>

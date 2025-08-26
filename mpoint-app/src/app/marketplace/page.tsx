@@ -5,7 +5,7 @@
 // Tailwind wird über PostCSS eingebunden, nicht per CDN.
 
 import { useEffect, useState, Suspense } from "react";
-import { Briefcase } from "lucide-react";
+import { Briefcase, Search, Funnel, Grid3X3, Calendar, List } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 
@@ -39,19 +39,18 @@ export function priceDataToString(price: PriceType): string {
 
 // Kategorie-Farben Mapping (Tailwind-Klassen)
 const categoryColorClasses: Record<string, string> = {
-  "DIENSTLEISTUNG": "bg-blue-50 text-blue-700",
-  "PRODUKT": "bg-violet-50 text-violet-700",
-  "DIGITALISIERUNG": "bg-green-50 text-green-700",
-  "NACHHALTIGKEIT": "bg-green-50 text-green-700",
-  "MANAGEMENT": "bg-blue-50 text-blue-700",
+  DIENSTLEISTUNG: "bg-blue-50 text-blue-700",
+  PRODUKT: "bg-violet-50 text-violet-700",
+  DIGITALISIERUNG: "bg-green-50 text-green-700",
+  NACHHALTIGKEIT: "bg-green-50 text-green-700",
+  MANAGEMENT: "bg-blue-50 text-blue-700",
 };
 
 // Typ-Farben Mapping für Anfrage/Angebot
 const typeColors: Record<string, string> = {
-  "Anfrage": "bg-yellow-50 text-yellow-700",
-  "Angebot": "bg-blue-50 text-blue-700",
+  Anfrage: "bg-yellow-50 text-yellow-700",
+  Angebot: "bg-blue-50 text-blue-700",
 };
-
 
 // Preis-Typ und Hilfsfunktion
 
@@ -83,22 +82,22 @@ function timeAgo(timestamp: number): string {
   const year = 365 * day;
   if (diff < hour) {
     const mins = Math.max(1, Math.floor(diff / minute));
-    return `vor ${mins} Minute${mins === 1 ? '' : 'n'}`;
+    return `vor ${mins} Minute${mins === 1 ? "" : "n"}`;
   } else if (diff < day) {
     const hours = Math.floor(diff / hour);
-    return `vor ${hours} Stunde${hours === 1 ? '' : 'n'}`;
+    return `vor ${hours} Stunde${hours === 1 ? "" : "n"}`;
   } else if (diff < week) {
     const days = Math.floor(diff / day);
-    return `vor ${days} Tag${days === 1 ? '' : 'en'}`;
+    return `vor ${days} Tag${days === 1 ? "" : "en"}`;
   } else if (diff < month) {
     const weeks = Math.floor(diff / week);
-    return `vor ${weeks} Woche${weeks === 1 ? '' : 'n'}`;
+    return `vor ${weeks} Woche${weeks === 1 ? "" : "n"}`;
   } else if (diff < year) {
     const months = Math.floor(diff / month);
-    return `vor ${months} Monat${months === 1 ? '' : 'en'}`;
+    return `vor ${months} Monat${months === 1 ? "" : "en"}`;
   } else {
     const years = Math.floor(diff / year);
-    return `vor ${years} Jahr${years === 1 ? '' : 'en'}`;
+    return `vor ${years} Jahr${years === 1 ? "" : "en"}`;
   }
 }
 
@@ -129,21 +128,27 @@ function MarketplaceContent() {
   const [myProjects, setMyProjects] = useState<any[]>([]);
   const [requestedProjects, setRequestedProjects] = useState<any[]>([]);
   // Anfrage-Zähler für eigene Projekte
-  const [projectRequestCounts, setProjectRequestCounts] = useState<Record<string, number>>({});
+  const [projectRequestCounts, setProjectRequestCounts] = useState<
+    Record<string, number>
+  >({});
   // Hole die Anzahl der Anfragen für eigene Projekte
   useEffect(() => {
     async function fetchRequestCounts() {
       if (!myProjects.length) return;
       const counts: Record<string, number> = {};
-      await Promise.all(myProjects.map(async (entry) => {
-        try {
-          const res = await fetch(`/api/marketplace/request?countRequestId=${entry.id}`);
-          const data = await res.json();
-          counts[entry.id] = data.count ?? 0;
-        } catch {
-          counts[entry.id] = 0;
-        }
-      }));
+      await Promise.all(
+        myProjects.map(async (entry) => {
+          try {
+            const res = await fetch(
+              `/api/marketplace/request?countRequestId=${entry.id}`
+            );
+            const data = await res.json();
+            counts[entry.id] = data.count ?? 0;
+          } catch {
+            counts[entry.id] = 0;
+          }
+        })
+      );
       setProjectRequestCounts(counts);
     }
     fetchRequestCounts();
@@ -172,9 +177,14 @@ function MarketplaceContent() {
   const pageParam = searchParams.get("page");
   const currentPage = pageParam ? parseInt(pageParam, 10) : 1;
 
-
   const [entries, setEntries] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // view mode
+  const [viewMode, setViewMode] = useState<"grid" | "calendar" | "list">(
+    "grid"
+  );
+
 
   useEffect(() => {
     if (!session?.user?.id) {
@@ -183,10 +193,12 @@ function MarketplaceContent() {
       return;
     }
     // Eigene Projekte filtern
-    setMyProjects(entries.filter(entry => entry.userId === session.user.id));
+    setMyProjects(entries.filter((entry) => entry.userId === session.user.id));
     // Angefragte Projekte filtern
     const requestedIds = Object.keys(userRequests);
-    setRequestedProjects(entries.filter(entry => requestedIds.includes(entry.id)));
+    setRequestedProjects(
+      entries.filter((entry) => requestedIds.includes(entry.id))
+    );
   }, [entries, userRequests, session]);
 
   useEffect(() => {
@@ -199,21 +211,27 @@ function MarketplaceContent() {
           const { email, ...rest } = entry;
           return rest;
         });
-        const enrichedData = await Promise.all(cleaned.map(async (entry) => {
-          const userName = await getUserNameById(entry.userId);
-          return { ...entry, userName };
-        }));
+        const enrichedData = await Promise.all(
+          cleaned.map(async (entry) => {
+            const userName = await getUserNameById(entry.userId);
+            return { ...entry, userName };
+          })
+        );
         setEntries(enrichedData);
         // Hole alle User-Requests für die Einträge
         if (session?.user?.id) {
           const requests: Record<string, any> = {};
-          await Promise.all(enrichedData.map(async (entry: any) => {
-            try {
-              const resReq = await fetch(`/api/marketplace/request?projectId=${entry.id}`);
-              const dataReq = await resReq.json();
-              if (dataReq.request) requests[entry.id] = dataReq.request;
-            } catch {}
-          }));
+          await Promise.all(
+            enrichedData.map(async (entry: any) => {
+              try {
+                const resReq = await fetch(
+                  `/api/marketplace/request?projectId=${entry.id}`
+                );
+                const dataReq = await resReq.json();
+                if (dataReq.request) requests[entry.id] = dataReq.request;
+              } catch {}
+            })
+          );
           setUserRequests(requests);
         }
       } catch (err) {
@@ -226,31 +244,38 @@ function MarketplaceContent() {
   }, [session]);
 
   // Filterung
-  let filteredEntries = entries.filter(entry => {
+  let filteredEntries = entries.filter((entry) => {
     // Kategorie-Filter
-    const categoryMatch = categoryFilter === "Alle" || entry.category === categoryFilter.toUpperCase();
+    const categoryMatch =
+      categoryFilter === "Alle" ||
+      entry.category === categoryFilter.toUpperCase();
     // Typ-Filter
     const typeMatch = typeFilter === "Beide" || entry.type === typeFilter;
     // Such-Filter
-    const searchMatch = searchValue.trim() === "" || (
+    const searchMatch =
+      searchValue.trim() === "" ||
       entry.title.toLowerCase().includes(searchValue.toLowerCase()) ||
-      entry.shortDescription.toLowerCase().includes(searchValue.toLowerCase()) ||
-      entry.longDescription.toLowerCase().includes(searchValue.toLowerCase())
-    );
+      entry.shortDescription
+        .toLowerCase()
+        .includes(searchValue.toLowerCase()) ||
+      entry.longDescription.toLowerCase().includes(searchValue.toLowerCase());
     return categoryMatch && typeMatch && searchMatch;
   });
 
   // Pagination
   const totalEntries = filteredEntries.length;
   const totalPages = Math.ceil(totalEntries / maximumProSeite);
-  const paginatedEntries = filteredEntries.slice((currentPage - 1) * maximumProSeite, currentPage * maximumProSeite);
+  const paginatedEntries = filteredEntries.slice(
+    (currentPage - 1) * maximumProSeite,
+    currentPage * maximumProSeite
+  );
 
   // Handler für Seitenwechsel
   const handlePageChange = (pageNum: number) => {
     // Seite wechseln, Filter bleiben erhalten
     const params = new URLSearchParams(searchParams.toString());
     params.set("page", pageNum.toString());
-  router.push(`/boerse?${params.toString()}`);
+    router.push(`/boerse?${params.toString()}`);
   };
 
   // Kategorie-Filter Handler
@@ -287,16 +312,28 @@ function MarketplaceContent() {
       const res = await fetch("/api/marketplace/request", {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ projectId: activeEntry.id, message: requestMessage }),
+        body: JSON.stringify({
+          projectId: activeEntry.id,
+          message: requestMessage,
+        }),
       });
       if (res.ok) {
-        setRequestSuccess(userRequests[activeEntry.id] ? "Anfrage erfolgreich bearbeitet!" : "Anfrage erfolgreich gesendet!");
+        setRequestSuccess(
+          userRequests[activeEntry.id]
+            ? "Anfrage erfolgreich bearbeitet!"
+            : "Anfrage erfolgreich gesendet!"
+        );
         setShowRequestModal(false);
         setRequestMessage("");
         // Reload userRequest for this entry
-        const reqRes = await fetch(`/api/marketplace/request?projectId=${activeEntry.id}`);
+        const reqRes = await fetch(
+          `/api/marketplace/request?projectId=${activeEntry.id}`
+        );
         const reqData = await reqRes.json();
-        setUserRequests(prev => ({ ...prev, [activeEntry.id]: reqData.request }));
+        setUserRequests((prev) => ({
+          ...prev,
+          [activeEntry.id]: reqData.request,
+        }));
       } else {
         const data = await res.json();
         setRequestError(data.error || "Fehler beim Senden der Anfrage.");
@@ -321,7 +358,7 @@ function MarketplaceContent() {
       if (res.ok) {
         setShowRequestModal(false);
         setRequestMessage("");
-        setUserRequests(prev => {
+        setUserRequests((prev) => {
           const copy = { ...prev };
           delete copy[activeEntry.id];
           return copy;
@@ -338,7 +375,7 @@ function MarketplaceContent() {
   }
 
   return (
-    <div className="bg-gray-50 text-gray-900 min-h-screen relative pt-24">
+    <div className="relative min-h-screen bg-gray-50 pt-20">
       {/* Ladeanzeige während die Einträge geladen werden */}
       {loading && (
         <div className="max-w-3xl mx-auto py-12 px-4 text-center text-gray-500 text-lg">
@@ -346,15 +383,64 @@ function MarketplaceContent() {
         </div>
       )}
       {!loading && (
-        <div className="max-w-7xl mx-auto p-5 relative z-0 space-y-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
           <div className="bg-white rounded-xl shadow-sm p-6">
             <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3 mb-4">
-              <Briefcase className="w-8 h-8 text-[#e60000]" aria-hidden="true" />
+              <Briefcase
+                className="w-8 h-8 text-[#e60000]"
+                aria-hidden="true"
+              />
               Börse
             </h1>
             <p className="text-gray-600">
-              Hier finden Sie alle Informationen zu Projekten, Dienstleistungen und Produkten.
+              Hier finden Sie alle Informationen zu Projekten, Dienstleistungen
+              und Produkten.
             </p>
+          </div>
+          {/* Project Bar */}
+          <div className="flex justify-end items-center mb-8">
+            <div className="flex items-center gap-4">
+              <div className="flex bg-gray-100 rounded-lg p-1">
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
+                    viewMode === "grid"
+                      ? "bg-white text-gray-900 shadow"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  <Grid3X3 size={16} />
+                  Grid
+                </button>
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
+                    viewMode === "list"
+                      ? "bg-white text-gray-900 shadow"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  <List size={16} />
+                  Liste
+                </button>
+                <button
+                  onClick={() => setViewMode("calendar")}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
+                    viewMode === "calendar"
+                      ? "bg-white text-gray-900 shadow"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  <Calendar size={16} />
+                  Kalender
+                </button>
+              </div>
+              <button class="bg-[#e60000] text-white px-4 py-2 rounded-xl hover:bg-red-700 transition-all font-medium cursor-pointer"
+              onClick={() => setShowModal(true)}
+              >
+                Eigenes Projekt einstellen
+              </button>
+            </div>
           </div>
           {/* Meine Projekte & Angefragte Projekte als Komponente */}
           {session?.user?.id && (
@@ -365,29 +451,39 @@ function MarketplaceContent() {
                 userRequests={userRequests}
                 setEntries={setEntries}
                 setUserRequests={setUserRequests}
-                onEditProject={entry => { setEditProject(entry); setShowEditModal(true); }}
+                onEditProject={(entry) => {
+                  setEditProject(entry);
+                  setShowEditModal(true);
+                }}
               />
               {showEditModal && editProject && (
                 <EditProjectModal
                   project={editProject}
                   onClose={() => setShowEditModal(false)}
-                  onSubmit={async formData => {
+                  onSubmit={async (formData) => {
                     // Patch-Request analog zum bisherigen Modal
                     try {
-                      const res = await fetch(`/api/marketplace/${editProject.id}`, {
-                        method: "PATCH",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(formData),
-                      });
+                      const res = await fetch(
+                        `/api/marketplace/${editProject.id}`,
+                        {
+                          method: "PATCH",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify(formData),
+                        }
+                      );
                       if (res.ok) {
                         setShowEditModal(false);
                         // Aktualisiere die Einträge
                         const entriesRes = await fetch("/api/marketplace");
                         const data = await entriesRes.json();
-                        const enrichedData = await Promise.all(data.map(async (entry: any) => {
-                          const userName = await getUserNameById(entry.userId);
-                          return { ...entry, userName };
-                        }));
+                        const enrichedData = await Promise.all(
+                          data.map(async (entry: any) => {
+                            const userName = await getUserNameById(
+                              entry.userId
+                            );
+                            return { ...entry, userName };
+                          })
+                        );
                         setEntries(enrichedData);
                       } else {
                         alert("Fehler beim Bearbeiten des Eintrags.");
@@ -400,176 +496,264 @@ function MarketplaceContent() {
               )}
             </>
           )}
-        {/* Header */}
-        <div className="bg-white p-5 rounded-lg shadow-sm mb-8">
-          <h2 className="text-primary text-xl font-bold mb-4">Filter</h2>
-        {/* Search & Filter Bar */}
-        <div className="flex flex-col md:flex-row gap-4 mb-5 items-center">
-          <input
-            type="text"
-            className="flex-1 px-3 py-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-            placeholder="Projekte, Dienstleistungen oder Produkte suchen..."
-            value={searchValue}
-            onChange={handleSearchChange}
-            id="searchInput"
-          />
-          <select
-            className="px-3 py-3 border border-gray-300 rounded-md text-sm bg-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-            value={categoryFilter}
-            onChange={handleCategoryChange}
-          >
-            <option value="Alle">Alle Kategorien</option>
-            <option value="DIENSTLEISTUNG">Dienstleistung</option>
-            <option value="PRODUKT">Produkt</option>
-            <option value="DIGITALISIERUNG">Digitalisierung</option>
-            <option value="NACHHALTIGKEIT">Nachhaltigkeit</option>
-            <option value="MANAGEMENT">Management</option>
-          </select>
-          <div className="flex gap-2 items-center">
-            <button
-              type="button"
-              className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${typeFilter === "Beide" ? "bg-primary text-white border-primary" : "bg-white text-gray-700 border-gray-300 hover:border-primary"}`}
-              onClick={() => handleTypeChange("Beide")}
-            >
-              Beide
-            </button>
-            <button
-              type="button"
-              className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${typeFilter === "Anfrage" ? "bg-yellow-50 text-yellow-700 border-yellow-200" : "bg-white text-gray-700 border-gray-300 hover:border-yellow-200"}`}
-              onClick={() => handleTypeChange("Anfrage")}
-            >
-              Anfrage
-            </button>
-            <button
-              type="button"
-              className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${typeFilter === "Angebot" ? "bg-blue-50 text-blue-700 border-blue-200" : "bg-white text-gray-700 border-gray-300 hover:border-blue-200"}`}
-              onClick={() => handleTypeChange("Angebot")}
-            >
-              Angebot
-            </button>
-          </div>
-        </div>
-        </div>
-        {/* Results Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
-          <div className="text-gray-600 text-sm" id="resultsCount">
-            {totalEntries} Ergebnis{totalEntries === 1 ? '' : 'se'} gefunden
-          </div>
-          <select className="px-3 py-2 border border-gray-300 rounded-md bg-white text-sm" id="sortDropdown">
-            <option>Relevanz</option>
-            <option>Neueste zuerst</option>
-            <option>Preis aufsteigend</option>
-            <option>Preis absteigend</option>
-            <option>Bewertung</option>
-          </select>
-        </div>
-        {/* Results Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-10" id="resultsGrid">
-          {paginatedEntries.map(entry => {
-            const userRequest = userRequests[entry.id];
-            const requestButton = userRequest ? (
-              <button
-                className="px-4 py-2 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 hover:shadow transition-colors"
-                onClick={e => { e.stopPropagation(); openRequestModal(entry); }}
-              >
-                Bearbeiten
-              </button>
-            ) : (
-              <button
-                className="px-4 py-2 bg-[#e31e24] text-white rounded text-sm font-medium hover:bg-[#c01a1f] hover:shadow transition-colors"
-                onClick={e => { e.stopPropagation(); openRequestModal(entry); }}
-              >
-                Anfragen
-              </button>
-            );
-            return (
-              <div
-                key={entry.id}
-                className="result-card bg-white rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer overflow-hidden flex flex-col h-full"
-                onClick={e => {
-                  if ((e.target as HTMLElement).closest('button')) return;
-                  router.push(`/boerse/${entry.id}`);
-                }}
-              >
-                <div className="p-4 border-b border-gray-100 flex-1 flex flex-col">
-                  <div className="flex justify-between items-start mb-2">
-                    <span
-                      className={`card-category px-3 py-1 rounded-full text-xs font-medium ${categoryColorClasses[entry.category] || "bg-gray-50 text-gray-700"}`}
-                    >
-                      {entry.category}
-                    </span>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${typeColors[entry.type] || "bg-gray-50 text-gray-700"}`}>
-                      {entry.type}
-                    </span>
-                  </div>
-                  <h3 className="font-semibold text-base mb-2 text-gray-900">{entry.title}</h3>
-                  <p className="text-gray-600 text-sm mb-3 leading-relaxed">{entry.shortDescription}</p>
-                  <div className="flex justify-between items-center text-xs text-gray-500 mt-auto">
-                    <div className="flex items-center gap-2">
-                      <span>{entry.userName}</span>
-                    </div>
-                    <span>{timeAgo(new Date(entry.createdAt).getTime())}</span>
-                  </div>
-                </div>
-                <div className="p-4 bg-gray-50 flex justify-between items-center">
-                  <div className="font-semibold text-primary text-base">{renderPrice(entry.price)}</div>
-                  {requestButton}
-                </div>
+          {/* Header */}
+          <div className="bg-white p-5 rounded-lg shadow-sm mb-8">
+            <h2 className="text-primary text-xl font-bold mb-4">Filter</h2>
+            {/* Search & Filter Bar */}
+            <div className="flex flex-col md:flex-row gap-4 mb-5 items-center">
+              <div className="flex-1 flex items-center bg-white rounded-lg shadow-sm px-4 py-2">
+                <Search className="w-5 h-5 text-gray-400 mr-2" />
+                <input
+                  type="text"
+                  className="flex-1 outline-none bg-transparent text-gray-900"
+                  placeholder="Projekte, Dienstleistungen oder Produkte suchen..."
+                  value={searchValue}
+                  onChange={handleSearchChange}
+                  id="searchInput"
+                />
               </div>
-            );
-          })}
-        </div>
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex justify-center items-center gap-2 mt-4">
-            <button
-              className={`px-3 py-2 border border-[#e31e24] bg-white text-[#e31e24] rounded text-sm font-medium hover:bg-[#e31e24] hover:text-white hover:shadow transition-colors ${currentPage === 1 ? "opacity-50 cursor-not-allowed" : ""}`}
-              disabled={currentPage === 1}
-              onClick={() => handlePageChange(currentPage - 1)}
-            >
-              ← Zurück
-            </button>
-            {[...Array(totalPages)].map((_, idx) => (
-              <button
-                key={idx + 1}
-                className={`px-3 py-2 border rounded text-sm font-medium hover:bg-[#e31e24] hover:text-white hover:shadow transition-colors ${currentPage === idx + 1 ? "bg-[#e31e24] text-white border-[#e31e24]" : "bg-white text-[#e31e24] border-[#e31e24]"}`}
-                onClick={() => handlePageChange(idx + 1)}
-              >
-                {idx + 1}
-              </button>
-            ))}
-            <button
-              className={`px-3 py-2 border border-[#e31e24] bg-white text-[#e31e24] rounded text-sm font-medium hover:bg-[#e31e24] hover:text-white hover:shadow transition-colors ${currentPage === totalPages ? "opacity-50 cursor-not-allowed" : ""}`}
-              disabled={currentPage === totalPages}
-              onClick={() => handlePageChange(currentPage + 1)}
-            >
-              Weiter →
-            </button>
+              <div className="flex items-center gap-2 bg-white rounded-lg shadow-sm px-3">
+                <Funnel className="w-5 h-5 text-gray-400 mr-2" />
+                <select
+                  className="pe-3 py-2 text-gray-900"
+                  value={categoryFilter}
+                  onChange={handleCategoryChange}
+                >
+                  <option value="Alle">Alle Kategorien</option>
+                  <option value="DIENSTLEISTUNG">Dienstleistung</option>
+                  <option value="PRODUKT">Produkt</option>
+                  <option value="DIGITALISIERUNG">Digitalisierung</option>
+                  <option value="NACHHALTIGKEIT">Nachhaltigkeit</option>
+                  <option value="MANAGEMENT">Management</option>
+                </select>
+              </div>
+              <div className="flex gap-2 items-center">
+                <button
+                  type="button"
+                  className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
+                    typeFilter === "Beide"
+                      ? "bg-primary text-white border-primary"
+                      : "bg-white text-gray-700 border-gray-300 hover:border-primary"
+                  }`}
+                  onClick={() => handleTypeChange("Beide")}
+                >
+                  Beide
+                </button>
+                <button
+                  type="button"
+                  className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
+                    typeFilter === "Anfrage"
+                      ? "bg-yellow-50 text-yellow-700 border-yellow-200"
+                      : "bg-white text-gray-700 border-gray-300 hover:border-yellow-200"
+                  }`}
+                  onClick={() => handleTypeChange("Anfrage")}
+                >
+                  Anfrage
+                </button>
+                <button
+                  type="button"
+                  className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
+                    typeFilter === "Angebot"
+                      ? "bg-blue-50 text-blue-700 border-blue-200"
+                      : "bg-white text-gray-700 border-gray-300 hover:border-blue-200"
+                  }`}
+                  onClick={() => handleTypeChange("Angebot")}
+                >
+                  Angebot
+                </button>
+              </div>
+            </div>
           </div>
-        )}
+
+          {/* Results Header */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
+            <div className="text-gray-600 text-sm" id="resultsCount">
+              {totalEntries} Ergebnis{totalEntries === 1 ? "" : "se"} gefunden
+            </div>
+            <select
+              className="px-3 py-2 border border-gray-300 rounded-md bg-white text-sm"
+              id="sortDropdown"
+            >
+              <option>Relevanz</option>
+              <option>Neueste zuerst</option>
+              <option>Preis aufsteigend</option>
+              <option>Preis absteigend</option>
+              <option>Bewertung</option>
+            </select>
+          </div>
+          {/* Results Grid */}
+          <div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-10"
+            id="resultsGrid"
+          >
+            {paginatedEntries.map((entry) => {
+              const userRequest = userRequests[entry.id];
+              const requestButton = userRequest ? (
+                <button
+                  className="px-4 py-2 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 hover:shadow transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openRequestModal(entry);
+                  }}
+                >
+                  Bearbeiten
+                </button>
+              ) : (
+                <button
+                  className="px-4 py-2 bg-[#e31e24] text-white rounded text-sm font-medium hover:bg-[#c01a1f] hover:shadow transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openRequestModal(entry);
+                  }}
+                >
+                  Anfragen
+                </button>
+              );
+              return (
+                <div
+                  key={entry.id}
+                  className="result-card bg-white rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer overflow-hidden flex flex-col h-full"
+                  onClick={(e) => {
+                    if ((e.target as HTMLElement).closest("button")) return;
+                    router.push(`/boerse/${entry.id}`);
+                  }}
+                >
+                  <div className="p-4 border-b border-gray-100 flex-1 flex flex-col">
+                    <div className="flex justify-between items-start mb-2">
+                      <span
+                        className={`card-category px-3 py-1 rounded-full text-xs font-medium ${
+                          categoryColorClasses[entry.category] ||
+                          "bg-gray-50 text-gray-700"
+                        }`}
+                      >
+                        {entry.category}
+                      </span>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          typeColors[entry.type] || "bg-gray-50 text-gray-700"
+                        }`}
+                      >
+                        {entry.type}
+                      </span>
+                    </div>
+                    <h3 className="font-semibold text-base mb-2 text-gray-900">
+                      {entry.title}
+                    </h3>
+                    <p className="text-gray-600 text-sm mb-3 leading-relaxed">
+                      {entry.shortDescription}
+                    </p>
+                    <div className="flex justify-between items-center text-xs text-gray-500 mt-auto">
+                      <div className="flex items-center gap-2">
+                        <span>{entry.userName}</span>
+                      </div>
+                      <span>
+                        {timeAgo(new Date(entry.createdAt).getTime())}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="p-4 bg-gray-50 flex justify-between items-center">
+                    <div className="font-semibold text-primary text-base">
+                      {renderPrice(entry.price)}
+                    </div>
+                    {requestButton}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-2 mt-4">
+              <button
+                className={`px-3 py-2 border border-[#e31e24] bg-white text-[#e31e24] rounded text-sm font-medium hover:bg-[#e31e24] hover:text-white hover:shadow transition-colors ${
+                  currentPage === 1 ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+                disabled={currentPage === 1}
+                onClick={() => handlePageChange(currentPage - 1)}
+              >
+                ← Zurück
+              </button>
+              {[...Array(totalPages)].map((_, idx) => (
+                <button
+                  key={idx + 1}
+                  className={`px-3 py-2 border rounded text-sm font-medium hover:bg-[#e31e24] hover:text-white hover:shadow transition-colors ${
+                    currentPage === idx + 1
+                      ? "bg-[#e31e24] text-white border-[#e31e24]"
+                      : "bg-white text-[#e31e24] border-[#e31e24]"
+                  }`}
+                  onClick={() => handlePageChange(idx + 1)}
+                >
+                  {idx + 1}
+                </button>
+              ))}
+              <button
+                className={`px-3 py-2 border border-[#e31e24] bg-white text-[#e31e24] rounded text-sm font-medium hover:bg-[#e31e24] hover:text-white hover:shadow transition-colors ${
+                  currentPage === totalPages
+                    ? "opacity-50 cursor-not-allowed"
+                    : ""
+                }`}
+                disabled={currentPage === totalPages}
+                onClick={() => handlePageChange(currentPage + 1)}
+              >
+                Weiter →
+              </button>
+            </div>
+          )}
         </div>
       )}
       {/* Anfrage Modal für Listenansicht */}
       {showRequestModal && activeEntry && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-xl p-8 max-w-sm w-full">
-            <h2 className="text-lg font-bold mb-4">{userRequests[activeEntry.id] ? "Anfrage bearbeiten" : "Projekt anfragen"}</h2>
+            <h2 className="text-lg font-bold mb-4">
+              {userRequests[activeEntry.id]
+                ? "Anfrage bearbeiten"
+                : "Projekt anfragen"}
+            </h2>
             <textarea
               className="w-full border rounded p-2 mb-4"
               rows={4}
               placeholder="Ihre Nachricht an den Anbieter..."
               value={requestMessage}
-              onChange={e => setRequestMessage(e.target.value)}
+              onChange={(e) => setRequestMessage(e.target.value)}
               disabled={requestLoading || deleteLoading}
             />
-            {requestError && <div className="text-red-600 text-sm mb-2">{requestError}</div>}
-            {requestSuccess && <div className="text-green-600 text-sm mb-2">{requestSuccess}</div>}
+            {requestError && (
+              <div className="text-red-600 text-sm mb-2">{requestError}</div>
+            )}
+            {requestSuccess && (
+              <div className="text-green-600 text-sm mb-2">
+                {requestSuccess}
+              </div>
+            )}
             <div className="flex gap-3 justify-end">
               {userRequests[activeEntry.id] && (
-                <button className="px-5 py-2 rounded bg-gray-100 text-gray-700 hover:bg-gray-200" onClick={handleDeleteRequest} disabled={deleteLoading || requestLoading}>Löschen</button>
+                <button
+                  className="px-5 py-2 rounded bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  onClick={handleDeleteRequest}
+                  disabled={deleteLoading || requestLoading}
+                >
+                  Löschen
+                </button>
               )}
-              <button className="px-5 py-2 rounded bg-gray-100 text-gray-700 hover:bg-gray-200" onClick={() => setShowRequestModal(false)} disabled={requestLoading || deleteLoading}>Abbrechen</button>
-              <button className={`px-5 py-2 rounded ${userRequests[activeEntry.id] ? "bg-blue-600 hover:bg-blue-700" : "bg-[#e31e24] hover:bg-[#c01a1f]"} text-white font-medium hover:shadow transition-colors`} onClick={handleRequestSubmit} disabled={requestLoading || deleteLoading || !requestMessage.trim()}>
+              <button
+                className="px-5 py-2 rounded bg-gray-100 text-gray-700 hover:bg-gray-200"
+                onClick={() => setShowRequestModal(false)}
+                disabled={requestLoading || deleteLoading}
+              >
+                Abbrechen
+              </button>
+              <button
+                className={`px-5 py-2 rounded ${
+                  userRequests[activeEntry.id]
+                    ? "bg-blue-600 hover:bg-blue-700"
+                    : "bg-[#e31e24] hover:bg-[#c01a1f]"
+                } text-white font-medium hover:shadow transition-colors`}
+                onClick={handleRequestSubmit}
+                disabled={
+                  requestLoading || deleteLoading || !requestMessage.trim()
+                }
+              >
                 {userRequests[activeEntry.id] ? "Speichern" : "Anfrage senden"}
               </button>
             </div>
@@ -582,7 +766,9 @@ function MarketplaceContent() {
 
 export default function MarketplacePage() {
   return (
-    <Suspense fallback={<div className="py-12 text-center text-gray-500">Lädt...</div>}>
+    <Suspense
+      fallback={<div className="py-12 text-center text-gray-500">Lädt...</div>}
+    >
       <MarketplaceContent />
     </Suspense>
   );

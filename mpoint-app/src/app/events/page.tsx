@@ -403,12 +403,15 @@ export default function EventsPage() {
               </button>
             </div>
 
-            <button
-              className="bg-[#e60000] text-white px-4 py-2 rounded-xl hover:bg-red-700 transition-all font-medium cursor-pointer"
-              onClick={() => setShowForm((v) => !v)}
-            >
-              {showForm ? "Abbrechen" : "Event erstellen"}
-            </button>
+            {session?.user?.role === "ENTERPRISE" && (
+              <button
+                id="create-event-btn"
+                className="bg-[#e60000] text-white px-4 py-2 rounded-xl hover:bg-red-700 transition-all font-medium cursor-pointer"
+                onClick={() => setShowForm((v) => !v)}
+              >
+                {showForm ? "Abbrechen" : "Eigenes Event erstellen"}
+              </button>
+            )}
           </div>
         </div>
 
@@ -495,8 +498,11 @@ export default function EventsPage() {
 
         {/* Listen-Ansicht */}
         {viewMode === "list" && (
-          <div className="flex flex-row gap-6">
-            <div className="bg-white rounded-xl shadow-sm p-6 basis-1/2">
+          <div className="flex flex-col gap-6">
+            {session?.user?.role === "ENTERPRISE" && (
+            <div
+              id="my-events-block-list"
+              className="bg-white rounded-xl shadow-sm p-6 basis-1/2">
               <div className="flex items-start justify-between mb-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                   Meine erstellten Events
@@ -586,6 +592,8 @@ export default function EventsPage() {
                 )}
               </div>
             </div>
+            )}
+
             <div className="bg-white rounded-xl shadow-sm p-6 basis-1/2">
               <div className="flex items-start justify-between mb-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
@@ -682,10 +690,14 @@ export default function EventsPage() {
         {/* Grid-Ansicht */}
         {viewMode === "grid" && (
 
-          <div className="flex flex-row gap-6">
+          <div className="flex flex-col gap-6">
             {/* Meine erstellten Events */}
 
-            <div className="bg-white rounded-xl shadow-sm p-6 basis-1/2">
+            {session?.user?.role === "ENTERPRISE" && (
+            <div
+              id="my-events-block-grid"
+              className="bg-white rounded-xl shadow-sm p-6 basis-1/2"
+            >
               <div className="flex items-start justify-between mb-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                   Meine erstellten Events
@@ -698,7 +710,7 @@ export default function EventsPage() {
                     Du hast noch keine Events erstellt.
                   </p>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {myEvents.map((event) => {
                       const enrichedEvent = enrichEventWithBookingInfo(event);
                       return (
@@ -791,9 +803,12 @@ export default function EventsPage() {
                 )}
               </div>
             </div>
+            )}
 
             {/* Verfügbare Events anderer User */}
-            <div className="bg-white rounded-xl shadow-sm p-6 basis-1/2">
+            <div
+              id="available-events-block"
+              className="bg-white rounded-xl shadow-sm p-6 basis-1/2">
               <div className="flex items-start justify-between mb-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                   Verfügbare Events
@@ -805,7 +820,7 @@ export default function EventsPage() {
                   Es gibt aktuell keine verfügbaren Events anderer Nutzer.
                 </p>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                   {availableEvents.map((event) => {
                     const enrichedEvent = enrichEventWithBookingInfo(event);
                     return (

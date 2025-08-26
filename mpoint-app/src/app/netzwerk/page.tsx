@@ -71,7 +71,7 @@ export default function NetzwerkPage() {
         <aside className="w-full lg:w-72 flex-shrink-0 space-y-6">
           <div className="bg-white/80 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-6 border border-white/50">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">
+              <h2 className="text-lg font-semibold text-gray-900">
                 Ihr Netzwerk
               </h2>
               <Network className="w-6 h-6 text-[#e60000]" />
@@ -108,7 +108,7 @@ export default function NetzwerkPage() {
 
           <div className="bg-white/80 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-6 border border-white/50">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">
+              <h2 className="text-lg font-semibold text-gray-900">
                 Smart Filter
               </h2>
               <Funnel className="w-6 h-6 text-[#e60000]" />
@@ -259,7 +259,7 @@ export default function NetzwerkPage() {
 
           <div className="bg-white/90 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">
+              <h2 className="text-lg font-semibold text-gray-900">
                 Ihre Performance
               </h2>
               <Activity className="w-6 h-6 text-[#e60000]" />
