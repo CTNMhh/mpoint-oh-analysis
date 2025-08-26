@@ -13,7 +13,7 @@ import {
   Calendar,
   List,
   ArrowLeft,
-  ArrowRight
+  ArrowRight,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -403,30 +403,33 @@ function MarketplaceContent() {
   }
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-gray-50">
+    <>
       {/* Ladeanzeige während die Einträge geladen werden */}
       {loading && (
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[rgb(228,25,31)] mx-auto mb-4"></div>
-          <p className="text-gray-600">Lädt Börse...</p>
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 pt-20">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[rgb(228,25,31)] mx-auto mb-4"></div>
+            <p className="text-gray-600">Lädt Börse...</p>
+          </div>
         </div>
       )}
       {!loading && (
-        <div className="max-w-7xl mx-auto pt-30 px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3 mb-4">
-              <Briefcase
-                className="w-8 h-8 text-[#e60000]"
-                aria-hidden="true"
-              />
-              Börse
-            </h1>
-            <p className="text-gray-600">
-              Hier finden Sie alle Informationen zu Projekten, Dienstleistungen
-              und Produkten.
-            </p>
-          </div>
-          {/* Project Bar */}
+        <div className="relative min-h-screen bg-gray-50 pt-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3 mb-4">
+                <Briefcase
+                  className="w-8 h-8 text-[#e60000]"
+                  aria-hidden="true"
+                />
+                Börse
+              </h1>
+              <p className="text-gray-600">
+                Hier finden Sie alle Informationen zu Projekten,
+                Dienstleistungen und Produkten.
+              </p>
+            </div>
+            {/* Project Bar */}
 
           {/* Meine Projekte & Angefragte Projekte als Komponente */}
           {session?.user?.id && (
@@ -550,12 +553,13 @@ function MarketplaceContent() {
               </div>
             </div>
 
-            {/* Results Header */}
-            <div className="flex flex-col sm:flex-row justify-end items-start sm:items-center gap-4 mb-5">
-              <div className="text-gray-600" id="resultsCount">
-                {totalEntries} Ergebnis{totalEntries === 1 ? "" : "se"} gefunden
+              {/* Results Header */}
+              <div className="flex flex-col sm:flex-row justify-end items-start sm:items-center gap-4 mb-5">
+                <div className="text-gray-600" id="resultsCount">
+                  {totalEntries} Ergebnis{totalEntries === 1 ? "" : "se"}{" "}
+                  gefunden
+                </div>
               </div>
-            </div>
 
             {/* Results Grid */}
             <div
@@ -653,107 +657,112 @@ function MarketplaceContent() {
               })}
             </div>
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex justify-center items-center gap-2 mt-4">
-                <button
-                  className={`inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-600 rounded-xl font-medium hover:text-gray-900 transition-all cursor-pointer ${
-                    currentPage === 1 ? "opacity-50 cursor-not-allowed" : ""
-                  }`}
-                  disabled={currentPage === 1}
-                  onClick={() => handlePageChange(currentPage - 1)}
-                >
-                  <ArrowLeft className="w-4 h-4 text-gray-600 hover:text-gray-900" />
-                  Zurück
-                </button>
-                {[...Array(totalPages)].map((_, idx) => (
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-2 mt-4">
                   <button
-                    key={idx + 1}
-                    className={`px-4 py-2 border rounded-xl font-medium hover:bg-[#e60000] text-white transition-all cursor-pointer ${
-                      currentPage === idx + 1
-                        ? "bg-[#e60000] text-white border-[#e60000]"
-                        : "bg-white text-gray-600 border-gray-600"
+                    className={`inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-600 rounded-xl font-medium hover:text-gray-900 transition-all cursor-pointer ${
+                      currentPage === 1 ? "opacity-50 cursor-not-allowed" : ""
                     }`}
-                    onClick={() => handlePageChange(idx + 1)}
+                    disabled={currentPage === 1}
+                    onClick={() => handlePageChange(currentPage - 1)}
                   >
-                    {idx + 1}
+                    <ArrowLeft className="w-4 h-4 text-gray-600 hover:text-gray-900" />
+                    Zurück
                   </button>
-                ))}
-                <button
-                  className={`inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-600 font-medium hover:text-gray-900 transition-all cursor-pointer ${
-                    currentPage === totalPages
-                      ? "opacity-50 cursor-not-allowed"
-                      : ""
-                  }`}
-                  disabled={currentPage === totalPages}
-                  onClick={() => handlePageChange(currentPage + 1)}
-                >
-                  Weiter
-                  <ArrowRight className="w-4 h-4 text-gray-600 hover:text-gray-900" />
-                </button>
-              </div>
-            )}
+                  {[...Array(totalPages)].map((_, idx) => (
+                    <button
+                      key={idx + 1}
+                      className={`px-4 py-2 border rounded-xl font-medium hover:bg-[#e60000] transition-all cursor-pointer ${
+                        currentPage === idx + 1
+                          ? "bg-[#e60000] text-white border-[#e60000]"
+                          : "bg-white text-gray-600 border-gray-600"
+                      }`}
+                      onClick={() => handlePageChange(idx + 1)}
+                    >
+                      {idx + 1}
+                    </button>
+                  ))}
+                  <button
+                    className={`inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-600 font-medium hover:text-gray-900 transition-all cursor-pointer ${
+                      currentPage === totalPages
+                        ? "opacity-50 cursor-not-allowed"
+                        : ""
+                    }`}
+                    disabled={currentPage === totalPages}
+                    onClick={() => handlePageChange(currentPage + 1)}
+                  >
+                    Weiter
+                    <ArrowRight className="w-4 h-4 text-gray-600 hover:text-gray-900" />
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
       {/* Anfrage Modal für Listenansicht */}
       {showRequestModal && activeEntry && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-xl p-8 max-w-lg w-full">
-            <h2 className="text-lg font-bold mb-4">
-              {userRequests[activeEntry.id]
-                ? "Anfrage bearbeiten"
-                : "Projekt anfragen"}
-            </h2>
-            <textarea
-              className="w-full border rounded p-2 mb-4"
-              rows={4}
-              placeholder="Ihre Nachricht an den Anbieter..."
-              value={requestMessage}
-              onChange={(e) => setRequestMessage(e.target.value)}
-              disabled={requestLoading || deleteLoading}
-            />
-            {requestError && (
-              <div className="text-red-600 mb-2">{requestError}</div>
-            )}
-            {requestSuccess && (
-              <div className="text-green-600 mb-2">{requestSuccess}</div>
-            )}
-            <div className="flex gap-3 justify-end">
-              {userRequests[activeEntry.id] && (
+        <div className="relative min-h-screen bg-gray-50 pt-20">
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl shadow-xl p-8 max-w-lg w-full">
+              <h2 className="text-lg font-bold mb-4">
+                {userRequests[activeEntry.id]
+                  ? "Anfrage bearbeiten"
+                  : "Projekt anfragen"}
+              </h2>
+              <textarea
+                className="w-full border rounded p-2 mb-4"
+                rows={4}
+                placeholder="Ihre Nachricht an den Anbieter..."
+                value={requestMessage}
+                onChange={(e) => setRequestMessage(e.target.value)}
+                disabled={requestLoading || deleteLoading}
+              />
+              {requestError && (
+                <div className="text-red-600 mb-2">{requestError}</div>
+              )}
+              {requestSuccess && (
+                <div className="text-green-600 mb-2">{requestSuccess}</div>
+              )}
+              <div className="flex gap-3 justify-end">
+                {userRequests[activeEntry.id] && (
+                  <button
+                    className="px-5 py-2 rounded bg-gray-100 text-gray-700 hover:bg-gray-200 cursor-pointer"
+                    onClick={handleDeleteRequest}
+                    disabled={deleteLoading || requestLoading}
+                  >
+                    Löschen
+                  </button>
+                )}
                 <button
                   className="px-5 py-2 rounded bg-gray-100 text-gray-700 hover:bg-gray-200 cursor-pointer"
-                  onClick={handleDeleteRequest}
-                  disabled={deleteLoading || requestLoading}
+                  onClick={() => setShowRequestModal(false)}
+                  disabled={requestLoading || deleteLoading}
                 >
-                  Löschen
+                  Abbrechen
                 </button>
-              )}
-              <button
-                className="px-5 py-2 rounded bg-gray-100 text-gray-700 hover:bg-gray-200 cursor-pointer"
-                onClick={() => setShowRequestModal(false)}
-                disabled={requestLoading || deleteLoading}
-              >
-                Abbrechen
-              </button>
-              <button
-                className={`px-5 py-2 rounded cursor-pointer ${
-                  userRequests[activeEntry.id]
-                    ? "bg-red-600 hover:bg-red-700"
-                    : "bg-[#e60000] hover:bg-[#c01a1f]"
-                } text-white font-medium hover:shadow transition-colors`}
-                onClick={handleRequestSubmit}
-                disabled={
-                  requestLoading || deleteLoading || !requestMessage.trim()
-                }
-              >
-                {userRequests[activeEntry.id] ? "Speichern" : "Anfrage senden"}
-              </button>
+                <button
+                  className={`px-5 py-2 rounded cursor-pointer ${
+                    userRequests[activeEntry.id]
+                      ? "bg-blue-600 hover:bg-blue-700"
+                      : "bg-[#e60000] hover:bg-[#c01a1f]"
+                  } text-white font-medium hover:shadow transition-colors`}
+                  onClick={handleRequestSubmit}
+                  disabled={
+                    requestLoading || deleteLoading || !requestMessage.trim()
+                  }
+                >
+                  {userRequests[activeEntry.id]
+                    ? "Speichern"
+                    : "Anfrage senden"}
+                </button>
+              </div>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
 

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
+import { Trash2 } from "lucide-react";
 
 export default function CartPage() {
   const [cart, setCart] = useState<{ id: string, items: any[] } | null>(null);
@@ -150,44 +151,48 @@ export default function CartPage() {
 
       {/* Haupt-Content */}
       <div className="max-w-3xl mx-auto py-8">
-        <h1 className="text-2xl font-bold mb-6">Warenkorb</h1>
-        <table className="w-full text-xs border rounded-xl overflow-hidden shadow bg-white">
-          <thead>
-            <tr className="bg-gray-100 text-gray-700 uppercase leading-tight">
-              <th className="py-2 px-2 text-left">Event</th>
-              <th className="py-2 px-2 text-center">Plätze</th>
-              <th className="py-2 px-2 text-right">Gesamt</th>
-              <th className="py-2 px-2 text-center">Aktionen</th>
-            </tr>
-          </thead>
-          <tbody>
-            {cart.items.map((item) => (
-              <tr key={item.id}>
-                <td className="py-2 px-2 border-b truncate max-w-[120px]">{item.event?.title}</td>
-                <td className="py-2 px-2 border-b text-center">{item.spaces}</td>
-                <td className="py-2 px-2 border-b text-right">{item.event?.price ? (item.event.price * item.spaces).toFixed(2) + " €" : "Kostenfrei"}</td>
-                <td className="py-2 px-2 border-b text-center">
-                  <button
-                    onClick={() => handleRemoveCartItem(item.id)}
-                    className="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-700"
-                  >
-                    Entfernen
-                  </button>
-                </td>
+        <div id="cart-box" className="pt-20">
+          <h1 className="text-2xl font-bold mb-6">Warenkorb</h1>
+          <table id="cart-items" className="w-full border rounded-xl overflow-hidden shadow bg-white">
+            <thead>
+              <tr className="bg-gray-100 text-gray-700 uppercase leading-tight">
+                <th className="py-2 px-2 text-left">Event</th>
+                <th className="py-2 px-2 text-center">Plätze</th>
+                <th className="py-2 px-2 text-right">Gesamt</th>
+                <th className="py-2 px-2 text-center">Aktionen</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-        <div className="mt-4 text-right font-bold text-lg">
-          Gesamtbetrag: {cart.items.reduce((sum, item) => sum + ((item.event?.price || 0) * item.spaces), 0).toFixed(2)} €
-        </div>
-        <div className="mt-6 flex justify-end">
-          <button
-            className="bg-green-600 text-white px-6 py-2 rounded text-sm hover:bg-green-700"
-            onClick={() => setStep(1)}
-          >
-            Zur Kasse
-          </button>
+            </thead>
+            <tbody>
+              {cart.items.map((item) => (
+                <tr key={item.id}>
+                  <td id="cart-item-title" className="py-2 px-2 border-b max-w-[120px]">{item.event?.title}</td>
+                  <td id="cart-item-spaces" className="py-2 px-2 border-b text-center">{item.spaces}</td>
+                  <td id="cart-item-total" className="py-2 px-2 border-b text-right">{item.event?.price ? (item.event.price * item.spaces).toFixed(2) + " €" : "Kostenfrei"}</td>
+                  <td id="cart-item-actions" className="py-2 px-2 border-b text-center align-middle">
+                    <button
+                      id="cart-item-remove-button"
+                      onClick={() => handleRemoveCartItem(item.id)}
+                      className="inline-flex items-center justify-center bg-red-500 text-white px-2 py-1 rounded hover:bg-red-700"
+                      title="Entfernen"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div id="cart-summary" className="mt-4 text-right font-bold text-lg">
+            Gesamtbetrag: {cart.items.reduce((sum, item) => sum + ((item.event?.price || 0) * item.spaces), 0).toFixed(2)} €
+          </div>
+          <div id="cart-actions" className="mt-6 flex justify-end">
+            <button
+              className="bg-red-500 text-white px-6 py-2 rounded text-sm hover:bg-red-700"
+              onClick={() => setStep(1)}
+            >
+              Zur Kasse
+            </button>
+          </div>
         </div>
 
         {step === 1 && (
@@ -265,7 +270,7 @@ export default function CartPage() {
             {error && <div className="text-red-600 mb-2">{error}</div>}
             <div className="flex justify-end gap-4 mt-4">
               <button type="button" className="px-4 py-2 bg-gray-300 rounded" onClick={() => setStep(0)}>Abbrechen</button>
-              <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded">Weiter</button>
+              <button type="submit" className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700">Weiter</button>
             </div>
           </form>
         )}
@@ -301,7 +306,7 @@ export default function CartPage() {
               {form.paymentMethod !== "PAYPAL" && (
                 <button
                   type="button"
-                  className="px-4 py-2 bg-green-600 text-white rounded"
+                  className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700"
                   onClick={async () => {
                     setError("");
                     try {
@@ -360,7 +365,7 @@ export default function CartPage() {
             <div className="mb-4 font-semibold">
               Gesamtbetrag: {cart.items.reduce((sum, item) => sum + (item.event?.price || 0) * item.spaces, 0).toFixed(2)} €
             </div>
-            <button className="px-4 py-2 bg-blue-600 text-white rounded" onClick={() => window.location.href = "/events"}>
+            <button className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700" onClick={() => window.location.href = "/events"}>
               Zurück zu Events
             </button>
           </div>

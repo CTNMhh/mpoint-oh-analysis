@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { EventType, EventStatus } from "../types";
 import { useCart } from "@/context/CartContext";
+import { useRouter } from "next/navigation";
 
 export default function EventDetailPage({
   params
@@ -77,6 +78,8 @@ export default function EventDetailPage({
   const fullName = session?.user ? `${session.user.firstName} ${session.user.lastName}` : "";
   const userEmail = session?.user?.email || "";
 
+  const router = useRouter();
+
   async function handleAddToCart(eventId: string, spaces: number = 1) {
     setSuccess(null);
     setError(null);
@@ -88,6 +91,7 @@ export default function EventDetailPage({
     if (res.ok) {
       setSuccess("Event wurde dem Warenkorb hinzugefügt!");
       refreshCart();
+      router.push("/cart"); // <-- Weiterleitung zu /cart
     } else {
       setError("Fehler beim Hinzufügen zum Warenkorb.");
     }
@@ -112,11 +116,12 @@ export default function EventDetailPage({
           <div className="w-1/2 flex items-center">
             <Link
               href="/events"
-              className="inline-flex items-center px-3 py-1.5 rounded-full bg-gray-100 text-gray-700 hover:bg-[rgb(228,25,31)] hover:text-white transition-colors font-semibold shadow text-sm"
+              className="inline-flex items-center px-4 py-2 rounded-xl bg-gray-100 text-gray-700 hover:bg-[rgb(228,25,31)] hover:text-white transition-colors font-semibold shadow text-sm"
             >
               <span className="text-xl">&larr;</span> <span className="ml-1">Zurück zu Events</span>
             </Link>
           </div>
+          {/*
           <div className="w-1/2 flex justify-end items-center">
             <button
               type="button"
@@ -126,6 +131,7 @@ export default function EventDetailPage({
               Event exportieren
             </button>
           </div>
+          */}
         </div>
 
         {/* Event-Titel, Bild, Infos */}
@@ -238,8 +244,9 @@ export default function EventDetailPage({
 
         {/* Nur noch EIN Button für alle Events */}
         <button
+          id="add-to-cart-button"
           type="button"
-          className="bg-blue-600 text-white px-8 py-3 rounded-xl hover:bg-blue-700 transition-colors font-semibold w-full text-lg shadow-lg mt-4"
+          className="bg-[#e60000] text-white px-4 py-2 rounded-xl font-medium hover:bg-[#c01a1f] transition-colors shadow  cursor-pointer w-full"
           onClick={() => handleAddToCart(event.id, spaces)}
         >
           In den Warenkorb
