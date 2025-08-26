@@ -27,9 +27,29 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({ project, onClose, o
     const longDescDiv = document.getElementById("projectLongDescription") as HTMLDivElement | null;
     let longDescription = longDescDiv?.innerHTML?.trim() || null;
     if (longDescription === "" || longDescription === "<br>") longDescription = null;
-    const payload = {
-      ...formState,
+    // Kategorie wie im Create-Modal in UPPERCASE senden
+    const category = formState.category ? String(formState.category).toUpperCase() : null;
+    // Deadline in ISO-Format normalisieren (falls "YYYY-MM-DD" aus dem Date-Input)
+    let deadline: string | null = null;
+    if (formState.deadline) {
+      const d = String(formState.deadline);
+      if (/^\d{4}-\d{2}-\d{2}$/.test(d)) {
+        deadline = new Date(d).toISOString();
+      } else {
+        deadline = d;
+      }
+    }
+    // Nur relevante Felder für das Update senden (email/publicEmail entfallen; "anonymous" ist nur Dummy)
+    const payload: any = {
+      id: formState.id,
+      type: formState.type,
+      title: formState.title ?? null,
+      category,
+      shortDescription: formState.shortDescription ?? null,
       longDescription,
+      location: formState.location ?? null,
+      deadline,
+      skills: formState.skills ?? null,
     };
     onSubmit(payload);
   }
@@ -51,7 +71,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({ project, onClose, o
           <form onSubmit={handleSubmit}>
             {/* Typ-Auswahl Angebot/Anfrage */}
             <div className="mb-5">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Typ <span className="text-primary">*</span></label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Typ</label>
               <div className="flex gap-3">
                 <label className="flex items-center gap-2 text-sm cursor-pointer px-3 py-2 rounded-lg border border-yellow-200 bg-yellow-50 text-yellow-700">
                   <input type="radio" name="type" value="Anfrage" checked={formState.type === "Anfrage"} onChange={handleChange} /> Anfrage
@@ -64,7 +84,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({ project, onClose, o
             {/* Projekttitel */}
             <div className="mb-5">
               <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="projectTitle">
-                Projekttitel <span className="text-primary">*</span>
+                Projekttitel
               </label>
               <input
                 type="text"
@@ -80,7 +100,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({ project, onClose, o
             {/* Kategorie */}
             <div className="mb-5">
               <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="projectCategory">
-                Kategorie <span className="text-primary">*</span>
+                Kategorie
               </label>
               <select id="projectCategory" name="category" className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" value={formState.category?.toLowerCase()} onChange={handleChange} required>
                 <option value="">Kategorie auswählen</option>
@@ -96,7 +116,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({ project, onClose, o
             {/* Beschreibung (kurz) */}
             <div className="mb-5">
               <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="projectShortDescription">
-                Beschreibung (kurz) <span className="text-primary">*</span>
+                Beschreibung (kurz)
               </label>
               <input
                 type="text"
@@ -150,6 +170,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({ project, onClose, o
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                   value={formState.deadline ? formState.deadline.slice(0, 10) : ""}
                   onChange={handleChange}
+                  required
                 />
               </div>
             </div>
@@ -168,27 +189,18 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({ project, onClose, o
                 onChange={handleChange}
               />
             </div>
-            {/* Kontakt E-Mail */}
-            <div className="mb-5">
-              <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="contactEmail">
-                Kontakt E-Mail <span className="text-primary">*</span>
-              </label>
-              <input
-                type="email"
-                id="contactEmail"
-                name="email"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                placeholder="ihre@email.de"
-                value={formState.email || ""}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            {/* Kontakt-Erlaubnis Checkbox */}
+            {/* Dummy Checkbox: Anonym einstellen */}
             <div className="mb-4">
               <label className="flex items-center gap-3 cursor-pointer">
-                <input type="checkbox" id="allowContact" name="publicEmail" className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary" checked={!!formState.publicEmail} onChange={handleChange} />
-                <span className="text-sm">Ich stimme zu, dass Interessenten mich kontaktieren dürfen <span className="text-primary">*</span></span>
+                <input
+                  type="checkbox"
+                  id="anonymous"
+                  name="anonymous"
+                  className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                  checked={!!formState.anonymous}
+                  onChange={handleChange}
+                />
+                <span className="text-sm">Anonym einstellen (Unternehmensname wird nicht angezeigt)</span>
               </label>
             </div>
             {/* Form Actions */}
