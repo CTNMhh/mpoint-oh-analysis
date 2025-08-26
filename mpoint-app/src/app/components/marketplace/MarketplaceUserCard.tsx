@@ -483,7 +483,7 @@ const MarketplaceUserCard: React.FC<Props> = ({ session, entries, userRequests, 
             <div className="flex justify-between items-center p-6 border-b border-gray-200">
               <h2 className="text-2xl font-semibold text-gray-900">Neues Projekt einstellen</h2>
               <button
-                className="text-gray-500 hover:text-gray-700 text-2xl p-1 hover:bg-gray-100 rounded"
+                className="text-gray-600 hover:text-gray-700 text-2xl p-1 hover:bg-gray-100 rounded-xl  cursor-pointer"
                 onClick={() => setShowModal(false)}
                 aria-label="Schließen"
               >
@@ -648,7 +648,7 @@ const MarketplaceUserCard: React.FC<Props> = ({ session, entries, userRequests, 
                             onChange={e => handlePriceChange("from", e.target.value ? Number(e.target.value) : undefined)}
                             required
                           />
-                          <span className="text-gray-500">bis</span>
+                          <span className="text-gray-600">bis</span>
                           <input
                             type="number"
                             className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
@@ -661,7 +661,7 @@ const MarketplaceUserCard: React.FC<Props> = ({ session, entries, userRequests, 
                           />
                         </>
                       )}
-                      <span className="text-gray-500">€</span>
+                      <span className="text-gray-600">€</span>
                     </div>
                   )}
                   {/* Zusatzoptionen entfernt, Flags werden automatisch gesetzt */}
@@ -700,7 +700,7 @@ const MarketplaceUserCard: React.FC<Props> = ({ session, entries, userRequests, 
                   >
                     Abbrechen
                   </button>
-                  <button type="submit" className="px-6 py-3 bg-[#e31e24] text-white rounded-lg font-medium hover:bg-[#c01a1f] hover:shadow transition-colors">
+                  <button type="submit" className="px-6 py-3 bg-[#e60000] text-white rounded-lg font-medium hover:bg-[#c01a1f] hover:shadow transition-colors cursor-pointer">
                     Projekt veröffentlichen
                   </button>
                 </div>
@@ -710,26 +710,26 @@ const MarketplaceUserCard: React.FC<Props> = ({ session, entries, userRequests, 
         </div>
       )}
       <div className="flex-1">
+        <h2 className="text-xl font-bold text-gray-900 mb-4">Meine Projekte</h2>
         <div className="mb-5">
           <button
-            className="bg-[#e31e24] text-white px-4 py-2 rounded-full font-medium hover:bg-[#c01a1f] transition-colors shadow"
+            className="bg-[#e60000] text-white px-4 py-2 rounded-xl font-medium hover:bg-[#c01a1f] transition-colors shadow  cursor-pointer"
             onClick={() => setShowModal(true)}
           >
             Eigenes Projekt einstellen
           </button>
         </div>
-        <h2 className="text-lg font-bold mb-3">Meine Projekte</h2>
         {/* Project Bar */}
         {myProjects.length === 0 ? (
-          <div className="text-gray-500 text-sm">Keine eigenen Projekte.</div>
+          <div className="text-gray-600">Keine eigenen Projekte.</div>
         ) : (
           <ul className="space-y-2">
             {myProjects.map(entry => (
-              <li key={entry.id} className="flex items-center justify-between gap-2">
+              <li key={entry.id} className="flex items-center justify-between gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 hover:shadow-md transition-all">
                 <a href={`/boerse/${entry.id}`} className="text-primary hover:underline font-medium">{entry.title}</a>
                 <div className="flex items-center gap-1 relative">
                   <button
-                    className={`relative text-lg px-2 ${((projectTotalRequestCounts[entry.id] ?? 0) > 0) ? 'text-blue-600 hover:text-blue-700' : 'text-gray-300 cursor-not-allowed'}`}
+                    className={`relative text-lg px-2 cursor-pointer ${((projectTotalRequestCounts[entry.id] ?? 0) > 0) ? 'text-blue-600 hover:text-blue-700' : 'text-gray-300 cursor-not-allowed'}`}
                     title="Mitteilungen"
                     onClick={e => {
                       e.preventDefault();
@@ -749,14 +749,14 @@ const MarketplaceUserCard: React.FC<Props> = ({ session, entries, userRequests, 
                     )}
                   </button>
                   <button
-                    className="text-gray-500 hover:text-blue-600 text-lg px-2"
+                    className="text-gray-600 hover:text-blue-600 text-lg px-2 cursor-pointer"
                     title="Projekt bearbeiten"
                     onClick={e => { e.preventDefault(); onEditProject ? onEditProject(entry) : (setEditProject(entry), setShowEditModal(true)); }}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5"><path d="M17.414 2.586a2 2 0 0 0-2.828 0l-9.5 9.5A2 2 0 0 0 4 13.5V16a1 1 0 0 0 1 1h2.5a2 2 0 0 0 1.414-.586l9.5-9.5a2 2 0 0 0 0-2.828l-2.5-2.5ZM15 4l2 2-9.5 9.5a1 1 0 0 1-.707.293H5v-1.293a1 1 0 0 1 .293-.707L15 4Z" /></svg>
                   </button>
                   <button
-                    className="text-red-500 hover:text-red-700 text-lg px-2"
+                    className="text-red-500 hover:text-red-700 text-lg px-2 cursor-pointer"
                     title="Projekt entfernen"
                     onClick={e => { e.preventDefault(); handleRemoveProject(entry.id); }}
                   >×</button>
@@ -767,9 +767,9 @@ const MarketplaceUserCard: React.FC<Props> = ({ session, entries, userRequests, 
         )}
       </div>
       <div className="flex-1">
-        <h2 className="text-lg font-bold mb-3">Angefragte Projekte</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-4">Angefragte Projekte</h2>
         {requestedProjects.length === 0 ? (
-          <div className="text-gray-500 text-sm">Keine Anfragen gestellt.</div>
+          <div className="text-gray-600">Keine Anfragen gestellt.</div>
         ) : (
           <ul className="space-y-2">
             {requestedProjects.map(entry => (
@@ -777,7 +777,7 @@ const MarketplaceUserCard: React.FC<Props> = ({ session, entries, userRequests, 
                 <a href={`/boerse/${entry.id}`} className="text-primary hover:underline font-medium">{entry.title}</a>
                 <div className="flex items-center gap-1">
                   <button
-                    className="text-gray-500 hover:text-blue-600 text-lg px-2"
+                    className="text-gray-600 hover:text-blue-600 text-lg px-2"
                     title="Anfrage bearbeiten"
                     onClick={e => { e.preventDefault(); handleEditRequest(entry); }}
                   >
