@@ -41,6 +41,7 @@ export const authOptions: AuthOptions = {
             firstName: user.firstName,
             lastName: user.lastName,
             isAdmin: false,
+            role: user.role,
           };
         }
 
@@ -82,6 +83,7 @@ export const authOptions: AuthOptions = {
         token.lastName = user.lastName;
         token.email = user.email;
         token.isAdmin = user.isAdmin || false;
+        token.role = user.role;
       }
       return token;
     },
@@ -93,6 +95,7 @@ export const authOptions: AuthOptions = {
           lastName: token.lastName as string,
           email: token.email as string,
           isAdmin: token.isAdmin as boolean,
+          role: token.role as string,
         };
       }
       return session;
