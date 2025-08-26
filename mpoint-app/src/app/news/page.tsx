@@ -142,7 +142,7 @@ export default function NewsPage() {
                   {news.map((n) => (
                     <article
                       key={n.id}
-                      className="bg-white hover:bg-gray-50 border border-gray-200 rounded-lg transition-shadow cursor-pointer overflow-hidden group flex md:flex-row flex-col h-auto md:h-64 min-h-0"
+                      className="bg-white hover:bg-gray-50 border border-gray-200 rounded-lg transition-shadow cursor-pointer overflow-hidden group flex md:flex-row flex-col h-auto md:h-64 min-h-0 hover:shadow-md"
                     >
                       {n.imageUrl && (
                         <div className="md:w-48 w-full h-64 relative flex-shrink-0">

@@ -46,7 +46,7 @@ export default function NewsDetailPage() {
     <main className="min-h-screen bg-gray-50 pt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         <button
-          className="mb-6 flex items-center gap-2 text-[#e60000] font-medium hover:underline"
+          className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 text-gray-700 hover:bg-[rgb(228,25,31)] hover:text-white transition-all font-semibold text-sm"
           onClick={() => router.back()}
         >
           <ArrowLeft className="w-4 h-4" /> Zurück
