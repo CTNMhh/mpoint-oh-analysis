@@ -136,10 +136,21 @@ export default function DashboardPage() {
 
   useEffect(() => {
     async function fetchEvents() {
-      const res = await fetch("/api/events");
-      if (res.ok) {
-        const data = await res.json();
-        setAllEvents(data);
+      try {
+        const res = await fetch("/api/events");
+        if (res.ok) {
+          const data = await res.json();
+          console.log("Events raw:", data.map((e: any) => ({ id: e.id, isActive: e.isActive })));
+          // akzeptiert 1, "1", true
+          const activeEvents = data.filter((e: any) => {
+            const v = e.isActive;
+            // Zahl / String in Zahl wandeln (Number(true) = 1, Number("1") = 1, Number(1)=1)
+            return Number(v) === 1;
+          });
+          setAllEvents(activeEvents);
+        }
+      } catch (error) {
+        console.error("Fehler beim Abrufen der Events:", error);
       }
     }
     fetchEvents();

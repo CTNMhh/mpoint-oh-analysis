@@ -362,12 +362,6 @@ export default function CompanyProfilePage() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
-            <button
-              onClick={() => router.back()}
-              className="p-2 hover:bg-white rounded-lg transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Profil</h1>
               <p className="text-gray-600 mt-1">
