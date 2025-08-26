@@ -543,8 +543,8 @@ function MarketplaceContent() {
                   type="button"
                   className={`px-4 py-2 rounded-xl font-medium border transition-colors cursor-pointer ${
                     typeFilter === "Angebot"
-                      ? "bg-red-50 text-blue-700 border-blue-200"
-                      : "bg-white text-gray-700 border-gray-300 hover:border-blue-200"
+                      ? "bg-red-50 text-blue-700 border-red-200"
+                      : "bg-white text-gray-700 border-gray-300 hover:border-red-200"
                   }`}
                   onClick={() => handleTypeChange("Angebot")}
                 >
@@ -745,7 +745,7 @@ function MarketplaceContent() {
                 <button
                   className={`px-5 py-2 rounded cursor-pointer ${
                     userRequests[activeEntry.id]
-                      ? "bg-blue-600 hover:bg-blue-700"
+                      ? "bg-red-600 hover:bg-red-700"
                       : "bg-[#e60000] hover:bg-[#c01a1f]"
                   } text-white font-medium hover:shadow transition-colors`}
                   onClick={handleRequestSubmit}

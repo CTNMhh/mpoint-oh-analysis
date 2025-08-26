@@ -49,7 +49,7 @@ const EditRequestModal: React.FC<EditRequestModalProps> = ({
               <button type="button" className="px-5 py-2 rounded bg-gray-100 text-gray-700 hover:bg-gray-200" onClick={onDelete} disabled={loading}>Löschen</button>
             )}
             <button type="button" className="px-5 py-2 rounded bg-gray-100 text-gray-700 hover:bg-gray-200" onClick={onClose} disabled={loading}>Abbrechen</button>
-            <button type="submit" className={`px-5 py-2 rounded ${isEdit ? "bg-blue-600 hover:bg-blue-700" : "bg-[#e31e24] hover:bg-[#c01a1f]"} text-white font-medium hover:shadow transition-colors`} disabled={loading || !msg.trim()}>
+            <button type="submit" className={`px-5 py-2 rounded bg-[#e31e24] hover:bg-[#c01a1f] text-white font-medium hover:shadow transition-colors`} disabled={loading || !msg.trim()}>
               {isEdit ? "Speichern" : "Anfrage senden"}
             </button>
           </div>

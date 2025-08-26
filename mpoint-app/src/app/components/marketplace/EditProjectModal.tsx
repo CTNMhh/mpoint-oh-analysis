@@ -205,10 +205,10 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({ project, onClose, o
             </div>
             {/* Form Actions */}
             <div className="flex flex-col sm:flex-row gap-3 justify-end pt-5 border-t border-gray-200">
-              <button type="button" className="px-6 py-3 border border-blue-600 bg-white text-blue-600 rounded-lg font-medium hover:bg-blue-600 hover:text-white hover:shadow transition-colors" onClick={onClose}>
+              <button type="button" className="px-6 py-3 border border-red-600 bg-white text-red-600 rounded-lg font-medium hover:bg-red-600 hover:text-white hover:shadow transition-colors" onClick={onClose}>
                 Abbrechen
               </button>
-              <button type="submit" className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 hover:shadow transition-colors">
+              <button type="submit" className="px-6 py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 hover:shadow transition-colors">
                 Bearbeiten
               </button>
             </div>
