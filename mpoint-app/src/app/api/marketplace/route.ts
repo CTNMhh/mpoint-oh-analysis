@@ -37,8 +37,6 @@ export async function POST(req: Request) {
         longDescription: body.longDescription,
         price: body.price,
         type: body.type,
-        email: body.email,
-        publicEmail: body.publicEmail ?? false,
         location: body.location,
         deadline: body.deadline ? new Date(body.deadline) : null,
         skills: body.skills,

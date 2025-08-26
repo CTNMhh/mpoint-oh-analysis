@@ -143,7 +143,6 @@ export default function MarketplaceDetailPage() {
         </div>
         <div className="prose prose-lg max-w-none mb-8" dangerouslySetInnerHTML={{ __html: entry.longDescription || "<em>Keine Detailbeschreibung vorhanden.</em>" }} />
         <div className="text-sm text-gray-500 mb-2">Erstellt von: {entry.user?.firstName} {entry.user?.lastName}</div>
-        <div className="text-sm text-gray-500 mb-6">Kontakt: {entry.email}</div>
         <div className="flex justify-between items-center mt-6">
           <div className="font-semibold text-primary text-lg">
             {/* Preis anzeigen falls vorhanden */}
