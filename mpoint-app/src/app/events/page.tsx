@@ -403,12 +403,15 @@ export default function EventsPage() {
               </button>
             </div>
 
-            <button
-              className="bg-[#e60000] text-white px-4 py-2 rounded-xl hover:bg-red-700 transition-all font-medium cursor-pointer"
-              onClick={() => setShowForm((v) => !v)}
-            >
-              {showForm ? "Abbrechen" : "Event erstellen"}
-            </button>
+            {session?.user?.role === "ENTERPRISE" && (
+              <button
+                id="create-event-btn"
+                className="bg-[#e60000] text-white px-4 py-2 rounded-xl hover:bg-red-700 transition-all font-medium cursor-pointer"
+                onClick={() => setShowForm((v) => !v)}
+              >
+                {showForm ? "Abbrechen" : "Event erstellen"}
+              </button>
+            )}
           </div>
         </div>
 
@@ -685,7 +688,10 @@ export default function EventsPage() {
           <div className="flex flex-row gap-6">
             {/* Meine erstellten Events */}
 
-            <div className="bg-white rounded-xl shadow-sm p-6 basis-1/2">
+            <div
+              id="my-events-block"
+              className="bg-white rounded-xl shadow-sm p-6 basis-1/2"
+            >
               <div className="flex items-start justify-between mb-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                   Meine erstellten Events
@@ -793,7 +799,9 @@ export default function EventsPage() {
             </div>
 
             {/* Verfügbare Events anderer User */}
-            <div className="bg-white rounded-xl shadow-sm p-6 basis-1/2">
+            <div
+              id="available-events-block"
+              className="bg-white rounded-xl shadow-sm p-6 basis-1/2">
               <div className="flex items-start justify-between mb-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                   Verfügbare Events
