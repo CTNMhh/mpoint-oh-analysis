@@ -61,6 +61,31 @@ const typeColors: Record<string, string> = {
   Angebot: "bg-blue-50 text-blue-700",
 };
 
+// Status-Badge Styles und Labels für Nutzer-Anfragen
+const requestStatusStyles: Record<string, string> = {
+  PENDING: "bg-amber-50 text-amber-700 border-amber-200",
+  DECLINED: "bg-red-50 text-red-700 border-red-200",
+  APPROVED: "bg-green-50 text-green-700 border-green-200",
+  ACCEPTED: "bg-green-50 text-green-700 border-green-200",
+  CONFIRMED: "bg-green-50 text-green-700 border-green-200",
+  CANCELED: "bg-gray-50 text-gray-700 border-gray-200",
+  CANCELLED: "bg-gray-50 text-gray-700 border-gray-200",
+};
+
+function requestStatusLabel(status?: string): string {
+  const map: Record<string, string> = {
+    PENDING: "Offen",
+    DECLINED: "Abgelehnt",
+    APPROVED: "Angenommen",
+    ACCEPTED: "Angenommen",
+    CONFIRMED: "Bestätigt",
+    CANCELED: "Storniert",
+    CANCELLED: "Storniert",
+  };
+  if (!status) return "Gesendet";
+  return map[status] || status;
+}
+
 // Preis-Typ und Hilfsfunktion
 
 function renderPrice(price: PriceType): string {
@@ -195,8 +220,8 @@ function MarketplaceContent() {
       setRequestedProjects([]);
       return;
     }
-    // Eigene Projekte filtern
-    setMyProjects(entries.filter((entry) => entry.userId === session.user.id));
+  // Eigene Projekte filtern
+  setMyProjects(entries.filter((entry) => entry.userId === session?.user?.id));
     // Angefragte Projekte filtern
     const requestedIds = Object.keys(userRequests);
     setRequestedProjects(
@@ -215,7 +240,7 @@ function MarketplaceContent() {
           return rest;
         });
         const enrichedData = await Promise.all(
-          cleaned.map(async (entry) => {
+          cleaned.map(async (entry: any) => {
             const userName = await getUserNameById(entry.userId);
             return { ...entry, userName };
           })
@@ -387,7 +412,7 @@ function MarketplaceContent() {
         </div>
       )}
       {!loading && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        <div className="max-w-7xl mx-auto pt-30 px-4 sm:px-6 lg:px-8 py-8 space-y-6">
           <div className="bg-white rounded-xl shadow-sm p-6">
             <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3 mb-4">
               <Briefcase
@@ -515,7 +540,7 @@ function MarketplaceContent() {
                   type="button"
                   className={`px-4 py-2 rounded-xl font-medium border transition-colors cursor-pointer ${
                     typeFilter === "Angebot"
-                      ? "bg-blue-50 text-blue-700 border-blue-200"
+                      ? "bg-red-50 text-blue-700 border-blue-200"
                       : "bg-white text-gray-700 border-gray-300 hover:border-blue-200"
                   }`}
                   onClick={() => handleTypeChange("Angebot")}
@@ -541,7 +566,7 @@ function MarketplaceContent() {
                 const userRequest = userRequests[entry.id];
                 const requestButton = userRequest ? (
                   <button
-                    className="px-4 py-2 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 hover:shadow transition-colors cursor-pointer"
+                    className="px-4 py-2 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 hover:shadow transition-colors cursor-pointer"
                     onClick={(e) => {
                       e.stopPropagation();
                       openRequestModal(entry);
@@ -560,6 +585,18 @@ function MarketplaceContent() {
                     Anfragen
                   </button>
                 );
+                const statusBadge = userRequest ? (
+                  <span
+                    className={`border text-xs font-medium px-2.5 py-1 rounded-full ${
+                      requestStatusStyles[userRequest.status] ||
+                      "bg-blue-50 text-blue-700 border-blue-200"
+                    }`}
+                    onClick={(e) => e.stopPropagation()}
+                    title={`Status deiner Anfrage: ${requestStatusLabel(userRequest.status)}`}
+                  >
+                    {requestStatusLabel(userRequest.status)}
+                  </span>
+                ) : null;
                 return (
                   <div
                     key={entry.id}
@@ -606,7 +643,10 @@ function MarketplaceContent() {
                       <div className="font-semibold text-primary text-base">
                         {renderPrice(entry.price)}
                       </div>
-                      {requestButton}
+                      <div className="flex items-center gap-2">
+                        {statusBadge}
+                        {requestButton}
+                      </div>
                     </div>
                   </div>
                 );
@@ -659,7 +699,7 @@ function MarketplaceContent() {
       {/* Anfrage Modal für Listenansicht */}
       {showRequestModal && activeEntry && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-xl p-8 max-w-sm w-full">
+          <div className="bg-white rounded-xl shadow-xl p-8 max-w-lg w-full">
             <h2 className="text-lg font-bold mb-4">
               {userRequests[activeEntry.id]
                 ? "Anfrage bearbeiten"
@@ -699,7 +739,7 @@ function MarketplaceContent() {
               <button
                 className={`px-5 py-2 rounded cursor-pointer ${
                   userRequests[activeEntry.id]
-                    ? "bg-blue-600 hover:bg-blue-700"
+                    ? "bg-red-600 hover:bg-red-700"
                     : "bg-[#e60000] hover:bg-[#c01a1f]"
                 } text-white font-medium hover:shadow transition-colors`}
                 onClick={handleRequestSubmit}
