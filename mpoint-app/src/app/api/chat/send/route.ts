@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "../../auth/[...nextauth]/route";
 import { PrismaClient, MatchStatus } from "@prisma/client";
 import { publish } from "../../../../lib/sse";
+import { NotificationType } from "@prisma/client";
+import { createNotification } from "../../../../lib/notifications";
 
 const prisma = new PrismaClient();
 export const runtime = "nodejs";
@@ -58,6 +60,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Receiver user missing" }, { status: 422 });
     }
 
+    // Anzeigenamen des Senders ermitteln
+    const senderUser = isSenderSide ? match.senderCompany?.user : match.receiverCompany?.user;
+    const senderDisplayName =
+      [senderUser?.firstName, senderUser?.lastName].filter(Boolean).join(" ") ||
+      senderUser?.name ||
+      session.user.name ||
+      senderUser?.email ||
+      senderUserId;
+
     // Nachricht speichern
     try {
       const message = await prisma.message.create({
@@ -69,6 +80,13 @@ export async function POST(req: NextRequest) {
           receiverUserId,
           receiverCompanyId,
         },
+      });
+      await createNotification({
+        userId: message.receiverUserId,
+        type: NotificationType.MESSAGE,
+        title: "Neue Nachricht",
+        body: `${senderDisplayName}: ${message.content?.slice(0, 120) || ""}`,
+        url: `/chat/${message.matchId}`,
       });
 
       publish(matchId, { type: "message", message });

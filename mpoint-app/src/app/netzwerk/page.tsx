@@ -228,7 +228,7 @@ export default function NetzwerkPage() {
           <div className="bg-white/90 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-bold text-lg text-gray-900">AI-Matches</h2>
-              <Sparkles className="w-5 h-5 text-[#e60000]" />
+              <Sparkles className="w-6 h-6 text-[#e60000]" />
             </div>
             <div className="space-y-4">
               <SuggestionItem
@@ -327,7 +327,7 @@ function TabButton({
 }) {
   return (
     <button
-      className={`flex items-center gap-2 px-5 py-3 rounded-xl font-medium transition-all whitespace-nowrap ${
+      className={`flex items-center gap-2 px-5 py-3 rounded-xl font-medium transition-all whitespace-nowrap cursor-pointer ${
         active
           ? "bg-[#e60000] text-white shadow-lg"
           : "bg-white/80 text-gray-700 hover:bg-gray-100 border border-gray-200"

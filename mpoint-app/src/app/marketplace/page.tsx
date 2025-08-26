@@ -5,6 +5,7 @@
 // Tailwind wird über PostCSS eingebunden, nicht per CDN.
 
 import { useEffect, useState, Suspense } from "react";
+import { Briefcase } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 
@@ -345,7 +346,16 @@ function MarketplaceContent() {
         </div>
       )}
       {!loading && (
-        <div className="max-w-7xl mx-auto p-5 relative z-0">
+        <div className="max-w-7xl mx-auto p-5 relative z-0 space-y-6">
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3 mb-4">
+              <Briefcase className="w-8 h-8 text-[#e60000]" aria-hidden="true" />
+              Börse
+            </h1>
+            <p className="text-gray-600">
+              Hier finden Sie alle Informationen zu Projekten, Dienstleistungen und Produkten.
+            </p>
+          </div>
           {/* Meine Projekte & Angefragte Projekte als Komponente */}
           {session?.user?.id && (
             <>
@@ -392,7 +402,7 @@ function MarketplaceContent() {
           )}
         {/* Header */}
         <div className="bg-white p-5 rounded-lg shadow-sm mb-8">
-          <h1 className="text-primary text-2xl font-bold mb-4">Börse</h1>
+          <h2 className="text-primary text-xl font-bold mb-4">Filter</h2>
         {/* Search & Filter Bar */}
         <div className="flex flex-col md:flex-row gap-4 mb-5 items-center">
           <input

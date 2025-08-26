@@ -60,7 +60,7 @@ function ProjectCard({ id, type, title, description, category, entryType, price,
   const typeClass = entryType ? typeColors[entryType] || "bg-gray-100 text-gray-800" : "bg-gray-100 text-gray-800";
 
   return (
-    <Link href={`/boerse/${id}`} className="border border-gray-200 rounded-xl bg-gray-50 p-4 hover:shadow-md transition-all group cursor-pointer block">
+    <Link href={`/boerse/${id}`} className="border border-gray-200 rounded-xl bg-white hover:bg-gray-50 p-4 hover:shadow-md transition-all group cursor-pointer block">
       <div className="flex items-start justify-between mb-2">
         <div className="flex items-center gap-2">
           <div className="text-gray-500">{getTypeIcon()}</div>
@@ -136,16 +136,16 @@ const MarketplaceSection: React.FC = () => {
   const showEntries = entries.slice(0, 3);
 
   return (
-    <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-      <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-        <Briefcase className="w-5 h-5 text-[#e60000]" />
-        Börse
-      </h2>
+    <section className="bg-white rounded-xl shadow-sm p-6">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-semibold text-gray-900">Börse</h2>
+        <Briefcase className="w-6 h-6 text-[#e60000]" />
+      </div>
       <div className="flex flex-col gap-3">
         {loading ? (
           <div className="text-gray-400 text-sm">Lädt...</div>
         ) : showEntries.length === 0 ? (
-          <div className="text-gray-400 text-sm">Keine Projekte gefunden.</div>
+          <div className="text-gray-500">Keine Projekte gefunden.</div>
         ) : (
           showEntries.map((entry: any) => (
             <ProjectCard

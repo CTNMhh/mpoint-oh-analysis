@@ -92,9 +92,8 @@ model User {
   carts    Cart[]    // Ein User kann mehrere Warenkörbe haben
   transactions Transaction[] // <--- Gegenrelation für Transaction
   MarketplaceEntry    MarketplaceEntry[]
+  notifications  Notification[]
 }
-
-
 
 enum UserRole {
   FREE
@@ -102,7 +101,6 @@ enum UserRole {
   PREMIUM
   ENTERPRISE
 }
-
 // ========== COMPANY MODELS ==========
 // ========== COMPANY MODELS ==========
 model Company {
@@ -541,6 +539,7 @@ enum EmployeeRange {
   LARGE // 250+
 }
 
+
 model Admin {
   id        String   @id @default(uuid())
   email     String   @unique
@@ -695,7 +694,29 @@ enum NewsCategory {
   POLITIK
 }
 
+enum NotificationType {
+  MESSAGE
+  MATCH_REQUEST
+  MATCH_ACCEPTED
+  SYSTEM
+}
 
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type      NotificationType
+  title     String
+  body      String?
+  url       String?
+  isRead    Boolean          @default(false)
+
+  createdAt DateTime         @default(now())
+
+  @@index([userId, isRead, createdAt])
+  @@index([userId, createdAt])
+}
 
 // ========== EVENT ACTIVITY LOGGING SYSTEM ==========
 

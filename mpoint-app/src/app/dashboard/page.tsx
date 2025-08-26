@@ -23,6 +23,8 @@ import {
   ChevronRight,
   UserRoundCog,
   House,
+  Network,
+  ThumbsUp,
 } from "lucide-react";
 import MatchingList from "./MatchingList";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -202,9 +204,9 @@ export default function DashboardPage() {
         </div>
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-0">
           {/* Recent Activities */}
-          <div className="lg:col-span-2 space-y-6 mb-6">
+          <div className="lg:col-span-2 space-y-6 mb-0">
             <section className="bg-white rounded-xl p-6 shadow-sm">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-gray-900">
@@ -311,7 +313,7 @@ export default function DashboardPage() {
               </div>
             </section>
 
-            <div className="grid lg:grid-cols-2 gap-6 mb-10">
+            <div className="grid lg:grid-cols-2 gap-6 mb-6">
               {/* Events Card */}
               <div className="bg-white rounded-xl shadow-sm p-6">
                 <div className="flex items-center justify-between mb-6">
@@ -326,7 +328,7 @@ export default function DashboardPage() {
                     <Link
                       key={event.id}
                       href={`/events/${event.id}`}
-                      className="block"
+                      className="block rounded-lg bg-white hover:bg-gray-50 border border-gray-200 p-3"
                     >
                       <EventItem
                         day={new Date(event.startDate)
@@ -477,7 +479,7 @@ export default function DashboardPage() {
                   href="/company"
                   className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 hover:shadow-md transition-all"
                 >
-                  <Users className="w-5 h-5 text-gray-600" />
+                  <UserRoundCog className="w-5 h-5 text-gray-600" />
                   <span>Unternehmensprofil</span>
                 </Link>
 
@@ -485,7 +487,7 @@ export default function DashboardPage() {
                   href="/netzwerk"
                   className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 hover:shadow-md transition-all"
                 >
-                  <Users className="w-5 h-5 text-blue-600" />
+                  <Network className="w-5 h-5 text-blue-600" />
                   <span>Netzwerk</span>
                 </Link>
 
@@ -493,7 +495,7 @@ export default function DashboardPage() {
                   href="/Matches"
                   className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 hover:shadow-md transition-all"
                 >
-                  <Users className="w-5 h-5 text-green-600" />
+                  <ThumbsUp className="w-5 h-5 text-green-600" />
                   <span>Matches</span>
                 </Link>
               </div>
@@ -551,9 +553,9 @@ export default function DashboardPage() {
             <MarketplaceSection />
           </div>
         </div>
-        <section className="bg-white rounded-xl shadow-sm p-8">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-bold text-gray-900">
+        <section className="bg-white rounded-xl shadow-sm p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-gray-900">
               Wirtschaftswetter
             </h2>
             <BarChart3 className="w-6 h-6 text-[#e60000]" />
@@ -562,64 +564,68 @@ export default function DashboardPage() {
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Barometer */}
             <div className="text-center">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center justify-center gap-2">
-                <Activity className="w-5 h-5 text-orange-500" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center justify-between">
                 Wirtschaftsstimmung Index
+                <Activity className="w-5 h-5 text-orange-500" />
               </h3>
-              <p className="text-sm text-gray-500 mb-6">
-                Multifaktorielle Analyse der Wirtschaftslage
-              </p>
+              <div className="flex flex-col items-center rounded-lg bg-white hover:bg-gray-50 border border-gray-200 p-3">
+                <p className="text-sm text-gray-500 mb-6">
+                  Multifaktorielle Analyse der Wirtschaftslage
+                </p>
 
-              <div className="relative">
-                <svg
-                  width="200"
-                  height="120"
-                  viewBox="0 0 200 120"
-                  className="mx-auto"
-                >
-                  {/* Background arc */}
-                  <path
-                    d="M 20 100 A 80 80 0 0 1 180 100"
-                    fill="none"
-                    stroke="#e5e7eb"
-                    strokeWidth="20"
-                    strokeLinecap="round"
-                  />
-                  {/* Value arc */}
-                  <path
-                    d="M 20 100 A 80 80 0 0 1 180 100"
-                    fill="none"
-                    stroke="#e60000"
-                    strokeWidth="20"
-                    strokeLinecap="round"
-                    strokeDasharray={`${gaugeValue * 2.51} 251`}
-                    className="transition-all duration-1000 ease-out"
-                  />
-                  {/* Center text */}
-                  <text
-                    x="100"
-                    y="90"
-                    textAnchor="middle"
-                    className="fill-gray-900 text-3xl font-bold"
+                <div className="relative">
+                  <svg
+                    width="200"
+                    height="120"
+                    viewBox="0 0 200 120"
+                    className="mx-auto"
                   >
-                    {gaugeValue}
-                  </text>
-                </svg>
-              </div>
+                    {/* Background arc */}
+                    <path
+                      d="M 20 100 A 80 80 0 0 1 180 100"
+                      fill="none"
+                      stroke="#e5e7eb"
+                      strokeWidth="20"
+                      strokeLinecap="round"
+                    />
+                    {/* Value arc */}
+                    <path
+                      d="M 20 100 A 80 80 0 0 1 180 100"
+                      fill="none"
+                      stroke="#e60000"
+                      strokeWidth="20"
+                      strokeLinecap="round"
+                      strokeDasharray={`${gaugeValue * 2.51} 251`}
+                      className="transition-all duration-1000 ease-out"
+                    />
+                    {/* Center text */}
+                    <text
+                      x="100"
+                      y="90"
+                      textAnchor="middle"
+                      className="fill-gray-900 text-3xl font-bold"
+                    >
+                      {gaugeValue}
+                    </text>
+                  </svg>
+                </div>
 
-              <div className="mt-4 inline-block bg-green-100 text-green-800 px-4 py-2 rounded-lg font-medium">
-                Optimistisch
-              </div>
+                <div className="mt-4 inline-block bg-green-100 text-green-800 px-4 py-2 rounded-lg font-medium">
+                  Optimistisch
+                </div>
 
-              <div className="flex justify-between text-xs text-gray-500 mt-4 px-4">
-                <span>Pessimistisch</span>
-                <span>Neutral</span>
-                <span>Optimistisch</span>
-              </div>
+                {/*
+                <div className="flex justify-between text-xs text-gray-500 mt-4 px-4">
+                  <span>Pessimistisch</span>
+                  <span>Neutral</span>
+                  <span>Optimistisch</span>
+                </div>
+                */}
 
-              <p className="text-sm text-gray-500 mt-4">
-                Letztes Update: 23. Juli 2025
-              </p>
+                <p className="text-sm text-gray-500 mt-4">
+                  Letztes Update: 23. Juli 2025
+                </p>
+              </div>
             </div>
 
             {/* Historical Values */}
@@ -670,40 +676,41 @@ export default function DashboardPage() {
               <h3 className="text-lg font-semibold text-gray-900 mb-6">
                 Nächstes Update
               </h3>
-              <p className="text-gray-600 mb-4">
-                Das nächste Update erfolgt in:
-              </p>
-              <div className="text-3xl font-bold text-[#e60000] font-mono mb-8">
-                {countdown}
+              <div className="flex flex-col items-center rounded-lg bg-white hover:bg-gray-50 border border-gray-200 p-3 mb-6">
+                <p className="text-gray-600 mb-4">
+                  Das nächste Update erfolgt in:
+                </p>
+                <div className="text-3xl font-bold text-[#e60000] font-mono">
+                  {countdown}
+                </div>
               </div>
-
-              <div className="border-t pt-6">
-                <h4 className="font-medium text-gray-900 mb-3">
+              <div className="flex flex-col items-center rounded-lg bg-white hover:bg-gray-50 border border-gray-200 p-3">
+                <h4 className="font-medium text-gray-600 mb-3">
                   Faktoren im Index:
                 </h4>
-                <ul className="space-y-2 text-sm text-gray-600">
+                <ul className="space-y-2 text-sm text-gray-600 ml-3">
                   <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>
+                    <span className="w-1.5 h-1.5 bg-gray-600 rounded-full"></span>
                     BIP-Entwicklung
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>
+                    <span className="w-1.5 h-1.5 bg-gray-600 rounded-full"></span>
                     Geschäftsklimaindex
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>
+                    <span className="w-1.5 h-1.5 bg-gray-600 rounded-full"></span>
                     Exportzahlen
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>
+                    <span className="w-1.5 h-1.5 bg-gray-600 rounded-full"></span>
                     Arbeitsmarktdaten
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>
+                    <span className="w-1.5 h-1.5 bg-gray-600 rounded-full"></span>
                     Inflationsrate
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>
+                    <span className="w-1.5 h-1.5 bg-gray-600 rounded-full"></span>
                     Investitionsvolumen
                   </li>
                 </ul>
