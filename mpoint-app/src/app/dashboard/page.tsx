@@ -328,7 +328,7 @@ export default function DashboardPage() {
                     <Link
                       key={event.id}
                       href={`/events/${event.id}`}
-                      className="block rounded-lg bg-white hover:bg-gray-50 border border-gray-200 p-3"
+                      className="block rounded-lg bg-white hover:bg-gray-50 border border-gray-200 p-3 hover:shadow-md"
                     >
                       <EventItem
                         day={new Date(event.startDate)
@@ -568,7 +568,7 @@ export default function DashboardPage() {
                 Wirtschaftsstimmung Index
                 <Activity className="w-5 h-5 text-orange-500" />
               </h3>
-              <div className="flex flex-col items-center rounded-lg bg-white hover:bg-gray-50 border border-gray-200 p-3">
+              <div className="flex flex-col items-center rounded-lg bg-white hover:bg-gray-50 border border-gray-200 p-3 hover:shadow-md">
                 <p className="text-sm text-gray-500 mb-6">
                   Multifaktorielle Analyse der Wirtschaftslage
                 </p>
@@ -676,7 +676,7 @@ export default function DashboardPage() {
               <h3 className="text-lg font-semibold text-gray-900 mb-6">
                 Nächstes Update
               </h3>
-              <div className="flex flex-col items-center rounded-lg bg-white hover:bg-gray-50 border border-gray-200 p-3 mb-6">
+              <div className="flex flex-col items-center rounded-lg bg-white hover:bg-gray-50 border border-gray-200 p-3 mb-6 hover:shadow-md">
                 <p className="text-gray-600 mb-4">
                   Das nächste Update erfolgt in:
                 </p>
@@ -684,7 +684,7 @@ export default function DashboardPage() {
                   {countdown}
                 </div>
               </div>
-              <div className="flex flex-col items-center rounded-lg bg-white hover:bg-gray-50 border border-gray-200 p-3">
+              <div className="flex flex-col items-center rounded-lg bg-white hover:bg-gray-50 border border-gray-200 p-3 hover:shadow-md">
                 <h4 className="font-medium text-gray-600 mb-3">
                   Faktoren im Index:
                 </h4>
@@ -864,7 +864,7 @@ export default function DashboardPage() {
     neutral?: boolean;
   }) {
     return (
-      <div className="flex items-center justify-between p-3 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg">
+      <div className="flex items-center justify-between p-3 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg hover:shadow-md">
         <span className="text-gray-600">{label}</span>
         <div className="flex items-center justify-between gap-3 w-[150px]">
           <span
@@ -898,7 +898,7 @@ export default function DashboardPage() {
     trend: "up" | "down";
   }) {
     return (
-      <div className="bg-white hover:bg-gray-50 border border-gray-200 rounded-lg p-3 flex flex-col justify-between h-32">
+      <div className="bg-white hover:bg-gray-50 border border-gray-200 rounded-lg p-3 flex flex-col justify-between h-32 hover:shadow-md">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs text-gray-600">{label}</span>
           {trend === "up" ? (
