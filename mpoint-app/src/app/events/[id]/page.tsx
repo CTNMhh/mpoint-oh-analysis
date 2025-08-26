@@ -117,6 +117,7 @@ export default function EventDetailPage({
               <span className="text-xl">&larr;</span> <span className="ml-1">Zurück zu Events</span>
             </Link>
           </div>
+          {/*
           <div className="w-1/2 flex justify-end items-center">
             <button
               type="button"
@@ -126,6 +127,7 @@ export default function EventDetailPage({
               Event exportieren
             </button>
           </div>
+          */}
         </div>
 
         {/* Event-Titel, Bild, Infos */}
@@ -239,7 +241,7 @@ export default function EventDetailPage({
         {/* Nur noch EIN Button für alle Events */}
         <button
           type="button"
-          className="bg-blue-600 text-white px-8 py-3 rounded-xl hover:bg-blue-700 transition-colors font-semibold w-full text-lg shadow-lg mt-4"
+          className="bg-[#e60000] text-white px-4 py-2 rounded-xl font-medium hover:bg-[#c01a1f] transition-colors shadow  cursor-pointer"
           onClick={() => handleAddToCart(event.id, spaces)}
         >
           In den Warenkorb
