@@ -125,16 +125,16 @@ export default function EventDetailPage({
               </Link>
             </div>
             {/*
-          <div className="w-1/2 flex justify-end items-center">
-              <button
-                type="button"
-                onClick={() => exportEventAsCSV(event)}
-                className="bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg hover:bg-yellow-500 font-semibold shadow flex items-center justify-center text-sm"
-              >
-                Event exportieren
-              </button>
-            </div>
-          */}
+              <div className="w-1/2 flex justify-end items-center">
+                <button
+                  type="button"
+                  onClick={() => exportEventAsCSV(event)}
+                  className="bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg hover:bg-yellow-500 font-semibold shadow flex items-center justify-center text-sm"
+                >
+                  Event exportieren
+                </button>
+              </div>
+            */}
             {/* Event-Titel, Bild, Infos */}
             <div className="flex flex-col md:flex-row items-center mb-8 gap-8">
               <h1 className="text-4xl font-extrabold mb-6 md:mb-0 md:w-1/2 text-[rgb(228,25,31)]">
@@ -246,16 +246,18 @@ export default function EventDetailPage({
               </div>
             </div>
 
-        {/* Nur noch EIN Button für alle Events */}
-        <button
-          id="add-to-cart-button"
-          type="button"
-          className="bg-[#e60000] text-white px-4 py-2 rounded-xl font-medium hover:bg-[#c01a1f] transition-colors shadow  cursor-pointer w-full"
-          onClick={() => handleAddToCart(event.id, spaces)}
-        >
-          In den Warenkorb
-          {event.price > 0 ? ` (€${(event.price * spaces).toFixed(2)})` : ""}
-        </button>
+            {/* Nur noch EIN Button für alle Events */}
+            <button
+              id="add-to-cart-button"
+              type="button"
+              className="bg-[#e60000] text-white px-4 py-2 rounded-xl font-medium hover:bg-[#c01a1f] transition-colors shadow  cursor-pointer w-full"
+              onClick={() => handleAddToCart(event.id, spaces)}
+            >
+              In den Warenkorb
+              {event.price > 0 ? ` (€${(event.price * spaces).toFixed(2)})` : ""}
+            </button>
+          </div>
+        </div>
       </div>
     </main>
   );
