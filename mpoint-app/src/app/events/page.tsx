@@ -499,7 +499,10 @@ export default function EventsPage() {
         {/* Listen-Ansicht */}
         {viewMode === "list" && (
           <div className="flex flex-row gap-6">
-            <div className="bg-white rounded-xl shadow-sm p-6 basis-1/2">
+            {session?.user?.role === "ENTERPRISE" && (
+            <div
+              id="my-events-block-list"
+              className="bg-white rounded-xl shadow-sm p-6 basis-1/2">
               <div className="flex items-start justify-between mb-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                   Meine erstellten Events
@@ -589,6 +592,8 @@ export default function EventsPage() {
                 )}
               </div>
             </div>
+            )}
+
             <div className="bg-white rounded-xl shadow-sm p-6 basis-1/2">
               <div className="flex items-start justify-between mb-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
@@ -690,7 +695,7 @@ export default function EventsPage() {
 
             {session?.user?.role === "ENTERPRISE" && (
             <div
-              id="my-events-block"
+              id="my-events-block-grid"
               className="bg-white rounded-xl shadow-sm p-6 basis-1/2"
             >
               <div className="flex items-start justify-between mb-6">
