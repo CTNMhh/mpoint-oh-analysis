@@ -49,46 +49,49 @@ export default function ConnectedCompanies() {
   return (
     <section className="bg-white rounded-xl shadow-sm p-6">
       <div className="flex items-start justify-between mb-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+        <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
           Vernetzte Unternehmen
         </h2>
         <Building2 className="w-6 h-6 text-[#e60000]" />
       </div>
       <div className="flex flex-col gap-3">
-      {loading ? (
-        <div className="flex items-center justify-center py-3">
+        {loading ? (
+          <div className="flex items-center justify-center py-3">
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#e60000]"></div>
-        </div>
-      ) : matches.length === 0 ? (
-        <div className="text-gray-500">Noch keine Vernetzungen.</div>
-      ) : !myCompanyId ? (
-        <div className="text-gray-500">Kein Unternehmen für diesen User gefunden.</div>
-      ) : (
-        <ul className="space-y-3">
-        {matches.map((match) => {
-          const partner =
-            match.senderCompany?.id === myCompanyId
-              ? match.receiverCompany
-              : match.senderCompany;
-          return (
-            <li key={match.id} className="flex items-center gap-3">
-              <Building2 className="w-6 h-6 text-gray-400" />
-              <span className="font-medium">
-                {partner?.name || "Unbekanntes Unternehmen"}
-              </span>
-              <button
-                className="ml-auto flex items-center gap-1 text-[#e60000] hover:underline text-xs"
-                onClick={() => router.push(`/chat/${match.id}`)}
-                title="Chat starten"
-              >
-                <MessageSquare className="w-4 h-4" />
-                Chat
-              </button>
-            </li>
-          );
-        })}
-      </ul>
-      )}
+          </div>
+        ) : matches.length === 0 ? (
+          <div className="text-gray-500">Noch keine Vernetzungen.</div>
+        ) : !myCompanyId ? (
+          <div className="text-gray-500">Kein Unternehmen für diesen User gefunden.</div>
+        ) : (
+          <ul className="space-y-3">
+            {matches.map((match) => {
+              const partner =
+                match.senderCompany?.id === myCompanyId
+                  ? match.receiverCompany
+                  : match.senderCompany;
+              return (
+                <li
+                  key={match.id}
+                  className="flex items-center gap-3 p-4 rounded-lg bg-white border border-gray-200 hover:bg-gray-50 hover:shadow-md transition-all"
+                >
+                  <Building2 className="w-6 h-6 text-gray-400" />
+                  <span className="font-medium">
+                    {partner?.name || "Unbekanntes Unternehmen"}
+                  </span>
+                  <button
+                    className="ml-auto flex items-center gap-1 text-[#e60000] hover:underline text-xs"
+                    onClick={() => router.push(`/chat/${match.id}`)}
+                    title="Chat starten"
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    Chat
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </div>
     </section>
   );
