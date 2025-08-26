@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { EventType, EventStatus } from "../types";
 import { useCart } from "@/context/CartContext";
+import { useRouter } from "next/navigation";
 
 export default function EventDetailPage({
   params
@@ -77,6 +78,8 @@ export default function EventDetailPage({
   const fullName = session?.user ? `${session.user.firstName} ${session.user.lastName}` : "";
   const userEmail = session?.user?.email || "";
 
+  const router = useRouter();
+
   async function handleAddToCart(eventId: string, spaces: number = 1) {
     setSuccess(null);
     setError(null);
@@ -88,6 +91,7 @@ export default function EventDetailPage({
     if (res.ok) {
       setSuccess("Event wurde dem Warenkorb hinzugefügt!");
       refreshCart();
+      router.push("/cart"); // <-- Weiterleitung zu /cart
     } else {
       setError("Fehler beim Hinzufügen zum Warenkorb.");
     }
@@ -240,6 +244,7 @@ export default function EventDetailPage({
 
         {/* Nur noch EIN Button für alle Events */}
         <button
+          id="add-to-cart-button"
           type="button"
           className="bg-[#e60000] text-white px-4 py-2 rounded-xl font-medium hover:bg-[#c01a1f] transition-colors shadow  cursor-pointer w-full"
           onClick={() => handleAddToCart(event.id, spaces)}
