@@ -123,13 +123,27 @@ async function handlePayment(bookingId: string) {
 }
 
 function enrichEventWithBookingInfo(event: EventType) {
-  const bookedSpaces = event.bookedCount || 0;
+  // Filtere nur Buchungen mit status=COMPLETED und paymentStatus=PAID
+  const validBookings = event.bookings
+    ? event.bookings.filter(
+        (b) => b.bookingStatus === "COMPLETED" && b.paymentStatus === "PAID"
+      )
+    : [];
+  console.log("Valid Bookings for Event ID " + event.id + ":");
+  console.log(validBookings);
+  // Summiere die gebuchten Plätze
+  const bookedSpaces = validBookings.reduce(
+    (sum, b) => sum + (b.spaces || 1),
+    0
+  );
+
   const maxParticipants = event.maxParticipants || 0;
   const availableSpaces =
     maxParticipants > 0 ? Math.max(0, maxParticipants - bookedSpaces) : 0;
   const bookingPercentage =
     maxParticipants > 0 ? (bookedSpaces / maxParticipants) * 100 : 0;
   const isFullyBooked = availableSpaces === 0 && maxParticipants > 0;
+
   return {
     ...event,
     bookedSpaces,
