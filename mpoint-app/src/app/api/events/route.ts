@@ -58,12 +58,10 @@ async function logEventActivity(
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
 
-  // Optional: Nur eingeloggte User sehen Events
   if (!session?.user?.email) {
     return NextResponse.json({ error: "Nicht authentifiziert." }, { status: 401 });
   }
 
-  // 🔄 ANGEPASST: User-Lookup für Logging hinzugefügt
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
     select: { id: true }
@@ -73,12 +71,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "User nicht gefunden." }, { status: 404 });
   }
 
-  // Optional: Eigene Events anzeigen
   const onlyMine = request.nextUrl.searchParams.get("mine") === "true";
   let where = {};
 
   if (onlyMine) {
-    // 🔄 ANGEPASST: User-ID direkt verwenden (war vorher doppelte Abfrage)
     where = { userId: user.id };
   }
 
@@ -87,7 +83,8 @@ export async function GET(request: NextRequest) {
       where,
       orderBy: { startDate: "asc" },
       include: {
-        user: { select: { id: true, firstName: true, lastName: true, email: true } }
+        user: { select: { id: true, firstName: true, lastName: true, email: true } },
+        bookings: true // <--- Buchungen werden mitgegeben
       }
     });
 
