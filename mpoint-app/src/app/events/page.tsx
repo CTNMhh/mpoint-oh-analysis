@@ -896,7 +896,7 @@ export default function EventsPage() {
                         <div className="mb-4 line-clamp-3">
                           {event.description}
                         </div>
-                        <div className="flex flex-wrap gap-2 mb-2">
+                        <div className="flex flex-wrap gap-2 mb-4">
                           {event.categories.map((cat) => (
                             <span
                               key={cat}
@@ -906,14 +906,14 @@ export default function EventsPage() {
                             </span>
                           ))}
                         </div>
-                        <div className="mt-auto">
+                        <div className="mt-auto flex justify-end">
                           <Link
                             href={`/events/${event.id}`}
                             className={`${
                               event.isFullyBooked
                                 ? "bg-gray-400 cursor-not-allowed"
-                                : "bg-[rgb(228,25,31)] hover:bg-red-700"
-                            } text-white px-4 py-2 rounded transition-colors text-center block`}
+                                : "bg-[#e60000] hover:bg-red-700 cursor-pointer"
+                            } text-white px-4 py-2 rounded-xl transition`}
                           >
                             {event.isFullyBooked
                               ? "Ausgebucht"
