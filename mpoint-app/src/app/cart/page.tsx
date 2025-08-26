@@ -145,13 +145,13 @@ export default function CartPage() {
   }
 
   return (
-    <>
+    <main className="min-h-screen bg-gray-50 pt-24 pb-12">
       {/* Meldung direkt nach dem Seiten-Header */}
       {messageBlock}
 
       {/* Haupt-Content */}
       <div className="max-w-3xl mx-auto py-8">
-        <div id="cart-box" className="pt-20">
+        <div id="cart-box">
           <h1 className="text-2xl font-bold mb-6">Warenkorb</h1>
           <table id="cart-items" className="w-full border rounded-xl overflow-hidden shadow bg-white">
             <thead>
@@ -371,6 +371,6 @@ export default function CartPage() {
           </div>
         )}
       </div>
-    </>
+    </main>
   );
 }
