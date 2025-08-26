@@ -61,6 +61,31 @@ const typeColors: Record<string, string> = {
   Angebot: "bg-blue-50 text-blue-700",
 };
 
+// Status-Badge Styles und Labels für Nutzer-Anfragen
+const requestStatusStyles: Record<string, string> = {
+  PENDING: "bg-amber-50 text-amber-700 border-amber-200",
+  DECLINED: "bg-red-50 text-red-700 border-red-200",
+  APPROVED: "bg-green-50 text-green-700 border-green-200",
+  ACCEPTED: "bg-green-50 text-green-700 border-green-200",
+  CONFIRMED: "bg-green-50 text-green-700 border-green-200",
+  CANCELED: "bg-gray-50 text-gray-700 border-gray-200",
+  CANCELLED: "bg-gray-50 text-gray-700 border-gray-200",
+};
+
+function requestStatusLabel(status?: string): string {
+  const map: Record<string, string> = {
+    PENDING: "Offen",
+    DECLINED: "Abgelehnt",
+    APPROVED: "Angenommen",
+    ACCEPTED: "Angenommen",
+    CONFIRMED: "Bestätigt",
+    CANCELED: "Storniert",
+    CANCELLED: "Storniert",
+  };
+  if (!status) return "Gesendet";
+  return map[status] || status;
+}
+
 // Preis-Typ und Hilfsfunktion
 
 function renderPrice(price: PriceType): string {
@@ -195,8 +220,8 @@ function MarketplaceContent() {
       setRequestedProjects([]);
       return;
     }
-    // Eigene Projekte filtern
-    setMyProjects(entries.filter((entry) => entry.userId === session.user.id));
+  // Eigene Projekte filtern
+  setMyProjects(entries.filter((entry) => entry.userId === session?.user?.id));
     // Angefragte Projekte filtern
     const requestedIds = Object.keys(userRequests);
     setRequestedProjects(
@@ -215,7 +240,7 @@ function MarketplaceContent() {
           return rest;
         });
         const enrichedData = await Promise.all(
-          cleaned.map(async (entry) => {
+          cleaned.map(async (entry: any) => {
             const userName = await getUserNameById(entry.userId);
             return { ...entry, userName };
           })
@@ -406,127 +431,127 @@ function MarketplaceContent() {
             </div>
             {/* Project Bar */}
 
-            {/* Meine Projekte & Angefragte Projekte als Komponente */}
-            {session?.user?.id && (
-              <>
-                <MarketplaceUserCard
-                  session={session}
-                  entries={entries}
-                  userRequests={userRequests}
-                  setEntries={setEntries}
-                  setUserRequests={setUserRequests}
-                  onEditProject={(entry) => {
-                    setEditProject(entry);
-                    setShowEditModal(true);
-                  }}
-                />
-                {showEditModal && editProject && (
-                  <EditProjectModal
-                    project={editProject}
-                    onClose={() => setShowEditModal(false)}
-                    onSubmit={async (formData) => {
-                      // Patch-Request analog zum bisherigen Modal
-                      try {
-                        const res = await fetch(
-                          `/api/marketplace/${editProject.id}`,
-                          {
-                            method: "PATCH",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify(formData),
-                          }
-                        );
-                        if (res.ok) {
-                          setShowEditModal(false);
-                          // Aktualisiere die Einträge
-                          const entriesRes = await fetch("/api/marketplace");
-                          const data = await entriesRes.json();
-                          const enrichedData = await Promise.all(
-                            data.map(async (entry: any) => {
-                              const userName = await getUserNameById(
-                                entry.userId
-                              );
-                              return { ...entry, userName };
-                            })
-                          );
-                          setEntries(enrichedData);
-                        } else {
-                          alert("Fehler beim Bearbeiten des Eintrags.");
+          {/* Meine Projekte & Angefragte Projekte als Komponente */}
+          {session?.user?.id && (
+            <>
+              <MarketplaceUserCard
+                session={session}
+                entries={entries}
+                userRequests={userRequests}
+                setEntries={setEntries}
+                setUserRequests={setUserRequests}
+                onEditProject={(entry) => {
+                  setEditProject(entry);
+                  setShowEditModal(true);
+                }}
+              />
+              {showEditModal && editProject && (
+                <EditProjectModal
+                  project={editProject}
+                  onClose={() => setShowEditModal(false)}
+                  onSubmit={async (formData) => {
+                    // Patch-Request analog zum bisherigen Modal
+                    try {
+                      const res = await fetch(
+                        `/api/marketplace/${editProject.id}`,
+                        {
+                          method: "PATCH",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify(formData),
                         }
-                      } catch (err) {
+                      );
+                      if (res.ok) {
+                        setShowEditModal(false);
+                        // Aktualisiere die Einträge
+                        const entriesRes = await fetch("/api/marketplace");
+                        const data = await entriesRes.json();
+                        const enrichedData = await Promise.all(
+                          data.map(async (entry: any) => {
+                            const userName = await getUserNameById(
+                              entry.userId
+                            );
+                            return { ...entry, userName };
+                          })
+                        );
+                        setEntries(enrichedData);
+                      } else {
                         alert("Fehler beim Bearbeiten des Eintrags.");
                       }
-                    }}
-                  />
-                )}
-              </>
-            )}
-            <div className="bg-white p-5 rounded-lg shadow-sm mb-8">
-              {/* Header */}
-              <h2 className="text-primary text-xl font-bold mb-4">Filter</h2>
-              {/* Search & Filter Bar */}
-              <div className="flex flex-col md:flex-row gap-4 mb-5 items-center">
-                <div className="flex-1 flex items-center bg-white rounded-lg shadow-sm px-4 py-2">
-                  <Search className="w-5 h-5 text-gray-400 mr-2" />
-                  <input
-                    type="text"
-                    className="flex-1 outline-none bg-transparent text-gray-900"
-                    placeholder="Projekte, Dienstleistungen oder Produkte suchen..."
-                    value={searchValue}
-                    onChange={handleSearchChange}
-                    id="searchInput"
-                  />
-                </div>
-                <div className="flex items-center gap-2 bg-white rounded-lg shadow-sm px-3">
-                  <Funnel className="w-5 h-5 text-gray-400 mr-2" />
-                  <select
-                    className="pe-3 py-2 text-gray-900"
-                    value={categoryFilter}
-                    onChange={handleCategoryChange}
-                  >
-                    <option value="Alle">Alle Kategorien</option>
-                    <option value="DIENSTLEISTUNG">Dienstleistung</option>
-                    <option value="PRODUKT">Produkt</option>
-                    <option value="DIGITALISIERUNG">Digitalisierung</option>
-                    <option value="NACHHALTIGKEIT">Nachhaltigkeit</option>
-                    <option value="MANAGEMENT">Management</option>
-                  </select>
-                </div>
-                <div className="flex gap-2 items-center">
-                  <button
-                    type="button"
-                    className={`px-4 py-2 rounded-xl font-medium border transition-colors cursor-pointer ${
-                      typeFilter === "Beide"
-                        ? "bg-primary text-white border-primary"
-                        : "bg-white text-gray-700 border-gray-300 hover:border-primary"
-                    }`}
-                    onClick={() => handleTypeChange("Beide")}
-                  >
-                    Beide
-                  </button>
-                  <button
-                    type="button"
-                    className={`px-4 py-2 rounded-xl font-medium border transition-colors cursor-pointer ${
-                      typeFilter === "Anfrage"
-                        ? "bg-yellow-50 text-yellow-700 border-yellow-200"
-                        : "bg-white text-gray-700 border-gray-300 hover:border-yellow-200"
-                    }`}
-                    onClick={() => handleTypeChange("Anfrage")}
-                  >
-                    Anfrage
-                  </button>
-                  <button
-                    type="button"
-                    className={`px-4 py-2 rounded-xl font-medium border transition-colors cursor-pointer ${
-                      typeFilter === "Angebot"
-                        ? "bg-blue-50 text-blue-700 border-blue-200"
-                        : "bg-white text-gray-700 border-gray-300 hover:border-blue-200"
-                    }`}
-                    onClick={() => handleTypeChange("Angebot")}
-                  >
-                    Angebot
-                  </button>
-                </div>
+                    } catch (err) {
+                      alert("Fehler beim Bearbeiten des Eintrags.");
+                    }
+                  }}
+                />
+              )}
+            </>
+          )}
+          <div className="bg-white p-5 rounded-lg shadow-sm mb-8">
+            {/* Header */}
+            <h2 className="text-primary text-xl font-bold mb-4">Filter</h2>
+            {/* Search & Filter Bar */}
+            <div className="flex flex-col md:flex-row gap-4 mb-5 items-center">
+              <div className="flex-1 flex items-center bg-white rounded-lg shadow-sm px-4 py-2">
+                <Search className="w-5 h-5 text-gray-400 mr-2" />
+                <input
+                  type="text"
+                  className="flex-1 outline-none bg-transparent text-gray-900"
+                  placeholder="Projekte, Dienstleistungen oder Produkte suchen..."
+                  value={searchValue}
+                  onChange={handleSearchChange}
+                  id="searchInput"
+                />
               </div>
+              <div className="flex items-center gap-2 bg-white rounded-lg shadow-sm px-3">
+                <Funnel className="w-5 h-5 text-gray-400 mr-2" />
+                <select
+                  className="pe-3 py-2 text-gray-900"
+                  value={categoryFilter}
+                  onChange={handleCategoryChange}
+                >
+                  <option value="Alle">Alle Kategorien</option>
+                  <option value="DIENSTLEISTUNG">Dienstleistung</option>
+                  <option value="PRODUKT">Produkt</option>
+                  <option value="DIGITALISIERUNG">Digitalisierung</option>
+                  <option value="NACHHALTIGKEIT">Nachhaltigkeit</option>
+                  <option value="MANAGEMENT">Management</option>
+                </select>
+              </div>
+              <div className="flex gap-2 items-center">
+                <button
+                  type="button"
+                  className={`px-4 py-2 rounded-xl font-medium border transition-colors cursor-pointer ${
+                    typeFilter === "Beide"
+                      ? "bg-primary text-white border-primary"
+                      : "bg-white text-gray-700 border-gray-300 hover:border-primary"
+                  }`}
+                  onClick={() => handleTypeChange("Beide")}
+                >
+                  Beide
+                </button>
+                <button
+                  type="button"
+                  className={`px-4 py-2 rounded-xl font-medium border transition-colors cursor-pointer ${
+                    typeFilter === "Anfrage"
+                      ? "bg-yellow-50 text-yellow-700 border-yellow-200"
+                      : "bg-white text-gray-700 border-gray-300 hover:border-yellow-200"
+                  }`}
+                  onClick={() => handleTypeChange("Anfrage")}
+                >
+                  Anfrage
+                </button>
+                <button
+                  type="button"
+                  className={`px-4 py-2 rounded-xl font-medium border transition-colors cursor-pointer ${
+                    typeFilter === "Angebot"
+                      ? "bg-red-50 text-blue-700 border-blue-200"
+                      : "bg-white text-gray-700 border-gray-300 hover:border-blue-200"
+                  }`}
+                  onClick={() => handleTypeChange("Angebot")}
+                >
+                  Angebot
+                </button>
+              </div>
+            </div>
 
               {/* Results Header */}
               <div className="flex flex-col sm:flex-row justify-end items-start sm:items-center gap-4 mb-5">
@@ -536,87 +561,101 @@ function MarketplaceContent() {
                 </div>
               </div>
 
-              {/* Results Grid */}
-              <div
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10"
-                id="resultsGrid"
-              >
-                {paginatedEntries.map((entry) => {
-                  const userRequest = userRequests[entry.id];
-                  const requestButton = userRequest ? (
-                    <button
-                      className="px-4 py-2 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 hover:shadow transition-colors cursor-pointer"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openRequestModal(entry);
-                      }}
-                    >
-                      Bearbeiten
-                    </button>
-                  ) : (
-                    <button
-                      className="px-4 py-2 bg-[#e60000] text-white rounded-xl font-medium hover:bg-[#c01a1f] hover:shadow transition-colors cursor-pointer"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openRequestModal(entry);
-                      }}
-                    >
-                      Anfragen
-                    </button>
-                  );
-                  return (
-                    <div
-                      key={entry.id}
-                      className="result-card bg-white rounded-lg cursor-pointer overflow-hidden flex flex-col h-full border border-gray-200 hover:bg-gray-50 hover:shadow-md transition-all"
-                      onClick={(e) => {
-                        if ((e.target as HTMLElement).closest("button")) return;
-                        router.push(`/boerse/${entry.id}`);
-                      }}
-                    >
-                      <div className="p-4 border-b border-gray-100 flex-1 flex flex-col">
-                        <div className="flex justify-between items-start mb-2">
-                          <span
-                            className={`card-category px-3 py-1 rounded-xl text-xs font-medium ${
-                              categoryColorClasses[entry.category] ||
-                              "bg-gray-50 text-gray-700"
-                            }`}
-                          >
-                            {entry.category}
-                          </span>
-                          <span
-                            className={`px-2 py-1 rounded-xl text-xs font-medium ${
-                              typeColors[entry.type] ||
-                              "bg-gray-50 text-gray-700"
-                            }`}
-                          >
-                            {entry.type}
-                          </span>
-                        </div>
-                        <h3 className="font-semibold text-base mb-2 text-gray-900">
-                          {entry.title}
-                        </h3>
-                        <p className="text-gray-600 text-sm mb-3 leading-relaxed">
-                          {entry.shortDescription}
-                        </p>
-                        <div className="flex justify-between items-center text-xs text-gray-600 mt-auto">
-                          <div className="flex items-center gap-2">
-                            <span>{entry.userName}</span>
-                          </div>
-                          <span>
-                            {timeAgo(new Date(entry.createdAt).getTime())}
-                          </span>
-                        </div>
+            {/* Results Grid */}
+            <div
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10"
+              id="resultsGrid"
+            >
+              {paginatedEntries.map((entry) => {
+                const userRequest = userRequests[entry.id];
+                const requestButton = userRequest ? (
+                  <button
+                    className="px-4 py-2 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 hover:shadow transition-colors cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openRequestModal(entry);
+                    }}
+                  >
+                    Bearbeiten
+                  </button>
+                ) : (
+                  <button
+                    className="px-4 py-2 bg-[#e60000] text-white rounded-xl font-medium hover:bg-[#c01a1f] hover:shadow transition-colors cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openRequestModal(entry);
+                    }}
+                  >
+                    Anfragen
+                  </button>
+                );
+                const statusBadge = userRequest ? (
+                  <span
+                    className={`border text-xs font-medium px-2.5 py-1 rounded-full ${
+                      requestStatusStyles[userRequest.status] ||
+                      "bg-blue-50 text-blue-700 border-blue-200"
+                    }`}
+                    onClick={(e) => e.stopPropagation()}
+                    title={`Status deiner Anfrage: ${requestStatusLabel(userRequest.status)}`}
+                  >
+                    {requestStatusLabel(userRequest.status)}
+                  </span>
+                ) : null;
+                return (
+                  <div
+                    key={entry.id}
+                    className="result-card bg-white rounded-lg cursor-pointer overflow-hidden flex flex-col h-full border border-gray-200 hover:bg-gray-50 hover:shadow-md transition-all"
+                    onClick={(e) => {
+                      if ((e.target as HTMLElement).closest("button")) return;
+                      router.push(`/boerse/${entry.id}`);
+                    }}
+                  >
+                    <div className="p-4 border-b border-gray-100 flex-1 flex flex-col">
+                      <div className="flex justify-between items-start mb-2">
+                        <span
+                          className={`card-category px-3 py-1 rounded-xl text-xs font-medium ${
+                            categoryColorClasses[entry.category] ||
+                            "bg-gray-50 text-gray-700"
+                          }`}
+                        >
+                          {entry.category}
+                        </span>
+                        <span
+                          className={`px-2 py-1 rounded-xl text-xs font-medium ${
+                            typeColors[entry.type] || "bg-gray-50 text-gray-700"
+                          }`}
+                        >
+                          {entry.type}
+                        </span>
                       </div>
-                      <div className="p-4 bg-gray-50 flex justify-between items-center">
-                        <div className="font-semibold text-primary text-base">
-                          {renderPrice(entry.price)}
+                      <h3 className="font-semibold text-base mb-2 text-gray-900">
+                        {entry.title}
+                      </h3>
+                      <p className="text-gray-600 text-sm mb-3 leading-relaxed">
+                        {entry.shortDescription}
+                      </p>
+                      <div className="flex justify-between items-center text-xs text-gray-600 mt-auto">
+                        <div className="flex items-center gap-2">
+                          <span>{entry.userName}</span>
                         </div>
+                        <span>
+                          {timeAgo(new Date(entry.createdAt).getTime())}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="p-4 bg-gray-50 flex justify-between items-center">
+                      <div className="font-semibold text-primary text-base">
+                        {renderPrice(entry.price)}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {statusBadge}
                         {requestButton}
                       </div>
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
+                );
+              })}
+            </div>
 
               {/* Pagination */}
               {totalPages > 1 && (
@@ -666,7 +705,7 @@ function MarketplaceContent() {
       {showRequestModal && activeEntry && (
         <div className="relative min-h-screen bg-gray-50 pt-20">
           <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-            <div className="bg-white rounded-xl shadow-xl p-8 max-w-sm w-full">
+            <div className="bg-white rounded-xl shadow-xl p-8 max-w-lg w-full">
               <h2 className="text-lg font-bold mb-4">
                 {userRequests[activeEntry.id]
                   ? "Anfrage bearbeiten"
