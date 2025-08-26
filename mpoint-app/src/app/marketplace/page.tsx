@@ -5,7 +5,16 @@
 // Tailwind wird über PostCSS eingebunden, nicht per CDN.
 
 import { useEffect, useState, Suspense } from "react";
-import { Briefcase, Search, Funnel, Grid3X3, Calendar, List } from "lucide-react";
+import {
+  Briefcase,
+  Search,
+  Funnel,
+  Grid3X3,
+  Calendar,
+  List,
+  ArrowLeft,
+  ArrowRight,
+} from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 
@@ -179,12 +188,6 @@ function MarketplaceContent() {
 
   const [entries, setEntries] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // view mode
-  const [viewMode, setViewMode] = useState<"grid" | "calendar" | "list">(
-    "grid"
-  );
-
 
   useEffect(() => {
     if (!session?.user?.id) {
@@ -375,399 +378,359 @@ function MarketplaceContent() {
   }
 
   return (
-    <div className="relative min-h-screen bg-gray-50 pt-20">
+    <>
       {/* Ladeanzeige während die Einträge geladen werden */}
       {loading && (
-        <div className="max-w-3xl mx-auto py-12 px-4 text-center text-gray-500 text-lg">
-          Lädt Einträge...
+        <div className="relative min-h-screen bg-gray-50 pt-20">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[rgb(228,25,31)] mx-auto mb-4"></div>
+            <p className="text-gray-600">Lädt Börse...</p>
+          </div>
         </div>
       )}
       {!loading && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3 mb-4">
-              <Briefcase
-                className="w-8 h-8 text-[#e60000]"
-                aria-hidden="true"
-              />
-              Börse
-            </h1>
-            <p className="text-gray-600">
-              Hier finden Sie alle Informationen zu Projekten, Dienstleistungen
-              und Produkten.
-            </p>
-          </div>
-          {/* Project Bar */}
-          <div className="flex justify-end items-center mb-8">
-            <div className="flex items-center gap-4">
-              <div className="flex bg-gray-100 rounded-lg p-1">
-                <button
-                  onClick={() => setViewMode("grid")}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
-                    viewMode === "grid"
-                      ? "bg-white text-gray-900 shadow"
-                      : "text-gray-600 hover:text-gray-900"
-                  }`}
-                >
-                  <Grid3X3 size={16} />
-                  Grid
-                </button>
-                <button
-                  onClick={() => setViewMode("list")}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
-                    viewMode === "list"
-                      ? "bg-white text-gray-900 shadow"
-                      : "text-gray-600 hover:text-gray-900"
-                  }`}
-                >
-                  <List size={16} />
-                  Liste
-                </button>
-                <button
-                  onClick={() => setViewMode("calendar")}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
-                    viewMode === "calendar"
-                      ? "bg-white text-gray-900 shadow"
-                      : "text-gray-600 hover:text-gray-900"
-                  }`}
-                >
-                  <Calendar size={16} />
-                  Kalender
-                </button>
-              </div>
-              <button class="bg-[#e60000] text-white px-4 py-2 rounded-xl hover:bg-red-700 transition-all font-medium cursor-pointer"
-              onClick={() => setShowModal(true)}
-              >
-                Eigenes Projekt einstellen
-              </button>
+        <div className="relative min-h-screen bg-gray-50 pt-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3 mb-4">
+                <Briefcase
+                  className="w-8 h-8 text-[#e60000]"
+                  aria-hidden="true"
+                />
+                Börse
+              </h1>
+              <p className="text-gray-600">
+                Hier finden Sie alle Informationen zu Projekten,
+                Dienstleistungen und Produkten.
+              </p>
             </div>
-          </div>
-          {/* Meine Projekte & Angefragte Projekte als Komponente */}
-          {session?.user?.id && (
-            <>
-              <MarketplaceUserCard
-                session={session}
-                entries={entries}
-                userRequests={userRequests}
-                setEntries={setEntries}
-                setUserRequests={setUserRequests}
-                onEditProject={(entry) => {
-                  setEditProject(entry);
-                  setShowEditModal(true);
-                }}
-              />
-              {showEditModal && editProject && (
-                <EditProjectModal
-                  project={editProject}
-                  onClose={() => setShowEditModal(false)}
-                  onSubmit={async (formData) => {
-                    // Patch-Request analog zum bisherigen Modal
-                    try {
-                      const res = await fetch(
-                        `/api/marketplace/${editProject.id}`,
-                        {
-                          method: "PATCH",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify(formData),
-                        }
-                      );
-                      if (res.ok) {
-                        setShowEditModal(false);
-                        // Aktualisiere die Einträge
-                        const entriesRes = await fetch("/api/marketplace");
-                        const data = await entriesRes.json();
-                        const enrichedData = await Promise.all(
-                          data.map(async (entry: any) => {
-                            const userName = await getUserNameById(
-                              entry.userId
-                            );
-                            return { ...entry, userName };
-                          })
+            {/* Project Bar */}
+
+            {/* Meine Projekte & Angefragte Projekte als Komponente */}
+            {session?.user?.id && (
+              <>
+                <MarketplaceUserCard
+                  session={session}
+                  entries={entries}
+                  userRequests={userRequests}
+                  setEntries={setEntries}
+                  setUserRequests={setUserRequests}
+                  onEditProject={(entry) => {
+                    setEditProject(entry);
+                    setShowEditModal(true);
+                  }}
+                />
+                {showEditModal && editProject && (
+                  <EditProjectModal
+                    project={editProject}
+                    onClose={() => setShowEditModal(false)}
+                    onSubmit={async (formData) => {
+                      // Patch-Request analog zum bisherigen Modal
+                      try {
+                        const res = await fetch(
+                          `/api/marketplace/${editProject.id}`,
+                          {
+                            method: "PATCH",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(formData),
+                          }
                         );
-                        setEntries(enrichedData);
-                      } else {
+                        if (res.ok) {
+                          setShowEditModal(false);
+                          // Aktualisiere die Einträge
+                          const entriesRes = await fetch("/api/marketplace");
+                          const data = await entriesRes.json();
+                          const enrichedData = await Promise.all(
+                            data.map(async (entry: any) => {
+                              const userName = await getUserNameById(
+                                entry.userId
+                              );
+                              return { ...entry, userName };
+                            })
+                          );
+                          setEntries(enrichedData);
+                        } else {
+                          alert("Fehler beim Bearbeiten des Eintrags.");
+                        }
+                      } catch (err) {
                         alert("Fehler beim Bearbeiten des Eintrags.");
                       }
-                    } catch (err) {
-                      alert("Fehler beim Bearbeiten des Eintrags.");
-                    }
-                  }}
-                />
-              )}
-            </>
-          )}
-          {/* Header */}
-          <div className="bg-white p-5 rounded-lg shadow-sm mb-8">
-            <h2 className="text-primary text-xl font-bold mb-4">Filter</h2>
-            {/* Search & Filter Bar */}
-            <div className="flex flex-col md:flex-row gap-4 mb-5 items-center">
-              <div className="flex-1 flex items-center bg-white rounded-lg shadow-sm px-4 py-2">
-                <Search className="w-5 h-5 text-gray-400 mr-2" />
-                <input
-                  type="text"
-                  className="flex-1 outline-none bg-transparent text-gray-900"
-                  placeholder="Projekte, Dienstleistungen oder Produkte suchen..."
-                  value={searchValue}
-                  onChange={handleSearchChange}
-                  id="searchInput"
-                />
-              </div>
-              <div className="flex items-center gap-2 bg-white rounded-lg shadow-sm px-3">
-                <Funnel className="w-5 h-5 text-gray-400 mr-2" />
-                <select
-                  className="pe-3 py-2 text-gray-900"
-                  value={categoryFilter}
-                  onChange={handleCategoryChange}
-                >
-                  <option value="Alle">Alle Kategorien</option>
-                  <option value="DIENSTLEISTUNG">Dienstleistung</option>
-                  <option value="PRODUKT">Produkt</option>
-                  <option value="DIGITALISIERUNG">Digitalisierung</option>
-                  <option value="NACHHALTIGKEIT">Nachhaltigkeit</option>
-                  <option value="MANAGEMENT">Management</option>
-                </select>
-              </div>
-              <div className="flex gap-2 items-center">
-                <button
-                  type="button"
-                  className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
-                    typeFilter === "Beide"
-                      ? "bg-primary text-white border-primary"
-                      : "bg-white text-gray-700 border-gray-300 hover:border-primary"
-                  }`}
-                  onClick={() => handleTypeChange("Beide")}
-                >
-                  Beide
-                </button>
-                <button
-                  type="button"
-                  className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
-                    typeFilter === "Anfrage"
-                      ? "bg-yellow-50 text-yellow-700 border-yellow-200"
-                      : "bg-white text-gray-700 border-gray-300 hover:border-yellow-200"
-                  }`}
-                  onClick={() => handleTypeChange("Anfrage")}
-                >
-                  Anfrage
-                </button>
-                <button
-                  type="button"
-                  className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
-                    typeFilter === "Angebot"
-                      ? "bg-blue-50 text-blue-700 border-blue-200"
-                      : "bg-white text-gray-700 border-gray-300 hover:border-blue-200"
-                  }`}
-                  onClick={() => handleTypeChange("Angebot")}
-                >
-                  Angebot
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Results Header */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
-            <div className="text-gray-600 text-sm" id="resultsCount">
-              {totalEntries} Ergebnis{totalEntries === 1 ? "" : "se"} gefunden
-            </div>
-            <select
-              className="px-3 py-2 border border-gray-300 rounded-md bg-white text-sm"
-              id="sortDropdown"
-            >
-              <option>Relevanz</option>
-              <option>Neueste zuerst</option>
-              <option>Preis aufsteigend</option>
-              <option>Preis absteigend</option>
-              <option>Bewertung</option>
-            </select>
-          </div>
-          {/* Results Grid */}
-          <div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-10"
-            id="resultsGrid"
-          >
-            {paginatedEntries.map((entry) => {
-              const userRequest = userRequests[entry.id];
-              const requestButton = userRequest ? (
-                <button
-                  className="px-4 py-2 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 hover:shadow transition-colors"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    openRequestModal(entry);
-                  }}
-                >
-                  Bearbeiten
-                </button>
-              ) : (
-                <button
-                  className="px-4 py-2 bg-[#e31e24] text-white rounded text-sm font-medium hover:bg-[#c01a1f] hover:shadow transition-colors"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    openRequestModal(entry);
-                  }}
-                >
-                  Anfragen
-                </button>
-              );
-              return (
-                <div
-                  key={entry.id}
-                  className="result-card bg-white rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer overflow-hidden flex flex-col h-full"
-                  onClick={(e) => {
-                    if ((e.target as HTMLElement).closest("button")) return;
-                    router.push(`/boerse/${entry.id}`);
-                  }}
-                >
-                  <div className="p-4 border-b border-gray-100 flex-1 flex flex-col">
-                    <div className="flex justify-between items-start mb-2">
-                      <span
-                        className={`card-category px-3 py-1 rounded-full text-xs font-medium ${
-                          categoryColorClasses[entry.category] ||
-                          "bg-gray-50 text-gray-700"
-                        }`}
-                      >
-                        {entry.category}
-                      </span>
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          typeColors[entry.type] || "bg-gray-50 text-gray-700"
-                        }`}
-                      >
-                        {entry.type}
-                      </span>
-                    </div>
-                    <h3 className="font-semibold text-base mb-2 text-gray-900">
-                      {entry.title}
-                    </h3>
-                    <p className="text-gray-600 text-sm mb-3 leading-relaxed">
-                      {entry.shortDescription}
-                    </p>
-                    <div className="flex justify-between items-center text-xs text-gray-500 mt-auto">
-                      <div className="flex items-center gap-2">
-                        <span>{entry.userName}</span>
-                      </div>
-                      <span>
-                        {timeAgo(new Date(entry.createdAt).getTime())}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="p-4 bg-gray-50 flex justify-between items-center">
-                    <div className="font-semibold text-primary text-base">
-                      {renderPrice(entry.price)}
-                    </div>
-                    {requestButton}
-                  </div>
+                    }}
+                  />
+                )}
+              </>
+            )}
+            <div className="bg-white p-5 rounded-lg shadow-sm mb-8">
+              {/* Header */}
+              <h2 className="text-primary text-xl font-bold mb-4">Filter</h2>
+              {/* Search & Filter Bar */}
+              <div className="flex flex-col md:flex-row gap-4 mb-5 items-center">
+                <div className="flex-1 flex items-center bg-white rounded-lg shadow-sm px-4 py-2">
+                  <Search className="w-5 h-5 text-gray-400 mr-2" />
+                  <input
+                    type="text"
+                    className="flex-1 outline-none bg-transparent text-gray-900"
+                    placeholder="Projekte, Dienstleistungen oder Produkte suchen..."
+                    value={searchValue}
+                    onChange={handleSearchChange}
+                    id="searchInput"
+                  />
                 </div>
-              );
-            })}
-          </div>
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex justify-center items-center gap-2 mt-4">
-              <button
-                className={`px-3 py-2 border border-[#e31e24] bg-white text-[#e31e24] rounded text-sm font-medium hover:bg-[#e31e24] hover:text-white hover:shadow transition-colors ${
-                  currentPage === 1 ? "opacity-50 cursor-not-allowed" : ""
-                }`}
-                disabled={currentPage === 1}
-                onClick={() => handlePageChange(currentPage - 1)}
+                <div className="flex items-center gap-2 bg-white rounded-lg shadow-sm px-3">
+                  <Funnel className="w-5 h-5 text-gray-400 mr-2" />
+                  <select
+                    className="pe-3 py-2 text-gray-900"
+                    value={categoryFilter}
+                    onChange={handleCategoryChange}
+                  >
+                    <option value="Alle">Alle Kategorien</option>
+                    <option value="DIENSTLEISTUNG">Dienstleistung</option>
+                    <option value="PRODUKT">Produkt</option>
+                    <option value="DIGITALISIERUNG">Digitalisierung</option>
+                    <option value="NACHHALTIGKEIT">Nachhaltigkeit</option>
+                    <option value="MANAGEMENT">Management</option>
+                  </select>
+                </div>
+                <div className="flex gap-2 items-center">
+                  <button
+                    type="button"
+                    className={`px-4 py-2 rounded-xl font-medium border transition-colors cursor-pointer ${
+                      typeFilter === "Beide"
+                        ? "bg-primary text-white border-primary"
+                        : "bg-white text-gray-700 border-gray-300 hover:border-primary"
+                    }`}
+                    onClick={() => handleTypeChange("Beide")}
+                  >
+                    Beide
+                  </button>
+                  <button
+                    type="button"
+                    className={`px-4 py-2 rounded-xl font-medium border transition-colors cursor-pointer ${
+                      typeFilter === "Anfrage"
+                        ? "bg-yellow-50 text-yellow-700 border-yellow-200"
+                        : "bg-white text-gray-700 border-gray-300 hover:border-yellow-200"
+                    }`}
+                    onClick={() => handleTypeChange("Anfrage")}
+                  >
+                    Anfrage
+                  </button>
+                  <button
+                    type="button"
+                    className={`px-4 py-2 rounded-xl font-medium border transition-colors cursor-pointer ${
+                      typeFilter === "Angebot"
+                        ? "bg-blue-50 text-blue-700 border-blue-200"
+                        : "bg-white text-gray-700 border-gray-300 hover:border-blue-200"
+                    }`}
+                    onClick={() => handleTypeChange("Angebot")}
+                  >
+                    Angebot
+                  </button>
+                </div>
+              </div>
+
+              {/* Results Header */}
+              <div className="flex flex-col sm:flex-row justify-end items-start sm:items-center gap-4 mb-5">
+                <div className="text-gray-600" id="resultsCount">
+                  {totalEntries} Ergebnis{totalEntries === 1 ? "" : "se"}{" "}
+                  gefunden
+                </div>
+              </div>
+
+              {/* Results Grid */}
+              <div
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10"
+                id="resultsGrid"
               >
-                ← Zurück
-              </button>
-              {[...Array(totalPages)].map((_, idx) => (
-                <button
-                  key={idx + 1}
-                  className={`px-3 py-2 border rounded text-sm font-medium hover:bg-[#e31e24] hover:text-white hover:shadow transition-colors ${
-                    currentPage === idx + 1
-                      ? "bg-[#e31e24] text-white border-[#e31e24]"
-                      : "bg-white text-[#e31e24] border-[#e31e24]"
-                  }`}
-                  onClick={() => handlePageChange(idx + 1)}
-                >
-                  {idx + 1}
-                </button>
-              ))}
-              <button
-                className={`px-3 py-2 border border-[#e31e24] bg-white text-[#e31e24] rounded text-sm font-medium hover:bg-[#e31e24] hover:text-white hover:shadow transition-colors ${
-                  currentPage === totalPages
-                    ? "opacity-50 cursor-not-allowed"
-                    : ""
-                }`}
-                disabled={currentPage === totalPages}
-                onClick={() => handlePageChange(currentPage + 1)}
-              >
-                Weiter →
-              </button>
+                {paginatedEntries.map((entry) => {
+                  const userRequest = userRequests[entry.id];
+                  const requestButton = userRequest ? (
+                    <button
+                      className="px-4 py-2 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 hover:shadow transition-colors cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openRequestModal(entry);
+                      }}
+                    >
+                      Bearbeiten
+                    </button>
+                  ) : (
+                    <button
+                      className="px-4 py-2 bg-[#e60000] text-white rounded-xl font-medium hover:bg-[#c01a1f] hover:shadow transition-colors cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openRequestModal(entry);
+                      }}
+                    >
+                      Anfragen
+                    </button>
+                  );
+                  return (
+                    <div
+                      key={entry.id}
+                      className="result-card bg-white rounded-lg cursor-pointer overflow-hidden flex flex-col h-full border border-gray-200 hover:bg-gray-50 hover:shadow-md transition-all"
+                      onClick={(e) => {
+                        if ((e.target as HTMLElement).closest("button")) return;
+                        router.push(`/boerse/${entry.id}`);
+                      }}
+                    >
+                      <div className="p-4 border-b border-gray-100 flex-1 flex flex-col">
+                        <div className="flex justify-between items-start mb-2">
+                          <span
+                            className={`card-category px-3 py-1 rounded-xl text-xs font-medium ${
+                              categoryColorClasses[entry.category] ||
+                              "bg-gray-50 text-gray-700"
+                            }`}
+                          >
+                            {entry.category}
+                          </span>
+                          <span
+                            className={`px-2 py-1 rounded-xl text-xs font-medium ${
+                              typeColors[entry.type] ||
+                              "bg-gray-50 text-gray-700"
+                            }`}
+                          >
+                            {entry.type}
+                          </span>
+                        </div>
+                        <h3 className="font-semibold text-base mb-2 text-gray-900">
+                          {entry.title}
+                        </h3>
+                        <p className="text-gray-600 text-sm mb-3 leading-relaxed">
+                          {entry.shortDescription}
+                        </p>
+                        <div className="flex justify-between items-center text-xs text-gray-600 mt-auto">
+                          <div className="flex items-center gap-2">
+                            <span>{entry.userName}</span>
+                          </div>
+                          <span>
+                            {timeAgo(new Date(entry.createdAt).getTime())}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="p-4 bg-gray-50 flex justify-between items-center">
+                        <div className="font-semibold text-primary text-base">
+                          {renderPrice(entry.price)}
+                        </div>
+                        {requestButton}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-2 mt-4">
+                  <button
+                    className={`inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-600 rounded-xl font-medium hover:text-gray-900 transition-all cursor-pointer ${
+                      currentPage === 1 ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                    disabled={currentPage === 1}
+                    onClick={() => handlePageChange(currentPage - 1)}
+                  >
+                    <ArrowLeft className="w-4 h-4 text-gray-600 hover:text-gray-900" />
+                    Zurück
+                  </button>
+                  {[...Array(totalPages)].map((_, idx) => (
+                    <button
+                      key={idx + 1}
+                      className={`px-4 py-2 border rounded-xl font-medium hover:bg-[#e60000] transition-all cursor-pointer ${
+                        currentPage === idx + 1
+                          ? "bg-[#e60000] text-white border-[#e60000]"
+                          : "bg-white text-gray-600 border-gray-600"
+                      }`}
+                      onClick={() => handlePageChange(idx + 1)}
+                    >
+                      {idx + 1}
+                    </button>
+                  ))}
+                  <button
+                    className={`inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-600 font-medium hover:text-gray-900 transition-all cursor-pointer ${
+                      currentPage === totalPages
+                        ? "opacity-50 cursor-not-allowed"
+                        : ""
+                    }`}
+                    disabled={currentPage === totalPages}
+                    onClick={() => handlePageChange(currentPage + 1)}
+                  >
+                    Weiter
+                    <ArrowRight className="w-4 h-4 text-gray-600 hover:text-gray-900" />
+                  </button>
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
       )}
       {/* Anfrage Modal für Listenansicht */}
       {showRequestModal && activeEntry && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-xl p-8 max-w-sm w-full">
-            <h2 className="text-lg font-bold mb-4">
-              {userRequests[activeEntry.id]
-                ? "Anfrage bearbeiten"
-                : "Projekt anfragen"}
-            </h2>
-            <textarea
-              className="w-full border rounded p-2 mb-4"
-              rows={4}
-              placeholder="Ihre Nachricht an den Anbieter..."
-              value={requestMessage}
-              onChange={(e) => setRequestMessage(e.target.value)}
-              disabled={requestLoading || deleteLoading}
-            />
-            {requestError && (
-              <div className="text-red-600 text-sm mb-2">{requestError}</div>
-            )}
-            {requestSuccess && (
-              <div className="text-green-600 text-sm mb-2">
-                {requestSuccess}
-              </div>
-            )}
-            <div className="flex gap-3 justify-end">
-              {userRequests[activeEntry.id] && (
-                <button
-                  className="px-5 py-2 rounded bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  onClick={handleDeleteRequest}
-                  disabled={deleteLoading || requestLoading}
-                >
-                  Löschen
-                </button>
-              )}
-              <button
-                className="px-5 py-2 rounded bg-gray-100 text-gray-700 hover:bg-gray-200"
-                onClick={() => setShowRequestModal(false)}
+        <div className="relative min-h-screen bg-gray-50 pt-20">
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl shadow-xl p-8 max-w-sm w-full">
+              <h2 className="text-lg font-bold mb-4">
+                {userRequests[activeEntry.id]
+                  ? "Anfrage bearbeiten"
+                  : "Projekt anfragen"}
+              </h2>
+              <textarea
+                className="w-full border rounded p-2 mb-4"
+                rows={4}
+                placeholder="Ihre Nachricht an den Anbieter..."
+                value={requestMessage}
+                onChange={(e) => setRequestMessage(e.target.value)}
                 disabled={requestLoading || deleteLoading}
-              >
-                Abbrechen
-              </button>
-              <button
-                className={`px-5 py-2 rounded ${
-                  userRequests[activeEntry.id]
-                    ? "bg-blue-600 hover:bg-blue-700"
-                    : "bg-[#e31e24] hover:bg-[#c01a1f]"
-                } text-white font-medium hover:shadow transition-colors`}
-                onClick={handleRequestSubmit}
-                disabled={
-                  requestLoading || deleteLoading || !requestMessage.trim()
-                }
-              >
-                {userRequests[activeEntry.id] ? "Speichern" : "Anfrage senden"}
-              </button>
+              />
+              {requestError && (
+                <div className="text-red-600 mb-2">{requestError}</div>
+              )}
+              {requestSuccess && (
+                <div className="text-green-600 mb-2">{requestSuccess}</div>
+              )}
+              <div className="flex gap-3 justify-end">
+                {userRequests[activeEntry.id] && (
+                  <button
+                    className="px-5 py-2 rounded bg-gray-100 text-gray-700 hover:bg-gray-200 cursor-pointer"
+                    onClick={handleDeleteRequest}
+                    disabled={deleteLoading || requestLoading}
+                  >
+                    Löschen
+                  </button>
+                )}
+                <button
+                  className="px-5 py-2 rounded bg-gray-100 text-gray-700 hover:bg-gray-200 cursor-pointer"
+                  onClick={() => setShowRequestModal(false)}
+                  disabled={requestLoading || deleteLoading}
+                >
+                  Abbrechen
+                </button>
+                <button
+                  className={`px-5 py-2 rounded cursor-pointer ${
+                    userRequests[activeEntry.id]
+                      ? "bg-blue-600 hover:bg-blue-700"
+                      : "bg-[#e60000] hover:bg-[#c01a1f]"
+                  } text-white font-medium hover:shadow transition-colors`}
+                  onClick={handleRequestSubmit}
+                  disabled={
+                    requestLoading || deleteLoading || !requestMessage.trim()
+                  }
+                >
+                  {userRequests[activeEntry.id]
+                    ? "Speichern"
+                    : "Anfrage senden"}
+                </button>
+              </div>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
 
 export default function MarketplacePage() {
   return (
     <Suspense
-      fallback={<div className="py-12 text-center text-gray-500">Lädt...</div>}
+      fallback={<div className="py-12 text-center text-gray-600">Lädt...</div>}
     >
       <MarketplaceContent />
     </Suspense>
