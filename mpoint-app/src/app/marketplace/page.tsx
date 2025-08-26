@@ -163,10 +163,6 @@ function MarketplaceContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // --- Preis-Eingabe State für Modal ---
-  const [priceInput, setPriceInput] = useState<PriceType>({});
-  const [priceMode, setPriceMode] = useState<string>("fixed");
-
   // Filter-States
   const [searchValue, setSearchValue] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("Alle");
@@ -198,7 +194,12 @@ function MarketplaceContent() {
       try {
         const res = await fetch("/api/marketplace");
         const data = await res.json();
-        const enrichedData = await Promise.all(data.map(async (entry) => {
+        // Email entfernen, falls vorhanden
+        const cleaned = data.map((entry: any) => {
+          const { email, ...rest } = entry;
+          return rest;
+        });
+        const enrichedData = await Promise.all(cleaned.map(async (entry) => {
           const userName = await getUserNameById(entry.userId);
           return { ...entry, userName };
         }));
@@ -266,11 +267,6 @@ function MarketplaceContent() {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
   };
-
-  // Preis-Eingabe-Handler
-  const handlePriceChange = (field: keyof PriceType, value: any) => {
-    setPriceInput(prev => ({ ...prev, [field]: value }));
-  }
 
   // Anfrage-Modal Handler
   const openRequestModal = (entry: any) => {
@@ -341,347 +337,12 @@ function MarketplaceContent() {
     }
   }
 
-  // Preis-Modus-Handler
-  const handlePriceModeChange = (mode: string) => {
-    setPriceMode(mode);
-    // Setze Preisobjekt je nach Modus
-    if (mode === "onRequest") {
-      setPriceInput({ onRequest: true });
-    } else if (mode === "fixed") {
-      setPriceInput({});
-    } else if (mode === "ab") {
-      setPriceInput({ ab: true });
-    } else if (mode === "perHour") {
-      setPriceInput({ perHour: true });
-    } else if (mode === "perWeek") {
-      setPriceInput({ perWeek: true });
-    } else if (mode === "perMonth") {
-      setPriceInput({ perMonth: true });
-    } else if (mode === "range") {
-      setPriceInput({});
-    } else {
-      setPriceInput({});
-    }
-  };
-
-  // --- NEU: Submit-Handler für das Modal-Formular ---
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const form = e.target as HTMLFormElement;
-    const formData = new FormData(form);
-    // Alle Felder aus dem Formular korrekt auslesen
-    const entryType = (form.elements.namedItem("entryType") as HTMLInputElement)?.value || null;
-    const title = (form.elements.namedItem("projectTitle") as HTMLInputElement)?.value.trim() || null;
-    const category = (form.elements.namedItem("projectCategory") as HTMLSelectElement)?.value.toUpperCase() || null;
-    const shortDescription = (form.elements.namedItem("projectShortDescription") as HTMLInputElement)?.value.trim() || null;
-    // longDescription aus contenteditable div
-    let longDescription: string | null = (form.querySelector("#projectLongDescription") as HTMLDivElement)?.innerHTML?.trim() || null;
-    if (longDescription === "" || longDescription === "<br>") longDescription = null;
-    const location = (form.elements.namedItem("projectLocation") as HTMLInputElement)?.value.trim() || null;
-    const deadlineRaw = (form.elements.namedItem("projectDeadline") as HTMLInputElement)?.value;
-    const deadline = deadlineRaw ? new Date(deadlineRaw).toISOString() : null;
-    const skills = (form.elements.namedItem("projectSkills") as HTMLInputElement)?.value.trim() || null;
-    const email = (form.elements.namedItem("contactEmail") as HTMLInputElement)?.value.trim() || null;
-    const publicEmail = (form.elements.namedItem("allowContact") as HTMLInputElement)?.checked || false;
-    // Preis aus State
-    const price = Object.keys(priceInput).length > 0 ? priceInput : null;
-
-    // Userdaten aus Session
-    const user = session?.user;
-    if (!user?.id) {
-      alert("Nicht eingeloggt. Bitte zuerst anmelden.");
-      return;
-    }
-
-    // Payload für MarketplaceEntry
-    const payload = {
-      userId: user.id,
-      category,
-      title,
-      shortDescription,
-      longDescription,
-      price,
-      type: entryType,
-      email,
-      publicEmail,
-      location,
-      deadline,
-      skills,
-    };
-    try {
-      const res = await fetch("/api/marketplace", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (res.ok) {
-        setShowModal(false);
-        setLoading(true);
-        // Nach dem Anlegen neu laden
-        const entriesRes = await fetch("/api/marketplace");
-        const data = await entriesRes.json();
-        const enrichedData = await Promise.all(data.map(async (entry: any) => {
-          const userName = await getUserNameById(entry.userId);
-          return { ...entry, userName };
-        }));
-        setEntries(enrichedData);
-      } else {
-        alert("Fehler beim Anlegen des Eintrags.");
-      }
-    } catch (err) {
-      alert("Fehler beim Anlegen des Eintrags.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
   return (
     <div className="bg-gray-50 text-gray-900 min-h-screen relative pt-24">
       {/* Ladeanzeige während die Einträge geladen werden */}
       {loading && (
         <div className="max-w-3xl mx-auto py-12 px-4 text-center text-gray-500 text-lg">
           Lädt Einträge...
-        </div>
-      )}
-      {/* Modal (außerhalb des Seiten-Containers platzieren) */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 backdrop-blur-sm">
-          <div className="bg-white rounded-xl w-11/12 max-w-2xl max-h-screen overflow-y-auto shadow-2xl">
-            {/* Modal Header */}
-            <div className="flex justify-between items-center p-6 border-b border-gray-200">
-              <h2 className="text-2xl font-semibold text-gray-900">Neues Projekt einstellen</h2>
-              <button
-                className="text-gray-500 hover:text-gray-700 text-2xl p-1 hover:bg-gray-100 rounded"
-                onClick={() => setShowModal(false)}
-                aria-label="Schließen"
-              >
-                ×
-              </button>
-            </div>
-            {/* Modal Body */}
-            <div className="p-6">
-              <form onSubmit={handleSubmit}>
-                {/* Typ-Auswahl Angebot/Anfrage */}
-                <div className="mb-5">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Typ <span className="text-primary">*</span></label>
-                  <div className="flex gap-3">
-                    <label className="flex items-center gap-2 text-sm cursor-pointer px-3 py-2 rounded-lg border border-yellow-200 bg-yellow-50 text-yellow-700">
-                      <input type="radio" name="entryType" value="Anfrage" defaultChecked /> Anfrage
-                    </label>
-                    <label className="flex items-center gap-2 text-sm cursor-pointer px-3 py-2 rounded-lg border border-blue-200 bg-blue-50 text-blue-700">
-                      <input type="radio" name="entryType" value="Angebot" /> Angebot
-                    </label>
-                  </div>
-                </div>
-                {/* Projekttitel */}
-                <div className="mb-5">
-                  <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="projectTitle">
-                    Projekttitel <span className="text-primary">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="projectTitle"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                    placeholder="z.B. Website-Relaunch für Startup"
-                    required
-                  />
-                </div>
-                {/* Kategorie */}
-                <div className="mb-5">
-                  <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="projectCategory">
-                    Kategorie <span className="text-primary">*</span>
-                  </label>
-                  <select id="projectCategory" className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" required>
-                    <option value="">Kategorie auswählen</option>
-                    <option value="dienstleistung">Dienstleistung</option>
-                    <option value="produkt">Produkt</option>
-                    <option value="digitalisierung">Digitalisierung</option>
-                    <option value="nachhaltigkeit">Nachhaltigkeit</option>
-                    <option value="management">Management</option>
-                    <option value="marketing">Marketing</option>
-                    <option value="consulting">Consulting</option>
-                  </select>
-                </div>
-                {/* Beschreibung (kurz) */}
-                <div className="mb-5">
-                  <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="projectShortDescription">
-                    Beschreibung (kurz) <span className="text-primary">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="projectShortDescription"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                    placeholder="Kurze Projektbeschreibung..."
-                    required
-                  />
-                </div>
-
-                {/* Beschreibung (lang) WYSIWYG Editor */}
-                <div className="mb-5">
-                  <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="projectLongDescription">
-                    Beschreibung (lang)
-                  </label>
-                  {/* Simple WYSIWYG Editor: contenteditable div, kann später durch ein echtes Editor-Component ersetzt werden */}
-                  <div
-                    id="projectLongDescription"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm min-h-24 bg-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                    contentEditable={true}
-                    style={{ minHeight: "96px" }}
-                    suppressContentEditableWarning={true}
-                  >
-                  </div>
-                </div>
-                {/* Standort und Deadline */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="projectLocation">
-                      Standort
-                    </label>
-                    <input
-                      type="text"
-                      id="projectLocation"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                      placeholder="z.B. München, Remote"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="projectDeadline">
-                      Deadline
-                    </label>
-                    <input
-                      type="date"
-                      id="projectDeadline"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                    />
-                  </div>
-                </div>
-                {/* Budget / Preis-Eingabe */}
-                <div className="mb-5">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Budget / Preis</label>
-                  <div className="flex gap-4 mb-3 flex-wrap">
-                    <label className="flex items-center gap-2 text-sm cursor-pointer">
-                      <input type="radio" name="priceMode" value="fixed" checked={priceMode === "fixed"} onChange={() => handlePriceModeChange("fixed")} />
-                      Festpreis
-                    </label>
-                    <label className="flex items-center gap-2 text-sm cursor-pointer">
-                      <input type="radio" name="priceMode" value="ab" checked={priceMode === "ab"} onChange={() => handlePriceModeChange("ab")} />
-                      ab Preis
-                    </label>
-                    <label className="flex items-center gap-2 text-sm cursor-pointer">
-                      <input type="radio" name="priceMode" value="range" checked={priceMode === "range"} onChange={() => handlePriceModeChange("range")} />
-                      von ... bis ...
-                    </label>
-                    <label className="flex items-center gap-2 text-sm cursor-pointer">
-                      <input type="radio" name="priceMode" value="perHour" checked={priceMode === "perHour"} onChange={() => handlePriceModeChange("perHour")} />
-                      pro Stunde
-                    </label>
-                    <label className="flex items-center gap-2 text-sm cursor-pointer">
-                      <input type="radio" name="priceMode" value="perWeek" checked={priceMode === "perWeek"} onChange={() => handlePriceModeChange("perWeek")} />
-                      pro Woche
-                    </label>
-                    <label className="flex items-center gap-2 text-sm cursor-pointer">
-                      <input type="radio" name="priceMode" value="perMonth" checked={priceMode === "perMonth"} onChange={() => handlePriceModeChange("perMonth")} />
-                      pro Monat
-                    </label>
-                    <label className="flex items-center gap-2 text-sm cursor-pointer">
-                      <input type="radio" name="priceMode" value="onRequest" checked={priceMode === "onRequest"} onChange={() => handlePriceModeChange("onRequest")} />
-                      Auf Anfrage
-                    </label>
-                  </div>
-                  {/* Preisfelder je nach Modus */}
-                  {priceMode !== "onRequest" && (
-                    <div className="flex items-center gap-3 mb-2 flex-wrap">
-                      {(priceMode === "fixed" || priceMode === "ab" || priceMode === "perHour" || priceMode === "perWeek" || priceMode === "perMonth") && (
-                        <input
-                          type="number"
-                          className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                          placeholder={priceMode === "ab" ? "ab Preis" : "Preis"}
-                          min="0"
-                          step="0.01"
-                          value={priceInput.from ?? ""}
-                          onChange={e => handlePriceChange("from", e.target.value ? Number(e.target.value) : undefined)}
-                        />
-                      )}
-                      {priceMode === "range" && (
-                        <>
-                          <input
-                            type="number"
-                            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                            placeholder="Von"
-                            min="0"
-                            step="0.01"
-                            value={priceInput.from ?? ""}
-                            onChange={e => handlePriceChange("from", e.target.value ? Number(e.target.value) : undefined)}
-                          />
-                          <span className="text-gray-500">bis</span>
-                          <input
-                            type="number"
-                            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                            placeholder="Bis"
-                            min="0"
-                            step="0.01"
-                            value={priceInput.to ?? ""}
-                            onChange={e => handlePriceChange("to", e.target.value ? Number(e.target.value) : undefined)}
-                          />
-                        </>
-                      )}
-                      <span className="text-gray-500">€</span>
-                    </div>
-                  )}
-                  {/* Zusatzoptionen entfernt, Flags werden automatisch gesetzt */}
-                  {/* Preisvorschau */}
-                  <div className="mt-2 text-xs text-gray-600">
-                    <span className="font-semibold">Preisvorschau:</span> {priceDataToString(priceInput)}
-                  </div>
-                </div>
-                {/* Benötigte Fähigkeiten */}
-                <div className="mb-5">
-                  <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="projectSkills">
-                    Benötigte Fähigkeiten
-                  </label>
-                  <input
-                    type="text"
-                    id="projectSkills"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                    placeholder="z.B. JavaScript, React, Design, SEO (mit Komma trennen)"
-                  />
-                </div>
-                {/* Kontakt E-Mail */}
-                <div className="mb-5">
-                  <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="contactEmail">
-                    Kontakt E-Mail <span className="text-primary">*</span>
-                  </label>
-                  <input
-                    type="email"
-                    id="contactEmail"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                    placeholder="ihre@email.de"
-                    required
-                  />
-                </div>
-                {/* Kontakt-Erlaubnis Checkbox */}
-                <div className="mb-4">
-                  <label className="flex items-center gap-3 cursor-pointer">
-                    <input type="checkbox" id="allowContact" className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary" required />
-                    <span className="text-sm">Ich stimme zu, dass Interessenten mich kontaktieren dürfen <span className="text-primary">*</span></span>
-                  </label>
-                </div>
-                {/* Form Actions */}
-                <div className="flex flex-col sm:flex-row gap-3 justify-end pt-5 border-t border-gray-200">
-                  <button
-                    type="button"
-                    className="px-6 py-3 border border-[#e31e24] bg-white text-[#e31e24] rounded-lg font-medium hover:bg-[#e31e24] hover:text-white hover:shadow transition-colors"
-                    onClick={() => setShowModal(false)}
-                  >
-                    Abbrechen
-                  </button>
-                  <button type="submit" className="px-6 py-3 bg-[#e31e24] text-white rounded-lg font-medium hover:bg-[#c01a1f] hover:shadow transition-colors">
-                    Projekt veröffentlichen
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
         </div>
       )}
       {!loading && (
@@ -788,15 +449,6 @@ function MarketplaceContent() {
             </button>
           </div>
         </div>
-        </div>
-        {/* Project Bar */}
-        <div className="mb-5">
-          <button
-            className="bg-[#e31e24] text-white px-4 py-2 rounded-full font-medium hover:bg-[#c01a1f] transition-colors shadow"
-            onClick={() => setShowModal(true)}
-          >
-            Eigenes Projekt einstellen
-          </button>
         </div>
         {/* Results Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
