@@ -328,7 +328,7 @@ export default function DashboardPage() {
                     <Link
                       key={event.id}
                       href={`/events/${event.id}`}
-                      className="block rounded-lg bg-white hover:bg-gray-50 border border-gray-200 p-3 hover:shadow-md"
+                      className="block rounded-lg bg-white hover:bg-gray-50 border border-gray-200 hover:shadow-md overflow-hidden"
                     >
                       <EventItem
                         day={new Date(event.startDate)
@@ -786,12 +786,12 @@ export default function DashboardPage() {
     location: string;
   }) {
     return (
-      <div className="flex gap-4 p-4 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer group">
-        <div className="bg-[#e60000] text-white rounded-lg p-3 text-center flex-shrink-0">
+      <div className="flex hover:bg-gray-50 transition-colors cursor-pointer group">
+        <div className="bg-[#e60000] text-white p-3 text-center flex-shrink-0">
           <div className="text-2xl font-bold">{day}</div>
           <div className="text-xs uppercase">{month}</div>
         </div>
-        <div className="flex-1">
+        <div className="flex-1 p-4">
           <h4 className="font-semibold text-gray-900 group-hover:text-[#e60000] transition-colors">
             {title}
           </h4>
