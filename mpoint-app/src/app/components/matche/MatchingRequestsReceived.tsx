@@ -25,7 +25,7 @@ export default function IncomingRequests() {
 
   return (
     <section className="bg-white rounded-xl shadow-sm p-6">
-      <div className="flex items-start justify-between mb-6">
+      <div className="flex items-start justify-between mb-4">
         <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
           Erhaltene Vernetzungsanfragen
         </h2>
@@ -37,7 +37,7 @@ export default function IncomingRequests() {
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#e60000]"></div>
           </div>
         ) : requests.length === 0 ? (
-          <div className="text-gray-500">Keine Anfragen gefunden.</div>
+          <div className="text-gray-600">Keine Anfragen gefunden.</div>
         ) : (
           <ul className="space-y-3">
             {requests.map((req) => (
@@ -49,7 +49,7 @@ export default function IncomingRequests() {
                 <span className="font-medium">
                   {req.senderCompany?.name || "Unbekanntes Unternehmen"}
                 </span>
-                <span className="text-xs text-gray-500 ml-auto">
+                <span className="text-xs text-gray-600 ml-auto">
                   {req.status === "PENDING" && "Wartet auf Ihre Bestätigung"}
                   {req.status === "ACCEPTED_BY_RECEIVER" &&
                     "Sie haben bereits bestätigt"}
@@ -101,7 +101,7 @@ export default function IncomingRequests() {
                           }
                         } catch {}
                       }}
-                      className="ml-2 text-red-600 hover:underline text-xs"
+                      className="ml-2 text-[#e60000] hover:underline text-xs"
                       title="Ablehnen"
                     >
                       Ablehnen

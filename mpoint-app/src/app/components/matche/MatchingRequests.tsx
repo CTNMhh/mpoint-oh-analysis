@@ -25,7 +25,7 @@ export default function OutgoingRequests() {
 
   return (
     <section className="bg-white rounded-xl shadow-sm p-6">
-      <div className="flex items-start justify-between mb-6">
+      <div className="flex items-start justify-between mb-4">
         <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
           Offene Vernetzungsanfragen
         </h2>
@@ -37,7 +37,7 @@ export default function OutgoingRequests() {
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[rgb(228,25,31)]"></div>
           </div>
         ) : requests.length === 0 ? (
-          <div className="text-gray-500">Keine offenen Anfragen.</div>
+          <div className="text-gray-600">Keine offenen Anfragen.</div>
         ) : (
           <ul className="space-y-3">
             {requests.map(req => (
