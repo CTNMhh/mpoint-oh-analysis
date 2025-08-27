@@ -303,7 +303,7 @@ export default function DashboardPage() {
                 )}
               </div>
 
-              <div className="mt-6 text-center">
+              <div className="mt-4 text-center">
                 <Link
                   href="/news"
                   className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all"
@@ -345,7 +345,7 @@ export default function DashboardPage() {
                   ))}
                 </div>
 
-                <div className="mt-6 text-center">
+                <div className="mt-4 text-center">
                   <a
                     href="#events"
                     className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all"
@@ -388,7 +388,7 @@ export default function DashboardPage() {
                   />
                 </div>
 
-                <div className="mt-6 text-center">
+                <div className="mt-4 text-center">
                   <a
                     href="#articles"
                     className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all"
@@ -513,7 +513,7 @@ export default function DashboardPage() {
                   showSuggestions={false}
                 />
               </Link>
-              <div className="mt-8 text-center">
+              <div className="mt-4 text-center">
                 <Link
                   href="/company"
                   className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all"
@@ -718,7 +718,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="mt-8 text-center">
+          <div className="mt-4 text-center">
             <a
               href="#wirtschaftsanalyse"
               className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all"
