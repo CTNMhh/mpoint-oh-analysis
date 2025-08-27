@@ -136,7 +136,7 @@ export default function CompanySearch() {
         <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold text-gray-900">Unternehmen</h2>
-                <Users className="w-5 h-5 text-[#e60000]" />
+                <Users className="w-6 h-6 text-[#e60000]" />
             </div>
             <div className="flex-1 flex items-center bg-white rounded-lg shadow-sm px-4 py-2">
                 <Search className="w-5 h-5 text-gray-400 mr-2" />

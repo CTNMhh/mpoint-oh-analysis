@@ -65,7 +65,7 @@ export default function MatchingMarketplacePage() {
                 <span className="text-sm text-gray-500 block absolute right-8">
                   KI-basierte Empfehlungen
                 </span>
-                <Sparkles className="w-5 h-5 text-[#e60000]" />
+                <Sparkles className="w-6 h-6 text-[#e60000]" />
               </div>
 
               <MatchingList limit={3} />
