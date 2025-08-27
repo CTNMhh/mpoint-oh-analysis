@@ -44,7 +44,7 @@ export default function NewsDetailPage() {
 
   return (
     <main className="min-h-screen bg-gray-50 pt-20">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         <button
           className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 text-gray-700 hover:bg-[rgb(228,25,31)] hover:text-white transition-all font-semibold text-sm"
           onClick={() => router.back()}
