@@ -69,7 +69,7 @@ export default function MatchingMarketplacePage() {
               </div>
 
               <MatchingList limit={3} />
-              <div className="mt-6 text-center">
+              <div className="mt-4 text-center">
                 <Link
                   href="/Matches"
                   className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all"

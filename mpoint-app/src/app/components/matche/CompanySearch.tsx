@@ -148,7 +148,7 @@ export default function CompanySearch() {
                     onChange={e => setQuery(e.target.value)}
                 />
             </div>
-            <div className="mt-6 text-center">
+            <div className="mt-4 text-center">
                 <Link
                     href="/Matches"
                     className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all"
@@ -167,8 +167,8 @@ export default function CompanySearch() {
             )}
             {!loading && !companies.length && query.length > 1 && (
                 <div className="text-center py-12">
-                    <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-500">Keine Unternehmen gefunden.</p>
+                    <Users className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                    <p className="text-gray-600">Keine Unternehmen gefunden.</p>
                 </div>
             )}
             <div className="space-y-4">
