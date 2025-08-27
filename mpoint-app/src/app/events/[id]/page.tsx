@@ -113,8 +113,12 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
             {error}
           </div>
         )}
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-          <div className="bg-white rounded-xl shadow-sm">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 flex gap-8">
+          {/* Event-Detail-Block: 2/3 */}
+          <div
+            id="event-detail-block"
+            className="bg-white rounded-xl shadow-sm flex-1 basis-2/3"
+          >
             {/* Zurück zu Events & Event exportieren */}
             <div className="flex gap-7 mb-8">
               <div className="w-1/2 flex items-center">
@@ -259,14 +263,16 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
               {event.price > 0 ? ` (€${(event.price * spaces).toFixed(2)})` : ""}
             </button>
           </div>
+
+          {/* MiniCart: 1/3 */}
+          <div
+            id="mini-cart-block"
+            className="bg-white rounded-xl shadow-sm flex-1 basis-1/3 border border-gray-200"
+          >
+            <MiniCart message={success} />
+          </div>
         </div>
       </main>
-
-      <MiniCart
-        show={showMiniCart}
-        onClose={() => setShowMiniCart(false)}
-        message={success}
-      />
     </>
   );
 }
