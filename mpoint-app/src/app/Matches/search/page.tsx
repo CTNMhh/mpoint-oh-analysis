@@ -95,7 +95,7 @@ export default function MatchingMarketplacePage() {
 
             {/* Stats Widget */}
             <section className="bg-white rounded-xl shadow-sm p-6">
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-gray-900">
                   Ihre Aktivität
                 </h2>
