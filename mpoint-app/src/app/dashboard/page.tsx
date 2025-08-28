@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import ProgressBar from "../company/ProgressBar"; // Assuming ProgressBar is in the same directory
 import Link from "next/link";
 import MarketplaceSection from "../components/marketplace/MarketplaceSection"; // Adjust the import path as necessary
+import Wirtschaftswetter from "../components/wirtschaftswetter/Wirtschaftswetter";
 import {
   Activity,
   Calendar,
@@ -45,8 +46,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<UserType | null>(null);
   const [loading, setLoading] = useState(true);
-  const [gaugeValue, setGaugeValue] = useState(0);
-  const [countdown, setCountdown] = useState("");
+  // Wirtschaftswetter state moved into component
 
   type BookingType = {
     id: string | number;
@@ -66,33 +66,7 @@ export default function DashboardPage() {
   const prevRef = useRef<HTMLButtonElement>(null);
   const nextRef = useRef<HTMLButtonElement>(null);
 
-  useEffect(() => {
-    setTimeout(() => setGaugeValue(74), 500);
-  }, []);
-
-  useEffect(() => {
-    const updateCountdown = () => {
-      const now = new Date();
-      const tomorrow = new Date(now);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      tomorrow.setHours(8, 0, 0, 0);
-
-      const diff = tomorrow.getTime() - now.getTime();
-      const hours = Math.floor(diff / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-      setCountdown(
-        `${hours.toString().padStart(2, "0")}:${minutes
-          .toString()
-          .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
-      );
-    };
-
-    const interval = setInterval(updateCountdown, 1000);
-    updateCountdown();
-    return () => clearInterval(interval);
-  }, []);
+  // countdown/gauge effects are encapsulated in Wirtschaftswetter
 
   // Redirect wenn nicht eingeloggt
   useEffect(() => {
@@ -564,180 +538,7 @@ export default function DashboardPage() {
             <MarketplaceSection />
           </div>
         </div>
-        <section className="bg-white rounded-xl shadow-sm p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">
-              Wirtschaftswetter
-            </h2>
-            <BarChart3 className="w-6 h-6 text-[#e60000]" />
-          </div>
-
-          <div className="grid lg:grid-cols-3 gap-8">
-            {/* Barometer */}
-            <div className="text-center">
-              <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center justify-between">
-                Wirtschaftsstimmung Index
-                <Activity className="w-5 h-5 text-orange-500" />
-              </h3>
-              <div className="flex flex-col items-center rounded-lg bg-white hover:bg-gray-50 border border-gray-200 p-3 hover:shadow-md">
-                <p className="text-sm text-gray-500 mb-6">
-                  Multifaktorielle Analyse der Wirtschaftslage
-                </p>
-
-                <div className="relative">
-                  <svg
-                    width="200"
-                    height="120"
-                    viewBox="0 0 200 120"
-                    className="mx-auto"
-                  >
-                    {/* Background arc */}
-                    <path
-                      d="M 20 100 A 80 80 0 0 1 180 100"
-                      fill="none"
-                      stroke="#e5e7eb"
-                      strokeWidth="20"
-                      strokeLinecap="round"
-                    />
-                    {/* Value arc */}
-                    <path
-                      d="M 20 100 A 80 80 0 0 1 180 100"
-                      fill="none"
-                      stroke="#e60000"
-                      strokeWidth="20"
-                      strokeLinecap="round"
-                      strokeDasharray={`${gaugeValue * 2.51} 251`}
-                      className="transition-all duration-1000 ease-out"
-                    />
-                    {/* Center text */}
-                    <text
-                      x="100"
-                      y="90"
-                      textAnchor="middle"
-                      className="fill-gray-900 text-3xl font-bold"
-                    >
-                      {gaugeValue}
-                    </text>
-                  </svg>
-                </div>
-
-                <div className="mt-4 inline-block bg-green-100 text-green-800 px-4 py-2 rounded-lg font-medium">
-                  Optimistisch
-                </div>
-
-                {/*
-                <div className="flex justify-between text-xs text-gray-500 mt-4 px-4">
-                  <span>Pessimistisch</span>
-                  <span>Neutral</span>
-                  <span>Optimistisch</span>
-                </div>
-                */}
-
-                <p className="text-sm text-gray-500 mt-4">
-                  Letztes Update: 23. Juli 2025
-                </p>
-              </div>
-            </div>
-
-            {/* Historical Values */}
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-6">
-                Historische Werte
-              </h3>
-
-              <div className="space-y-4 mb-6">
-                <HistoricalValue
-                  label="Jetzt"
-                  value={74}
-                  status="Optimistisch"
-                />
-                <HistoricalValue
-                  label="Gestern"
-                  value={72}
-                  status="Optimistisch"
-                />
-                <HistoricalValue
-                  label="Letzte Woche"
-                  value={70}
-                  status="Optimistisch"
-                />
-                <HistoricalValue
-                  label="Letzter Monat"
-                  value={47}
-                  status="Neutral"
-                  neutral
-                />
-              </div>
-
-              {/* Economic Indicators */}
-              <div className="grid grid-cols-2 gap-3">
-                <IndicatorCard label="BIP-Prognose" value="+2,3%" trend="up" />
-                <IndicatorCard
-                  label="Geschäftsklima"
-                  value="108,5"
-                  trend="up"
-                />
-                <IndicatorCard label="Export-Index" value="+4,7%" trend="up" />
-                <IndicatorCard label="Inflation" value="2,1%" trend="down" />
-              </div>
-            </div>
-
-            {/* Next Update */}
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-6">
-                Nächstes Update
-              </h3>
-              <div className="flex flex-col items-center rounded-lg bg-white hover:bg-gray-50 border border-gray-200 p-3 mb-6 hover:shadow-md">
-                <p className="text-gray-600 mb-4">
-                  Das nächste Update erfolgt in:
-                </p>
-                <div className="text-3xl font-bold text-[#e60000] font-mono">
-                  {countdown}
-                </div>
-              </div>
-              <div className="flex flex-col items-center rounded-lg bg-white hover:bg-gray-50 border border-gray-200 p-3 hover:shadow-md">
-                <h4 className="font-medium text-gray-600 mb-3">
-                  Faktoren im Index:
-                </h4>
-                <ul className="space-y-2 text-sm text-gray-600 ml-3">
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-gray-600 rounded-full"></span>
-                    BIP-Entwicklung
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-gray-600 rounded-full"></span>
-                    Geschäftsklimaindex
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-gray-600 rounded-full"></span>
-                    Exportzahlen
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-gray-600 rounded-full"></span>
-                    Arbeitsmarktdaten
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-gray-600 rounded-full"></span>
-                    Inflationsrate
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-gray-600 rounded-full"></span>
-                    Investitionsvolumen
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-8 text-center">
-            <a
-              href="#wirtschaftsanalyse"
-              className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all"
-            >
-              Detaillierte Wirtschaftsanalyse <ArrowRight className="w-4 h-4" />
-            </a>
-          </div>
-        </section>
+  <Wirtschaftswetter />
       </div>
     </main>
   );
@@ -863,85 +664,5 @@ export default function DashboardPage() {
     );
   }
 
-  function HistoricalValue({
-    label,
-    value,
-    status,
-    neutral,
-  }: {
-    label: string;
-    value: number;
-    status: string;
-    neutral?: boolean;
-  }) {
-    return (
-      <div className="flex items-center justify-between p-3 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg hover:shadow-md">
-        <span className="text-gray-600">{label}</span>
-        <div className="flex items-center justify-between gap-3 w-[150px]">
-          <span
-            className={`text-sm ${
-              neutral ? "text-gray-600" : "text-green-600"
-            }`}
-          >
-            {status}
-          </span>
-          <span
-            className={`inline-block px-3 py-1 rounded-lg font-bold ${
-              neutral
-                ? "bg-gray-200 text-gray-700"
-                : "bg-green-100 text-green-800"
-            }`}
-          >
-            {value}
-          </span>
-        </div>
-      </div>
-    );
-  }
-
-  function IndicatorCard({
-    label,
-    value,
-    trend,
-  }: {
-    label: string;
-    value: string;
-    trend: "up" | "down";
-  }) {
-    return (
-      <div className="bg-white hover:bg-gray-50 border border-gray-200 rounded-lg p-3 flex flex-col justify-between h-32 hover:shadow-md">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-xs text-gray-600">{label}</span>
-          {trend === "up" ? (
-            <ArrowUpRight className="w-4 h-4 text-green-600" />
-          ) : (
-            <ArrowDownRight className="w-4 h-4 text-red-600" />
-          )}
-        </div>
-        <div className="font-bold text-gray-900 text-xl">{value}</div>
-        <div className="mt-2">
-          {/* Trendlinie */}
-          {trend === "up" ? (
-            <svg width="80" height="24" viewBox="0 0 80 24" fill="none">
-              <polyline
-                points="0,20 20,16 40,18 60,12 80,8"
-                stroke="green"
-                strokeWidth="2"
-                fill="none"
-              />
-            </svg>
-          ) : (
-            <svg width="80" height="24" viewBox="0 0 80 24" fill="none">
-              <polyline
-                points="0,8 20,12 40,16 60,18 80,20"
-                stroke="red"
-                strokeWidth="2"
-                fill="none"
-              />
-            </svg>
-          )}
-        </div>
-      </div>
-    );
-  }
+  // removed: HistoricalValue and IndicatorCard (now internal to Wirtschaftswetter)
 }
