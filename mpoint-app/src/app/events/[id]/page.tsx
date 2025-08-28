@@ -4,7 +4,7 @@
 
 import { notFound } from "next/navigation";
 import { useEffect, useState, use } from "react"; // NEU: use importieren
-import { Calendar } from "lucide-react";
+import { Calendar, ArrowLeft, Download } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { EventType, EventStatus } from "../types";
@@ -54,7 +54,7 @@ export default function EventDetailPage({
           </p>
           <a
             href="/login"
-            className="inline-block px-6 py-3 bg-[rgb(228,25,31)] text-white rounded-lg font-semibold hover:bg-red-700 transition-colors"
+            className="inline-block px-6 py-3 bg-[#e60000] text-white rounded-lg font-semibold hover:bg-red-700 transition-colors"
           >
             Zum Login
           </a>
@@ -66,7 +66,7 @@ export default function EventDetailPage({
   if (loading) {
     return (
       <main className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[rgb(228,25,31)]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#e60000]"></div>
       </main>
     );
   }
@@ -109,29 +109,28 @@ export default function EventDetailPage({
         </div>
       )}
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-        <div className="bg-white rounded-xl shadow-sm">
+        <Link
+          href="/events"
+          className="cursor-pointer gap-2 inline-flex items-center px-4 py-2 rounded-xl bg-gray-100 text-gray-700 hover:bg-[rgb(228,25,31)] hover:text-white transition-colors font-semibold shadow text-sm"
+        >
+          <ArrowLeft className="w-4 h-4" /> <span>Zurück zu Events</span>
+        </Link>
+        <div className="bg-white rounded-xl shadow-sm p-6">
           {/* Zurück zu Events & Event exportieren */}
-          <div className="flex gap-7 mb-8">
-            <div className="w-1/2 flex items-center">
-              <Link
-                href="/events"
-                className="cursor-pointer gap-2 inline-flex items-center px-4 py-2 rounded-xl bg-gray-100 text-gray-700 hover:bg-[rgb(228,25,31)] hover:text-white transition-colors font-semibold shadow text-sm"
-              >
-                <ArrowLeft className="w-4 h-4" /> <span>Zurück zu Events</span>
-              </Link>
-            </div>
-            <div className="w-1/2 flex justify-end items-center">
+          <div className="flex flex-col gap-6 mb-8">
+            <div className="flex justify-end items-center">
               <button
                 type="button"
                 onClick={() => exportEventAsCSV(event)}
-                className="bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg hover:bg-yellow-500 font-semibold shadow flex items-center justify-center text-sm"
+                className="bg-white text-gray-900 cursor-pointer"
+                title="Event exportieren"
               >
-                Event exportieren
+                <Download className="w-6 h-6" />
               </button>
             </div>
             {/* Event-Titel, Bild, Infos */}
-            <div className="flex flex-col md:flex-row items-center mb-8 gap-8">
-              <h1 className="text-4xl font-extrabold mb-6 md:mb-0 md:w-1/2 text-[rgb(228,25,31)]">
+            <div className="flex flex-col md:flex-row items-start mb-6 gap-6">
+              <h1 className="text-2xl font-bold mb-6 text-gray-900">
                 {event.title}
                 {event.active && (
                   <span className="ml-3 px-3 py-1 bg-green-100 text-green-700 text-base rounded font-semibold align-middle">
@@ -140,7 +139,7 @@ export default function EventDetailPage({
                 )}
               </h1>
               <div className="mb-4">
-                <span className="px-2 py-1 bg-gray-100 text-gray-700 text-sm rounded font-semibold">
+                <span className="px-2 py-1 bg-gray-100 text-gray-700 text-sm rounded-lg font-semibold">
                   {event.user.email === session?.user?.email
                     ? event.status
                     : event.status === EventStatus.FULL ||
@@ -150,16 +149,16 @@ export default function EventDetailPage({
                 </span>
               </div>
               {event.imageUrl && (
-                <div className="md:w-1/2 w-full flex justify-center">
+                <div className="flex justify-end">
                   <img
-                    src={event.imageUrl}
-                    alt={event.title}
-                    className="rounded-xl h-40 w-40 object-cover shadow-lg border border-gray-200"
+                    src="{event.imageUrl}"
+                    alt="{event.title}"
+                    className="rounded-lg h-40 w-40 object-cover border border-gray-200 bg-linear-to-r from-gray-200 to-gray-300"
                   />
                 </div>
               )}
             </div>
-            <div className="w-full bg-gray-50 rounded-xl px-6 py-4 mb-6 shadow">
+            <div className="w-full bg-white hover:bg-gray-50 border border-gray-200 rounded-lg p-6 hover:shadow-md">
               <div className="font-semibold text-gray--700 mb-2">
                 Veranstalter: {event.ventType}
               </div>
@@ -206,51 +205,53 @@ export default function EventDetailPage({
               </div>
             )}
             <div className="mb-10">
-              <label className="block text-base font-semibold text-gray-600 mb-2">
-                Beschreibung
-              </label>
-              <div className="text-gray-800 text-lg leading-relaxed bg-gray-100 rounded-xl p-4">
+              <div className="text-gray-600 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg p-6 hover:shadow-md">
+                <label className="block text-base font-semibold text-gray-600 mb-2">
+                  Beschreibung
+                </label>
                 {event.description}
               </div>
             </div>
 
             {/* Ticket-Auswahl für alle Events */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Anzahl Tickets:
-              </label>
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setSpaces(Math.max(1, spaces - 1))}
-                  className="w-10 h-10 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center"
-                >
-                  −
-                </button>
-                <span className="w-20 text-center font-bold text-lg">
-                  {spaces}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setSpaces(Math.min(10, spaces + 1))}
-                  className="w-10 h-10 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center"
-                >
-                  +
-                </button>
+            <div className="flex flex-row items-end">
+              <div className="flex flex-col gap-2 grow">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Anzahl Tickets:
+                </label>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setSpaces(Math.max(1, spaces - 1))}
+                    className="w-10 h-10 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center"
+                  >
+                    −
+                  </button>
+                  <span className="w-10 text-center font-bold text-lg">
+                    {spaces}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setSpaces(Math.min(10, spaces + 1))}
+                    className="w-10 h-10 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center"
+                  >
+                    +
+                  </button>
+                </div>
               </div>
-            </div>
 
-            {/* Nur noch EIN Button für alle Events */}
-            <button
-              type="button"
-              className="bg-blue-600 text-white px-8 py-3 rounded-xl hover:bg-blue-700 transition-colors font-semibold w-full text-lg shadow-lg mt-4"
-              onClick={() => handleAddToCart(event.id, spaces)}
-            >
-              In den Warenkorb
-              {event.price > 0
-                ? ` (€${(event.price * spaces).toFixed(2)})`
-                : ""}
-            </button>
+              {/* Nur noch EIN Button für alle Events */}
+              <button
+                type="button"
+                className="bg-[#e60000] text-white px-4 py-2 rounded-xl hover:bg-red-700 transition-all font-medium"
+                onClick={() => handleAddToCart(event.id, spaces)}
+              >
+                In den Warenkorb
+                {event.price > 0
+                  ? ` (${(event.price * spaces).toFixed(2)} €)`
+                  : ""}
+              </button>
+            </div>
           </div>
         </div>
       </div>
