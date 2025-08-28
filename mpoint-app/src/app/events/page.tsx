@@ -432,7 +432,7 @@ export default function EventsPage() {
         {/* Kalender-Ansicht */}
         {viewMode === "calendar" && (
           <div className="mb-12">
-            <div className="bg-white rounded-xl shadow p-3 max-w-4xl mx-auto">
+            <div className="bg-white rounded-xl shadow-sm p-6 max-w-7xl mx-auto">
               {/* Kalender Header */}
               <div className="flex items-center justify-between mb-3">
                 <button
@@ -507,15 +507,15 @@ export default function EventsPage() {
             <div
               id="my-events-block-list"
               className="bg-white rounded-xl shadow-sm p-6 basis-1/2">
-              <div className="flex items-start justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <div className="flex items-start justify-between mb-4">
+                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
                   Meine erstellten Events
                 </h2>
                 <Calendar className="w-6 h-6 text-[#e60000]" />
               </div>
               <div className="space-y-4">
                 {myEvents.length === 0 ? (
-                  <div className="text-center text-gray-500">
+                  <div className="text-gray-600">
                     Du hast noch keine Events erstellt.
                   </div>
                 ) : (
@@ -528,7 +528,7 @@ export default function EventsPage() {
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
-                            <h2 className="text-xl font-bold mb-2">
+                            <h3 className="text-lg font-bold mb-2">
                               {event.title}
                               {event.user.email === session?.user?.email ? (
                                 <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-semibold">
@@ -540,7 +540,7 @@ export default function EventsPage() {
                                   {event.status}
                                 </span>
                               ) : null}
-                            </h2>
+                            </h3>
 
                             {/* NEU: Platz-Verfügbarkeit in Listen-Ansicht */}
                             <div className="mb-3">
@@ -599,15 +599,15 @@ export default function EventsPage() {
             )}
 
             <div className="bg-white rounded-xl shadow-sm p-6 basis-1/2">
-              <div className="flex items-start justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <div className="flex items-start justify-between mb-4">
+                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
                   Verfügbare Events
                 </h2>
                 <Calendar className="w-6 h-6 text-[#e60000]" />
               </div>
               <div className="space-y-4">
                 {availableEvents.length === 0 ? (
-                  <div className="text-center text-gray-500">
+                  <div className="text-gray-600">
                     Es gibt aktuell keine verfügbaren Events anderer Nutzer.
                   </div>
                 ) : (
@@ -620,7 +620,7 @@ export default function EventsPage() {
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
-                            <h2 className="text-xl font-bold mb-2">
+                            <h3 className="text-lg font-bold mb-2">
                               {event.title}
                               {event.user.email === session?.user?.email ? (
                                 <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-semibold">
@@ -632,7 +632,7 @@ export default function EventsPage() {
                                   {event.status}
                                 </span>
                               ) : null}
-                            </h2>
+                            </h3>
 
                             {/* NEU: Platz-Verfügbarkeit in Listen-Ansicht */}
                             <div className="mb-3">
@@ -702,15 +702,15 @@ export default function EventsPage() {
               id="my-events-block-grid"
               className="bg-white rounded-xl shadow-sm p-6 basis-1/2"
             >
-              <div className="flex items-start justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <div className="flex items-start justify-between mb-4">
+                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
                   Meine erstellten Events
                 </h2>
                 <Calendar className="w-6 h-6 text-[#e60000]" />
               </div>
               <div className="space-y-4">
                 {myEvents.length === 0 ? (
-                  <p className="text-center text-gray-500">
+                  <p className="text-gray-600">
                     Du hast noch keine Events erstellt.
                   </p>
                 ) : (
@@ -729,7 +729,7 @@ export default function EventsPage() {
                               className="mb-4 h-40 object-cover w-full rounded-t-lg"
                             />
                           )}
-                          <h2 className="text-xl font-bold mb-2 px-4">
+                          <h3 className="text-lg font-bold mb-2 px-4">
                             {event.title}
                             {event.user.email === session?.user?.email ? (
                               <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-semibold">
@@ -741,7 +741,7 @@ export default function EventsPage() {
                                 {event.status}
                               </span>
                             ) : null}
-                          </h2>
+                          </h3>
 
                           {/* NEU: Platz-Verfügbarkeit in Grid-Ansicht */}
                           <div className="mb-3 px-4">
@@ -813,24 +813,24 @@ export default function EventsPage() {
             <div
               id="available-events-block"
               className="bg-white rounded-xl shadow-sm p-6 basis-1/2">
-              <div className="flex items-start justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <div className="flex items-start justify-between mb-4">
+                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
                   Verfügbare Events
                 </h2>
                 <Calendar className="w-6 h-6 text-[#e60000]" />
               </div>
               {availableEvents.length === 0 ? (
-                <p className="text-center text-gray-500">
+                <p className="text-gray-600">
                   Es gibt aktuell keine verfügbaren Events anderer Nutzer.
                 </p>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {availableEvents.map((event) => {
                     const enrichedEvent = enrichEventWithBookingInfo(event);
                     return (
                       <div
                         key={event.id}
-                        className="bg-white rounded-xl shadow p-6 flex flex-col"
+                        className="flex flex-col bg-white rounded-lg border border-gray-200 hover:bg-gray-50 hover:shadow-md p-4 transition-all"
                       >
                         {event.imageUrl && (
                           <img
@@ -839,7 +839,7 @@ export default function EventsPage() {
                             className="rounded-lg mb-4 h-40 object-cover"
                           />
                         )}
-                        <h2 className="text-xl font-bold mb-2">
+                        <h3 className="text-lg font-bold mb-2">
                           {event.title}
                           {(event.status === EventStatus.FULL ||
                             event.status === EventStatus.CANCELLED) && (
@@ -847,7 +847,7 @@ export default function EventsPage() {
                               {event.status}
                             </span>
                           )}
-                        </h2>
+                        </h3>
 
                         {/* NEU: Platz-Verfügbarkeit für verfügbare Events */}
                         <div className="mb-3">
