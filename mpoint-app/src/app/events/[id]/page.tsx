@@ -105,177 +105,183 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 pt-20">
-      {/* ...vor <div className="max-w-3xl mx-auto ..."> */}
+    <>
+      <main className="min-h-screen bg-gray-50 pt-20">
+        {/* ...vor <div className="max-w-3xl mx-auto ..."> */}
 
-      {error && (
-        <div className="mb-6 px-4 py-3 rounded-lg bg-red-100 text-red-800 font-semibold text-center shadow">
-          {error}
-        </div>
-      )}
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-        {/* Event-Detail-Block: 2/3 */}
-        <div  
-          id="event-detail-block"
-          className="bg-white rounded-xl shadow-sm flex-1 basis-2/3"
-        >
-          {/* Zurück zu Events & Event exportieren */}
-          <div className="flex gap-7 mb-8">
-            <div className="w-1/2 flex items-center">
-              <Link
-                href="/events"
-                className="cursor-pointer gap-2 inline-flex items-center px-4 py-2 rounded-xl bg-gray-100 text-gray-700 hover:bg-[rgb(228,25,31)] hover:text-white transition-colors font-semibold shadow text-sm"
-              >
-                <ArrowLeft className="w-4 h-4" /> <span>Zurück zu Events</span>
-              </Link>
-            </div>
-            {/*
-            <div className="w-1/2 flex justify-end items-center">
-              <button
-                type="button"
-                onClick={() => exportEventAsCSV(event)}
-                className="bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg hover:bg-yellow-500 font-semibold shadow flex items-center justify-center text-sm"
-              >
-                Event exportieren
-              </button>
-            </div>
-            */}
-            </div>
-            {/* Event-Titel, Bild, Infos */}
-            <div className="flex flex-col md:flex-row items-start mb-6 gap-6">
-              <h1 className="text-2xl font-bold mb-6 text-gray-900">
-                {event.title}
-                {event.active && (
-                  <span className="ml-3 px-3 py-1 bg-green-100 text-green-700 text-base rounded font-semibold align-middle">
-                    Aktiv
-                  </span>
-                )}
-              </h1>
-              <div className="mb-4">
-                <span className="px-2 py-1 bg-gray-100 text-gray-700 text-sm rounded-lg font-semibold">
-                  {event.user.email === session?.user?.email
-                    ? event.status
-                    : (event.status === EventStatus.FULL ||
-                      event.status === EventStatus.CANCELLED)
-                    ? event.status
-                    : null}
-                </span>
-              </div>
-              {event.imageUrl && (
-                <div className="flex justify-end">
-                  <img
-                    src="{event.imageUrl}"
-                    alt="{event.title}"
-                    className="rounded-lg h-40 w-40 object-cover border border-gray-200 bg-linear-to-r from-gray-200 to-gray-300"
-                  />
-                </div>
-              )}
-            </div>
-            <div className="w-full bg-white hover:bg-gray-50 border border-gray-200 rounded-lg p-6 hover:shadow-md">
-              <div className="font-semibold text-gray--700 mb-2">
-                Veranstalter: {event.ventType}
-              </div>
-              <div className="text-gray-600 mb-2">
-                📅 {new Date(event.startDate).toLocaleString()}
-                {event.endDate && (
-                  <> – {new Date(event.endDate).toLocaleString()}</>
-                )}{" "}
-                – {event.location}
-              </div>
-              {!event.chargeFree && event.price > 0 && (
-                <div className="text-gray-700 mt-3 font-medium">
-                  Preis: <span className="font-semibold">{event.price} €</span>
-                </div>
-              )}
-              {event.chargeFree && (
-                <div className="text-green-700 mt-3 font-bold">
-                  ✓ Kostenfreies Event
-                </div>
-              )}
-            </div>
-            {event.calendarLinks && (
-              <div className="mb-6 flex items-center gap-4">
-                <span className="font-semibold">Zum Kalender hinzufügen:</span>
-                {event.calendarLinks.google && (
-                  <a
-                    href={event.calendarLinks.google}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-red-600"
-                  >
-                    <Calendar size={18} /> Google Kalender
-                  </a>
-                )}
-                {event.calendarLinks.ics && (
-                  <a
-                    href={event.calendarLinks.ics}
-                    download="event.ics"
-                    className="flex items-center gap-1 text-red-600"
-                  >
-                    <Calendar size={18} /> ICS herunterladen
-                  </a>
-                )}
-              </div>
-            )}
-            <div className="mb-10">
-              <div className="text-gray-600 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg p-6 hover:shadow-md">
-                <label className="block text-base font-semibold text-gray-600 mb-2">
-                  Beschreibung
-                </label>
-                {event.description}
-              </div>
-            </div>
-
-            {/* Ticket-Auswahl für alle Events */}
-            <div className="flex flex-row items-end">
-              <div className="flex flex-col gap-2 grow">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Anzahl Tickets:
-                </label>
-                <div className="flex items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setSpaces(Math.max(1, spaces - 1))}
-                    className="w-10 h-10 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center"
-                  >
-                    −
-                  </button>
-                  <span className="w-10 text-center font-bold text-lg">
-                    {spaces}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setSpaces(Math.min(10, spaces + 1))}
-                    className="w-10 h-10 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-
-            {/* Nur noch EIN Button für alle Events */}
-            <button
-              type="button"
-              className="bg-blue-600 text-white px-8 py-3 rounded-xl hover:bg-blue-700 transition-colors font-semibold w-full text-lg shadow-lg mt-4"
-              onClick={() => handleAddToCart(event.id, spaces)}
-            >
-              In den Warenkorb
-              {event.price > 0
-                ? ` (€${(event.price * spaces).toFixed(2)})`
-                : ""}
-            </button>
+        {error && (
+          <div className="mb-6 px-4 py-3 rounded-lg bg-red-100 text-red-800 font-semibold text-center shadow">
+            {error}
           </div>
-        </div>
-
-          {/* MiniCart: 1/3 */}
-          <div
-            id="mini-cart-block"
-            className="bg-white rounded-xl shadow-sm flex-1 basis-1/3 border border-gray-200"
+        )}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+          {/* Zurück zu Events */}
+          <Link
+            href="/events"
+            className="cursor-pointer gap-2 inline-flex items-center px-4 py-2 rounded-xl bg-gray-100 text-gray-700 hover:bg-red-700 hover:text-white transition-colors font-semibold shadow text-sm"
           >
-            <MiniCart message={success} />
+            <ArrowLeft className="w-4 h-4" /> <span>Zurück zu Events</span>
+          </Link>
+
+          <div className="flex flex-col md:flex-row gap-6">
+            {/* Event-Detail-Block: 2/3 */}
+            <div
+              id="event-detail-block"
+              className="bg-white rounded-xl shadow-sm p-6 flex-1 basis-2/3"
+            >
+              <div className="flex flex-col gap-6">
+                {/* Event exportieren */}
+                {/*
+                <div className="w-1/2 flex justify-end items-center">
+                  <button
+                    type="button"
+                    onClick={() => exportEventAsCSV(event)}
+                    className="bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg hover:bg-yellow-500 font-semibold shadow flex items-center justify-center text-sm"
+                    >
+                    Event exportieren
+                  </button>
+                </div>
+                */}
+                {/* Event-Titel, Bild, Infos */}
+                <div className="flex flex-col md:flex-row items-start mb-6 gap-6">
+                  <h1 className="text-2xl font-bold mb-6 text-gray-900">
+                    {event.title}
+                    {event.active && (
+                      <span className="ml-3 px-3 py-1 bg-green-100 text-green-700 text-base rounded font-semibold align-middle">
+                        Aktiv
+                      </span>
+                    )}
+                  </h1>
+                  <div className="mb-4">
+                    <span className="px-2 py-1 bg-gray-100 text-gray-700 text-sm rounded-lg font-semibold">
+                      {event.user.email === session?.user?.email
+                        ? event.status
+                        : event.status === EventStatus.FULL ||
+                          event.status === EventStatus.CANCELLED
+                        ? event.status
+                        : null}
+                    </span>
+                  </div>
+                  {event.imageUrl && (
+                    <div className="flex justify-end grow">
+                      <img
+                        src="{event.imageUrl}"
+                        alt="{event.title}"
+                        className="rounded-lg h-40 w-40 object-cover border border-gray-200 bg-linear-to-r from-gray-200 to-gray-300"
+                      />
+                    </div>
+                  )}
+                </div>
+                <div className="w-full bg-white hover:bg-gray-50 border border-gray-200 rounded-lg p-6 hover:shadow-md">
+                  <div className="font-semibold text-gray--700 mb-2">
+                    Veranstalter: {event.ventType}
+                  </div>
+                  <div className="text-gray-600 mb-2">
+                    📅 {new Date(event.startDate).toLocaleString()}
+                    {event.endDate && (
+                      <> – {new Date(event.endDate).toLocaleString()}</>
+                    )}{" "}
+                    – {event.location}
+                  </div>
+                  {!event.chargeFree && event.price > 0 && (
+                    <div className="text-gray-700 mt-3 font-medium">
+                      Preis:{" "}
+                      <span className="font-semibold">{event.price} €</span>
+                    </div>
+                  )}
+                  {event.chargeFree && (
+                    <div className="text-green-700 mt-3 font-bold">
+                      ✓ Kostenfreies Event
+                    </div>
+                  )}
+                </div>
+                {event.calendarLinks && (
+                  <div className="mb-6 flex items-center gap-4">
+                    <span className="font-semibold">
+                      Zum Kalender hinzufügen:
+                    </span>
+                    {event.calendarLinks.google && (
+                      <a
+                        href={event.calendarLinks.google}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 text-red-600"
+                      >
+                        <Calendar size={18} /> Google Kalender
+                      </a>
+                    )}
+                    {event.calendarLinks.ics && (
+                      <a
+                        href={event.calendarLinks.ics}
+                        download="event.ics"
+                        className="flex items-center gap-1 text-red-600"
+                      >
+                        <Calendar size={18} /> ICS herunterladen
+                      </a>
+                    )}
+                  </div>
+                )}
+                <div className="mb-10">
+                  <div className="text-gray-600 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg p-6 hover:shadow-md">
+                    <label className="block text-base font-semibold text-gray-600 mb-2">
+                      Beschreibung
+                    </label>
+                    {event.description}
+                  </div>
+                </div>
+
+                {/* Ticket-Auswahl für alle Events */}
+                <div className="flex flex-row items-end">
+                  <div className="flex flex-col gap-2 grow">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Anzahl Tickets:
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setSpaces(Math.max(1, spaces - 1))}
+                        className="w-10 h-10 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center"
+                      >
+                        −
+                      </button>
+                      <span className="w-10 text-center font-bold text-lg">
+                        {spaces}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setSpaces(Math.min(10, spaces + 1))}
+                        className="w-10 h-10 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Nur noch EIN Button für alle Events */}
+                  <button
+                    type="button"
+                    className="bg-[#e60000] text-white px-4 py-2 rounded-xl hover:bg-red-700 transition-all font-medium cursor-pointer"
+                    onClick={() => handleAddToCart(event.id, spaces)}
+                  >
+                    In den Warenkorb
+                    {event.price > 0
+                      ? ` (${(event.price * spaces).toFixed(2)} €)`
+                      : ""}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* MiniCart: 1/3 */}
+            <div
+              id="mini-cart-block"
+              className="bg-white rounded-xl shadow-sm flex-1 basis-1/3"
+            >
+              <MiniCart message={success} />
+            </div>
           </div>
         </div>
       </main>
-    
+    </>
   );
 }

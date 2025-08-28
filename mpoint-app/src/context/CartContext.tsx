@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Trash2 } from "lucide-react";
+import { Trash2, ShoppingCart } from "lucide-react";
 import Link from "next/link";
 
 type CartItem = { id: string; event?: any; spaces: number };
@@ -80,7 +80,7 @@ export function MiniCart({ message }: { message?: string }) {
   );
 
   return (
-    <div className="bg-white shadow-lg border p-6 rounded-md h-full">
+    <div className="bg-white p-6 rounded-xl h-full flex flex-col align-end justify-start">
       {/* Erfolgsmeldung beim Hinzufügen */}
       {message && (
         <div className="mb-2 px-3 py-2 rounded bg-green-100 text-green-800 font-semibold text-center shadow">
@@ -93,9 +93,12 @@ export function MiniCart({ message }: { message?: string }) {
           {removeMsg}
         </div>
       )}
-      <h2 className="text-lg font-bold mb-4">Warenkorb</h2>
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-xl font-bold text-gray-900">Warenkorb</h3>
+        <ShoppingCart className="h-6 w-6" />
+      </div>
       {items.length === 0 ? (
-        <div className="text-gray-500">Keine Artikel im Warenkorb.</div>
+        <div className="text-gray-500 mb-6">Keine Artikel im Warenkorb.</div>
       ) : (
         <>
           <ul className="mb-6 space-y-4">
@@ -116,7 +119,7 @@ export function MiniCart({ message }: { message?: string }) {
                     : "Kostenfrei"}
                 </span>
                 <button
-                  className="ml-4 bg-red-500 text-white px-2 py-1 rounded hover:bg-red-700 flex items-center justify-center"
+                  className="ml-4 bg-[#e60000] text-white px-2 py-1 rounded hover:bg-red-700 flex items-center justify-center cursor-pointer"
                   title="Entfernen"
                   onClick={async () => {
                     await handleRemoveCartItem(item.id);
@@ -134,7 +137,7 @@ export function MiniCart({ message }: { message?: string }) {
         </>
       )}
       <button
-        className="bg-[#e60000] text-white px-4 py-2 rounded-xl font-medium hover:bg-[#c01a1f] transition-colors w-full"
+        className="bg-[#e60000] text-xl text-white px-4 py-2 rounded-xl font-medium hover:bg-red-700 transition-all self-end cursor-pointer"
         onClick={() => router.push("/checkout")}
       >
         Zur Kasse
