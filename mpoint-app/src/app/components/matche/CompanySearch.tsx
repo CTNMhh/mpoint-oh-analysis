@@ -134,9 +134,9 @@ export default function CompanySearch() {
 
     return (
         <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-gray-900">Unternehmen</h2>
-                <Users className="w-5 h-5 text-[#e60000]" />
+                <Users className="w-6 h-6 text-[#e60000]" />
             </div>
             <div className="flex-1 flex items-center bg-white rounded-lg shadow-sm px-4 py-2">
                 <Search className="w-5 h-5 text-gray-400 mr-2" />
@@ -148,7 +148,7 @@ export default function CompanySearch() {
                     onChange={e => setQuery(e.target.value)}
                 />
             </div>
-            <div className="mt-6 text-center">
+            <div className="mt-4 text-center">
                 <Link
                     href="/Matches"
                     className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all"
@@ -167,8 +167,8 @@ export default function CompanySearch() {
             )}
             {!loading && !companies.length && query.length > 1 && (
                 <div className="text-center py-12">
-                    <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-500">Keine Unternehmen gefunden.</p>
+                    <Users className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                    <p className="text-gray-600">Keine Unternehmen gefunden.</p>
                 </div>
             )}
             <div className="space-y-4">

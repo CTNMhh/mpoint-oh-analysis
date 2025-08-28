@@ -661,8 +661,8 @@ function MarketplaceContent() {
               {totalPages > 1 && (
                 <div className="flex justify-center items-center gap-2 mt-4">
                   <button
-                    className={`inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-600 rounded-xl font-medium hover:text-gray-900 transition-all cursor-pointer ${
-                      currentPage === 1 ? "opacity-50 cursor-not-allowed" : ""
+                    className={`inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-600 rounded-xl font-medium hover:text-gray-900 transition-all ${
+                      currentPage === 1 ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
                     }`}
                     disabled={currentPage === 1}
                     onClick={() => handlePageChange(currentPage - 1)}
@@ -673,7 +673,7 @@ function MarketplaceContent() {
                   {[...Array(totalPages)].map((_, idx) => (
                     <button
                       key={idx + 1}
-                      className={`px-4 py-2 border rounded-xl font-medium hover:bg-[#e60000] transition-all cursor-pointer ${
+                      className={`px-4 py-2 border border-[#e60000] text-[#e60000] hover:text-white rounded-xl font-medium hover:bg-[#e60000] transition-all cursor-pointer ${
                         currentPage === idx + 1
                           ? "bg-[#e60000] text-white border-[#e60000]"
                           : "bg-white text-gray-600 border-gray-600"
@@ -684,10 +684,10 @@ function MarketplaceContent() {
                     </button>
                   ))}
                   <button
-                    className={`inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-600 font-medium hover:text-gray-900 transition-all cursor-pointer ${
+                    className={`inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-600 font-medium hover:text-gray-900 transition-all ${
                       currentPage === totalPages
                         ? "opacity-50 cursor-not-allowed"
-                        : ""
+                        : "cursor-pointer"
                     }`}
                     disabled={currentPage === totalPages}
                     onClick={() => handlePageChange(currentPage + 1)}

@@ -8,6 +8,7 @@ declare global {
 }
 import EditRequestModal from "./EditRequestModal";
 import MessageModal from "./MessageModal";
+import { Pencil, MessageCircleQuestionMark, X } from "lucide-react";
 
 // Typen und Hilfsfunktionen aus page.tsx
 export type PriceType = {
@@ -739,11 +740,9 @@ const MarketplaceUserCard: React.FC<Props> = ({ session, entries, userRequests, 
                       }
                     }}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3.5h6m-6 3.5h3.75M21 12c0 4.418-4.03 8-9 8a9.77 9.77 0 0 1-4.5-1.07L3 21l1.07-4.5A8.96 8.96 0 0 1 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8Z" />
-                    </svg>
+                    <MessageCircleQuestionMark className="w-5 h-5" />
                     {typeof projectRequestCounts[entry.id] === 'number' && projectRequestCounts[entry.id] > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[18px] text-center font-bold">
+                      <span className="absolute -top-2 -right-2 bg-[#e60000] text-white text-xs rounded-full px-1.5 py-0.5 min-w-[18px] text-center font-bold">
                         {projectRequestCounts[entry.id]}
                       </span>
                     )}
@@ -753,13 +752,15 @@ const MarketplaceUserCard: React.FC<Props> = ({ session, entries, userRequests, 
                     title="Projekt bearbeiten"
                     onClick={e => { e.preventDefault(); onEditProject ? onEditProject(entry) : (setEditProject(entry), setShowEditModal(true)); }}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5"><path d="M17.414 2.586a2 2 0 0 0-2.828 0l-9.5 9.5A2 2 0 0 0 4 13.5V16a1 1 0 0 0 1 1h2.5a2 2 0 0 0 1.414-.586l9.5-9.5a2 2 0 0 0 0-2.828l-2.5-2.5ZM15 4l2 2-9.5 9.5a1 1 0 0 1-.707.293H5v-1.293a1 1 0 0 1 .293-.707L15 4Z" /></svg>
+                    <Pencil className="w-4 h-4" />
                   </button>
                   <button
-                    className="text-red-500 hover:text-red-700 text-lg px-2 cursor-pointer"
+                    className="text-[#e60000] hover:text-[#c01a1f] text-lg px-2 cursor-pointer"
                     title="Projekt entfernen"
                     onClick={e => { e.preventDefault(); handleRemoveProject(entry.id); }}
-                  >×</button>
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
                 </div>
               </li>
             ))}
@@ -773,21 +774,23 @@ const MarketplaceUserCard: React.FC<Props> = ({ session, entries, userRequests, 
         ) : (
           <ul className="space-y-2">
             {requestedProjects.map(entry => (
-              <li key={entry.id} className="flex items-center justify-between gap-2">
+              <li key={entry.id} className="flex items-center justify-between gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 hover:shadow-md transition-all">
                 <a href={`/boerse/${entry.id}`} className="text-primary hover:underline font-medium">{entry.title}</a>
                 <div className="flex items-center gap-1">
                   <button
-                    className="text-gray-600 hover:text-blue-600 text-lg px-2"
+                    className="text-gray-600 hover:text-blue-600 text-lg px-2 cursor-pointer"
                     title="Anfrage bearbeiten"
                     onClick={e => { e.preventDefault(); handleEditRequest(entry); }}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5"><path d="M17.414 2.586a2 2 0 0 0-2.828 0l-9.5 9.5A2 2 0 0 0 4 13.5V16a1 1 0 0 0 1 1h2.5a2 2 0 0 0 1.414-.586l9.5-9.5a2 2 0 0 0 0-2.828l-2.5-2.5ZM15 4l2 2-9.5 9.5a1 1 0 0 1-.707.293H5v-1.293a1 1 0 0 1 .293-.707L15 4Z" /></svg>
+                    <Pencil className="w-4 h-4" />
                   </button>
                   <button
-                    className="text-red-500 hover:text-red-700 text-lg px-2"
+                    className="text-[#e60000] hover:text-[#c01a1f] text-lg px-2 cursor-pointer"
                     title="Anfrage entfernen"
                     onClick={e => { e.preventDefault(); handleRemoveRequest(entry.id); }}
-                  >×</button>
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
                 </div>
               </li>
             ))}
