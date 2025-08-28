@@ -4,55 +4,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]/route";
-
+import { createNotification } from "./../../../lib/notifications";
+import { NotificationType } from "@prisma/client";// <-- Pfad anpassen falls anders
 const prisma = new PrismaClient();
 
-// 🆕 NEU HINZUGEFÜGT: Helper function für Activity Logging
 
-// 🆕 NEU HINZUGEFÜGT: Helper function für Activity Logging
-async function logEventActivity(
-  userId: string,
-  action: string,
-  eventId?: string,
-  metadata?: any,
-  request?: NextRequest
-) {
-  try {
-    // Extrahiere technische Details aus Request
-    const userAgent = request?.headers.get('user-agent') || undefined;
-    const ipAddress = request?.headers.get('x-forwarded-for') ||
-                     request?.headers.get('x-real-ip') ||
-                     request?.ip ||
-                     undefined;
-
-    // Bestimme Device Type basierend auf User Agent
-    let deviceType = 'UNKNOWN';
-    if (userAgent) {
-      if (/Mobile|Android|iPhone|iPad/.test(userAgent)) {
-        deviceType = /iPad/.test(userAgent) ? 'TABLET' : 'MOBILE';
-      } else {
-        deviceType = 'DESKTOP';
-      }
-    }
-
-    await prisma.eventActivityLog.create({
-      data: {
-        userId,
-        eventId,
-        action: action as any, // EventActionType
-        description: `User ${action.toLowerCase().replace('_', ' ')}`,
-        ipAddress,
-        userAgent,
-        deviceType: deviceType as any,
-        metadata,
-        timestamp: new Date()
-      }
-    });
-  } catch (error) {
-    console.error('Fehler beim Loggen der Event Activity:', error);
-    // Logging-Fehler sollen die Hauptfunktion nicht unterbrechen
-  }
-}
 
 // GET: Alle Events abrufen (optional: nur eigene Events)
 export async function GET(request: NextRequest) {
@@ -88,18 +44,7 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    // 🆕 NEU HINZUGEFÜGT: Log Event List View
-    await logEventActivity(
-      user.id,
-      'EVENT_LIST_VIEWED',
-      undefined,
-      {
-        onlyMine,
-        eventsCount: events.length,
-        filters: Object.fromEntries(request.nextUrl.searchParams)
-      },
-      request
-    );
+
 
     return NextResponse.json(events);
   } catch (error) {
@@ -165,25 +110,21 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // Activity Logging
-    await logEventActivity(
-      user.id,
-      'EVENT_CREATED',
-      event.id,
-      {
-        eventTitle: event.title,
-        eventType: event.ventType,
-        price: event.price,
-        chargeFree: event.chargeFree,
-        status: event.status,
-        isActive: event.isActive,
-        maxParticipants: event.maxParticipants,
-        location: event.location,
-        startDate: event.startDate,
-        categories: event.categories
-      },
-      request
-    );
+
+
+    // Notification anlegen (Ersteller oder weitere Zielgruppe)
+    try {
+      await createNotification({
+        userId: user.id,
+        type: NotificationType.EVENT_CREATED, // Muss exakt so heißen
+        title: "Neues Event erstellt",
+        body: `Dein Event "${event.title}" wurde erfolgreich angelegt.`,
+        url: `/events/${event.id}`
+      });
+    } catch (e) {
+      console.error("Notification (EVENT_CREATED) fehlgeschlagen:", e);
+    }
+
 
     return NextResponse.json(event, { status: 201 });
   } catch (error: any) {
@@ -191,18 +132,7 @@ export async function POST(request: NextRequest) {
     console.error('Error code:', error.code);
     console.error('Error message:', error.message);
 
-    // Logging auch bei Fehler
-    await logEventActivity(
-      user.id,
-      'EVENT_CREATED',
-      undefined,
-      {
-        error: error.message,
-        errorCode: error.code,
-        eventData: body
-      },
-      request
-    );
+
 
     return NextResponse.json({
       error: "Fehler beim Erstellen des Events.",
@@ -272,36 +202,14 @@ export async function PUT(request: NextRequest) {
       }
     });
 
-    // Log Event Update
-    await logEventActivity(
-      user.id,
-      'EVENT_UPDATED',
-      eventId,
-      {
-        changedFields: Object.keys(body).filter(key => key !== 'id'),
-        oldTitle: existingEvent.title,
-        newTitle: updatedEvent.title,
-        oldPrice: existingEvent.price,
-        newPrice: updatedEvent.price
-      },
-      request
-    );
+
+
 
     return NextResponse.json(updatedEvent);
   } catch (error) {
     console.error('Fehler beim Aktualisieren des Events:', error);
 
-    // Log Failed Update
-    await logEventActivity(
-      user.id,
-      'EVENT_UPDATED',
-      eventId,
-      {
-        error: error.message,
-        attemptedChanges: Object.keys(body)
-      },
-      request
-    );
+
 
     return NextResponse.json({ error: "Fehler beim Aktualisieren des Events." }, { status: 500 });
   }
@@ -350,35 +258,12 @@ export async function DELETE(request: NextRequest) {
       where: { id: eventId }
     });
 
-    // Log Event Deletion
-    await logEventActivity(
-      user.id,
-      'EVENT_DELETED',
-      eventId,
-      {
-        deletedEventTitle: existingEvent.title,
-        hadBookings: existingEvent.bookings.length > 0,
-        bookingsCount: existingEvent.bookings.length,
-        eventType: existingEvent.ventType,
-        wasScheduledFor: existingEvent.startDate
-      },
-      request
-    );
+
 
     return NextResponse.json({ message: "Event erfolgreich gelöscht." });
   } catch (error) {
     console.error('Fehler beim Löschen des Events:', error);
 
-    // Log Failed Deletion
-    await logEventActivity(
-      user.id,
-      'EVENT_DELETED',
-      eventId,
-      {
-        error: error.message
-      },
-      request
-    );
 
     return NextResponse.json({ error: "Fehler beim Löschen des Events." }, { status: 500 });
   }

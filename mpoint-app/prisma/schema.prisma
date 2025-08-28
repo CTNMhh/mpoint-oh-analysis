@@ -699,6 +699,9 @@ enum NotificationType {
   MATCH_REQUEST
   MATCH_ACCEPTED
   SYSTEM
+  EVENT_CREATED
+  EVENT_UPDATED
+  EVENT_Booking_Confirmed
 }
 
 model Notification {
