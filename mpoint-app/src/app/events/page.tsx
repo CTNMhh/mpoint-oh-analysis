@@ -726,7 +726,7 @@ export default function EventsPage() {
                             <img
                               src={event.imageUrl}
                               alt={event.title}
-                              className="mb-4 h-40 object-cover w-full rounded-t-lg"
+                              className="mb-4 h-40 object-cover w-full rounded-t-lg bg-linear-to-r from-gray-200 to-gray-300"
                             />
                           )}
                           <h3 className="text-lg font-bold mb-2 px-4">
@@ -786,18 +786,18 @@ export default function EventsPage() {
                               </span>
                             ))}
                           </div>
-                          <div className="flex flex-col mt-8 space-y-2 px-4 pb-2 justify-center">
+                          <div className="flex flex-row flex-wrap mt-8 gap-2 px-4 pb-2 justify-end content-end grow">
                             <Link
                               href={`/events/${event.id}`}
-                              className="bg-[#e60000] hover:bg-red-700 text-white px-4 rounded-xl transition-all font-medium mb-2 py-4 w-full text-center"
+                              className="flex align-center bg-[#e60000] hover:bg-red-700 text-white px-4 rounded-xl transition-all font-medium mb-2 py-2 text-center"
                             >
                               Details & Anmeldung
                             </Link>
                             <Link
                               href={`/events/${event.id}/edit`}
-                              className="bg-sky-700 hover:bg-sky-500 text-white px-4 rounded-xl transition-all font-medium mb-2 py-4 w-full text-center"
+                              className="flex align-center bg-sky-700 hover:bg-sky-800 text-white px-4 rounded-xl transition-all font-medium mb-2 py-2 text-center"
                             >
-                              Event bearbeiten
+                              Bearbeiten
                             </Link>
                           </div>
                         </div>
@@ -836,7 +836,7 @@ export default function EventsPage() {
                           <img
                             src={event.imageUrl}
                             alt={event.title}
-                            className="rounded-lg mb-4 h-40 object-cover"
+                            className="rounded-t-lg -mt-4 -mx-4 mb-4 h-40 object-cover bg-linear-to-r from-gray-200 to-gray-300"
                           />
                         )}
                         <h3 className="text-lg font-bold mb-2">
