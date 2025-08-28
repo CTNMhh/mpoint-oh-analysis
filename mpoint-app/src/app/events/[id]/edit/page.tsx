@@ -190,7 +190,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br pt-40 from-gray-50 to-white py-12 px-4">
+    <main className="min-h-screen bg-gray-50 pt-20">
       <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-2xl p-8">
         <Link
           href={`/events`}

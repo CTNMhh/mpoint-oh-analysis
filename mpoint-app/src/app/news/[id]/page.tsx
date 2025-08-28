@@ -59,7 +59,7 @@ export default function NewsDetailPage() {
               className="w-full h-64 object-cover rounded-t-xl"
             />
           )}
-          <div className="p-8 pt-6">
+          <div className="p-6">
             <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-2 leading-tight">
               {news.title}
             </h1>
