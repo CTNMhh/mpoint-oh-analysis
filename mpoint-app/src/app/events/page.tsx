@@ -809,7 +809,7 @@ export default function EventsPage() {
                             </Link>
                             <Link
                               href={`/events/${event.id}/edit`}
-                              className="flex align-center bg-sky-700 hover:bg-sky-800 text-white px-4 rounded-xl transition-all font-medium mb-2 py-2 text-center"
+                              className="flex align-center bg-[#e60000] hover:bg-red-700 text-white px-4 rounded-xl transition-all font-medium mb-2 py-2 text-center"
                             >
                               Bearbeiten
                             </Link>
