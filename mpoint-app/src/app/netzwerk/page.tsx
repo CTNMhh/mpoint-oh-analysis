@@ -23,6 +23,8 @@ import {
   Activity
 } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { GroupProvider, useGroups, GroupList } from "@/context/GroupContext";
+import Link from "next/link";
 
 export default function NetzwerkPage() {
   const [activeTab, setActiveTab] = useState<
@@ -52,243 +54,259 @@ export default function NetzwerkPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 pt-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-6 space-y-6">
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3 mb-4">
-            <Network className="w-8 h-8 text-[#e60000]" />
-            Netzwerk
-          </h1>
-          <p className="text-gray-600">
-            Hier finden Sie alle Informationen zu Ihren Kontakten, Gruppen und
-            Aktivitäten.
-          </p>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 gap-6 pb-8 flex flex-col lg:flex-row">
-        {/* Left Sidebar */}
-        <aside className="w-full lg:w-72 flex-shrink-0 space-y-6">
-          <div className="bg-white/80 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-6 border border-white/50">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-gray-900">
-                Ihr Netzwerk
-              </h2>
-              <Network className="w-6 h-6 text-[#e60000]" />
-            </div>
-
-            <div className="space-y-3">
-              <SidebarStat
-                label="M-POINT Kontakte"
-                icon={<Users className="w-5 h-5 text-[#e60000]" />}
-                count={256}
-              />
-              <SidebarStat
-                label="Folgen & Follower"
-                icon={<UserPlus className="w-5 h-5 text-purple-500" />}
-                count={142}
-              />
-              <SidebarStat
-                label="Gruppen"
-                icon={<Hash className="w-5 h-5 text-blue-500" />}
-                count={12}
-              />
-              <SidebarStat
-                label="Events"
-                icon={<Calendar className="w-5 h-5 text-green-500" />}
-                count={8}
-              />
-              <SidebarStat
-                label="Unternehmen"
-                icon={<Building2 className="w-5 h-5 text-orange-500" />}
-                count={15}
-              />
-            </div>
+    <GroupProvider>
+      <main className="min-h-screen bg-gray-50 pt-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-6 space-y-6">
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3 mb-4">
+              <Network className="w-8 h-8 text-[#e60000]" />
+              Netzwerk
+            </h1>
+            <p className="text-gray-600">
+              Hier finden Sie alle Informationen zu Ihren Kontakten, Gruppen und
+              Aktivitäten.
+            </p>
           </div>
-
-          <div className="bg-white/80 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-6 border border-white/50">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-gray-900">
-                Smart Filter
-              </h2>
-              <Funnel className="w-6 h-6 text-[#e60000]" />
-            </div>
-            <div className="space-y-4">
-              <label className="flex items-center gap-3 cursor-pointer group">
-                <input
-                  type="checkbox"
-                  checked
-                  readOnly
-                  className="w-5 h-5 text-[#e60000] rounded-md focus:ring-[#e60000] cursor-pointer"
-                />
-                <span className="text-gray-700 group-hover:text-gray-900 transition-colors">
-                  Branche: IT & Tech
-                </span>
-              </label>
-              <label className="flex items-center gap-3 cursor-pointer group">
-                <input
-                  type="checkbox"
-                  checked
-                  readOnly
-                  className="w-5 h-5 text-[#e60000] rounded-md focus:ring-[#e60000] cursor-pointer"
-                />
-                <span className="text-gray-700 group-hover:text-gray-900 transition-colors">
-                  Region: NRW
-                </span>
-              </label>
-              <label className="flex items-center gap-3 cursor-pointer group">
-                <input
-                  type="checkbox"
-                  className="w-5 h-5 text-[#e60000] rounded-md focus:ring-[#e60000] cursor-pointer"
-                />
-                <span className="text-gray-700 group-hover:text-gray-900 transition-colors">
-                  Premium-Mitglieder
-                </span>
-              </label>
-            </div>
-          </div>
-        </aside>
-
-        {/* Center Content */}
-        <div className="flex-1 min-w-0">
-          {/* Modern Search Bar */}
-          <div className="flex flex-col md:flex-row mb-6">
-            <div className="flex-1 flex items-center bg-white rounded-lg shadow-sm px-4 py-2">
-              <Search className="w-5 h-5 text-gray-400 mr-2" />
-              <input
-                type="text"
-                className="flex-1 outline-none bg-transparent text-gray-900"
-                placeholder="Nach Kontakten, Unternehmen oder Themen suchen..."
-              />
-            </div>
-          </div>
-
-          {/* Modern Tab Navigation */}
-          <nav className="flex gap-2 mb-6 overflow-x-auto pb-2">
-            <TabButton
-              active={activeTab === "invitations"}
-              onClick={() => setActiveTab("invitations")}
-            >
-              <UserPlus className="w-4 h-4" />
-              Einladungen
-              <span className="ml-2 bg-[#e60000] text-white text-xs rounded-full px-2 py-0.5 font-bold">
-                15
-              </span>
-            </TabButton>
-            <TabButton
-              active={activeTab === "messages"}
-              onClick={() => setActiveTab("messages")}
-            >
-              <MessageSquare className="w-4 h-4" />
-              Nachrichten
-              <span className="ml-2 bg-[#e60000] text-white text-xs rounded-full px-2 py-0.5 font-bold">
-                3
-              </span>
-            </TabButton>
-            <TabButton
-              active={activeTab === "connections"}
-              onClick={() => setActiveTab("connections")}
-            >
-              <Link2 className="w-4 h-4" />
-              Verbindungen
-            </TabButton>
-            <TabButton
-              active={activeTab === "groups"}
-              onClick={() => setActiveTab("groups")}
-            >
-              <Hash className="w-4 h-4" />
-              Gruppen
-            </TabButton>
-          </nav>
-
-          {/* Tab Content */}
-          {activeTab === "invitations" && <InvitationsSection />}
-          {activeTab === "messages" && <MessagesSection />}
-          {activeTab === "connections" && (
-            <div className="bg-white/80 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-8 text-center border border-white/50">
-              <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500">
-                Verbindungen-Ansicht: Zeigt alle Ihre M-POINT Kontakte.
-              </p>
-            </div>
-          )}
-          {activeTab === "groups" && (
-            <div className="bg-white/80 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-8 text-center border border-white/50">
-              <Hash className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500">
-                Gruppen-Ansicht: Zeigt Ihre Branchengruppen und
-                Interessensgemeinschaften.
-              </p>
-            </div>
-          )}
         </div>
 
-        {/* Right Sidebar */}
-        <aside className="w-full lg:w-80 flex-shrink-0 space-y-6">
-          <div className="bg-white/90 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="font-bold text-lg text-gray-900">AI-Matches</h2>
-              <Sparkles className="w-6 h-6 text-[#e60000]" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 gap-6 pb-8 flex flex-col lg:flex-row">
+          {/* Left Sidebar */}
+          <aside className="w-full lg:w-72 flex-shrink-0 space-y-6">
+            <div className="bg-white/80 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-6 border border-white/50">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Ihr Netzwerk
+                </h2>
+                <Network className="w-6 h-6 text-[#e60000]" />
+              </div>
+
+              <div className="space-y-3">
+                <SidebarStat
+                  label="M-POINT Kontakte"
+                  icon={<Users className="w-5 h-5 text-[#e60000]" />}
+                  count={256}
+                />
+                <SidebarStat
+                  label="Folgen & Follower"
+                  icon={<UserPlus className="w-5 h-5 text-purple-500" />}
+                  count={142}
+                />
+                <SidebarStat
+                  label="Gruppen"
+                  icon={<Hash className="w-5 h-5 text-blue-500" />}
+                  count={12}
+                />
+                <SidebarStat
+                  label="Events"
+                  icon={<Calendar className="w-5 h-5 text-green-500" />}
+                  count={8}
+                />
+                <SidebarStat
+                  label="Unternehmen"
+                  icon={<Building2 className="w-5 h-5 text-orange-500" />}
+                  count={15}
+                />
+              </div>
             </div>
-            <div className="space-y-4">
-              <SuggestionItem
-                name="Dr. Lisa Chen"
-                title="CEO • AI Solutions GmbH"
-                match={95}
-              />
-              <SuggestionItem
-                name="Thomas Berg"
-                title="CTO • TechStart Berlin"
-                match={88}
-              />
-              <SuggestionItem
-                name="Julia Hoffmann"
-                title="Investor • NRW Ventures"
-                match={82}
-              />
+
+            <div className="bg-white/80 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-6 border border-white/50">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Smart Filter
+                </h2>
+                <Funnel className="w-6 h-6 text-[#e60000]" />
+              </div>
+              <div className="space-y-4">
+                <label className="flex items-center gap-3 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked
+                    readOnly
+                    className="w-5 h-5 text-[#e60000] rounded-md focus:ring-[#e60000] cursor-pointer"
+                  />
+                  <span className="text-gray-700 group-hover:text-gray-900 transition-colors">
+                    Branche: IT & Tech
+                  </span>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked
+                    readOnly
+                    className="w-5 h-5 text-[#e60000] rounded-md focus:ring-[#e60000] cursor-pointer"
+                  />
+                  <span className="text-gray-700 group-hover:text-gray-900 transition-colors">
+                    Region: NRW
+                  </span>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    className="w-5 h-5 text-[#e60000] rounded-md focus:ring-[#e60000] cursor-pointer"
+                  />
+                  <span className="text-gray-700 group-hover:text-gray-900 transition-colors">
+                    Premium-Mitglieder
+                  </span>
+                </label>
+              </div>
             </div>
-            <div className="text-center mt-6">
-              <a
-                href="#"
-                className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all"
+          </aside>
+
+          {/* Center Content */}
+          <div className="flex-1 min-w-0">
+            {/* Modern Search Bar */}
+            <div className="flex flex-col md:flex-row mb-6">
+              <div className="flex-1 flex items-center bg-white rounded-lg shadow-sm px-4 py-2">
+                <Search className="w-5 h-5 text-gray-400 mr-2" />
+                <input
+                  type="text"
+                  className="flex-1 outline-none bg-transparent text-gray-900"
+                  placeholder="Nach Kontakten, Unternehmen oder Themen suchen..."
+                />
+              </div>
+            </div>
+
+            {/* Modern Tab Navigation */}
+            <nav className="flex gap-2 mb-6 overflow-x-auto pb-2">
+              <TabButton
+                active={activeTab === "invitations"}
+                onClick={() => setActiveTab("invitations")}
               >
-                Alle Matches <ArrowRight className="w-4 h-4" />
-              </a>
-            </div>
+                <UserPlus className="w-4 h-4" />
+                Einladungen
+                <span className="ml-2 bg-[#e60000] text-white text-xs rounded-full px-2 py-0.5 font-bold">
+                  15
+                </span>
+              </TabButton>
+              <TabButton
+                active={activeTab === "messages"}
+                onClick={() => setActiveTab("messages")}
+              >
+                <MessageSquare className="w-4 h-4" />
+                Nachrichten
+                <span className="ml-2 bg-[#e60000] text-white text-xs rounded-full px-2 py-0.5 font-bold">
+                  3
+                </span>
+              </TabButton>
+              <TabButton
+                active={activeTab === "connections"}
+                onClick={() => setActiveTab("connections")}
+              >
+                <Link2 className="w-4 h-4" />
+                Verbindungen
+              </TabButton>
+              <TabButton
+                active={activeTab === "groups"}
+                onClick={() => setActiveTab("groups")}
+              >
+                <Hash className="w-4 h-4" />
+                Gruppen
+              </TabButton>
+            </nav>
+
+            {/* Tab Content */}
+            {activeTab === "invitations" && <InvitationsSection />}
+            {activeTab === "messages" && <MessagesSection />}
+            {activeTab === "connections" && (
+              <div className="bg-white/80 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-8 text-center border border-white/50">
+                <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500">
+                  Verbindungen-Ansicht: Zeigt alle Ihre M-POINT Kontakte.
+                </p>
+              </div>
+            )}
+            {activeTab === "groups" && (
+              <div
+                id="groups-content"
+                className="bg-white/80 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-8 border border-white/50"
+              >
+                <Hash className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+
+                {/* Gruppen aus Context */}
+                <GroupList session={session} />
+
+                {/* Button für ENTERPRISE-User */}
+                {session?.user?.role === "ENTERPRISE" && (
+                  <div className="mt-8 text-center">
+                    <Link
+                      href="/gruppen-verwalten"
+                      className="inline-block px-6 py-3 bg-[#e60000] text-white rounded-lg font-semibold hover:bg-red-700 transition-colors"
+                    >
+                      Gruppen verwalten
+                    </Link>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
-          <div className="bg-white/90 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-gray-900">
-                Ihre Performance
-              </h2>
-              <Activity className="w-6 h-6 text-[#e60000]" />
+          {/* Right Sidebar */}
+          <aside className="w-full lg:w-80 flex-shrink-0 space-y-6">
+            <div className="bg-white/90 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="font-bold text-lg text-gray-900">AI-Matches</h2>
+                <Sparkles className="w-6 h-6 text-[#e60000]" />
+              </div>
+              <div className="space-y-4">
+                <SuggestionItem
+                  name="Dr. Lisa Chen"
+                  title="CEO • AI Solutions GmbH"
+                  match={95}
+                />
+                <SuggestionItem
+                  name="Thomas Berg"
+                  title="CTO • TechStart Berlin"
+                  match={88}
+                />
+                <SuggestionItem
+                  name="Julia Hoffmann"
+                  title="Investor • NRW Ventures"
+                  match={82}
+                />
+              </div>
+              <div className="text-center mt-6">
+                <a
+                  href="#"
+                  className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all"
+                >
+                  Alle Matches <ArrowRight className="w-4 h-4" />
+                </a>
+              </div>
             </div>
-            <div className="space-y-4">
-              <QuickStat
-                icon={<Eye className="w-5 h-5" />}
-                label="Profilaufrufe"
-                value={47}
-                trend="+12%"
-              />
-              <QuickStat
-                icon={<Star className="w-5 h-5" />}
-                label="Neue Matches"
-                value={12}
-                trend="+5%"
-                highlight
-              />
-              <QuickStat
-                icon={<TrendingUp className="w-5 h-5" />}
-                label="Engagement Rate"
-                value="89%"
-                trend="+3%"
-              />
+
+            <div className="bg-white/90 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Ihre Performance
+                </h2>
+                <Activity className="w-6 h-6 text-[#e60000]" />
+              </div>
+              <div className="space-y-4">
+                <QuickStat
+                  icon={<Eye className="w-5 h-5" />}
+                  label="Profilaufrufe"
+                  value={47}
+                  trend="+12%"
+                />
+                <QuickStat
+                  icon={<Star className="w-5 h-5" />}
+                  label="Neue Matches"
+                  value={12}
+                  trend="+5%"
+                  highlight
+                />
+                <QuickStat
+                  icon={<TrendingUp className="w-5 h-5" />}
+                  label="Engagement Rate"
+                  value="89%"
+                  trend="+3%"
+                />
+              </div>
             </div>
-          </div>
-        </aside>
-      </div>
-    </main>
+          </aside>
+        </div>
+      </main>
+    </GroupProvider>
   );
 }
 
