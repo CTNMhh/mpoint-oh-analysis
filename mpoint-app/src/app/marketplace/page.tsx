@@ -19,7 +19,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 
 import MarketplaceUserCard from "../components/marketplace/MarketplaceUserCard";
-import EditProjectModal from "../components/marketplace/EditProjectModal";
 // --- Preis-Objekt zu String Funktion für Vorschau und Anzeige ---
 export type PriceType = {
   from?: number;
@@ -155,9 +154,7 @@ async function getUserNameById(userId: string): Promise<string> {
 }
 
 function MarketplaceContent() {
-  // State für Projekt-Bearbeiten-Modal
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [editProject, setEditProject] = useState<any>(null);
+  // Keine Projekt-Modal mehr – Edit/Create sind eigene Seiten
   // --- Eigene Projekte und angefragte Projekte ---
   const [myProjects, setMyProjects] = useState<any[]>([]);
   const [requestedProjects, setRequestedProjects] = useState<any[]>([]);
@@ -189,14 +186,12 @@ function MarketplaceContent() {
   }, [myProjects]);
 
   const { data: session, status } = useSession();
-  const [showModal, setShowModal] = useState(false);
-  // Modal für Anfrage/Bearbeiten pro Eintrag
-  const [showRequestModal, setShowRequestModal] = useState(false);
-  const [requestMessage, setRequestMessage] = useState("");
+  // Inline Chat-Inputs pro Eintrag (anstelle Modal)
+  const [openChatEntryId, setOpenChatEntryId] = useState<string | null>(null);
+  const [draftMessages, setDraftMessages] = useState<Record<string, string>>({});
   const [requestLoading, setRequestLoading] = useState(false);
   const [requestSuccess, setRequestSuccess] = useState<string | null>(null);
   const [requestError, setRequestError] = useState<string | null>(null);
-  const [activeEntry, setActiveEntry] = useState<any>(null);
   const [userRequests, setUserRequests] = useState<Record<string, any>>({});
   const [deleteLoading, setDeleteLoading] = useState(false);
   const router = useRouter();
@@ -239,18 +234,12 @@ function MarketplaceContent() {
           const { email, ...rest } = entry;
           return rest;
         });
-        const enrichedData = await Promise.all(
-          cleaned.map(async (entry: any) => {
-            const userName = await getUserNameById(entry.userId);
-            return { ...entry, userName };
-          })
-        );
-        setEntries(enrichedData);
+        setEntries(cleaned);
         // Hole alle User-Requests für die Einträge
         if (session?.user?.id) {
           const requests: Record<string, any> = {};
           await Promise.all(
-            enrichedData.map(async (entry: any) => {
+            cleaned.map(async (entry: any) => {
               try {
                 const resReq = await fetch(
                   `/api/marketplace/request?projectId=${entry.id}`
@@ -321,47 +310,49 @@ function MarketplaceContent() {
     setSearchValue(e.target.value);
   };
 
-  // Anfrage-Modal Handler
-  const openRequestModal = (entry: any) => {
-    setActiveEntry(entry);
-    setRequestMessage(userRequests[entry.id]?.message || "");
+  // Inline-Chat öffnen
+  const openInlineChat = (entry: any) => {
+    setOpenChatEntryId((prev) => (prev === entry.id ? null : entry.id));
     setRequestError(null);
     setRequestSuccess(null);
-    setShowRequestModal(true);
+    setDraftMessages((prev) => ({
+      ...prev,
+      [entry.id]: prev[entry.id] ?? userRequests[entry.id]?.message ?? "",
+    }));
   };
 
-  async function handleRequestSubmit() {
-    if (!activeEntry) return;
+  async function handleRequestSubmit(entryId: string) {
+    if (!entryId) return;
     setRequestLoading(true);
     setRequestError(null);
     setRequestSuccess(null);
     try {
-      const method = userRequests[activeEntry.id] ? "PATCH" : "POST";
+      const method = userRequests[entryId] ? "PATCH" : "POST";
       const res = await fetch("/api/marketplace/request", {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          projectId: activeEntry.id,
-          message: requestMessage,
+          projectId: entryId,
+          message: draftMessages[entryId]?.trim() || "",
         }),
       });
       if (res.ok) {
         setRequestSuccess(
-          userRequests[activeEntry.id]
+          userRequests[entryId]
             ? "Anfrage erfolgreich bearbeitet!"
             : "Anfrage erfolgreich gesendet!"
         );
-        setShowRequestModal(false);
-        setRequestMessage("");
+        setOpenChatEntryId(null);
         // Reload userRequest for this entry
         const reqRes = await fetch(
-          `/api/marketplace/request?projectId=${activeEntry.id}`
+          `/api/marketplace/request?projectId=${entryId}`
         );
         const reqData = await reqRes.json();
         setUserRequests((prev) => ({
           ...prev,
-          [activeEntry.id]: reqData.request,
+          [entryId]: reqData.request,
         }));
+        setDraftMessages((prev) => ({ ...prev, [entryId]: "" }));
       } else {
         const data = await res.json();
         setRequestError(data.error || "Fehler beim Senden der Anfrage.");
@@ -373,22 +364,21 @@ function MarketplaceContent() {
     }
   }
 
-  async function handleDeleteRequest() {
-    if (!activeEntry) return;
+  async function handleDeleteRequest(entryId: string) {
+    if (!entryId) return;
     setDeleteLoading(true);
     setRequestError(null);
     try {
       const res = await fetch("/api/marketplace/request", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ projectId: activeEntry.id }),
+        body: JSON.stringify({ projectId: entryId }),
       });
       if (res.ok) {
-        setShowRequestModal(false);
-        setRequestMessage("");
+        setOpenChatEntryId(null);
         setUserRequests((prev) => {
           const copy = { ...prev };
-          delete copy[activeEntry.id];
+          delete copy[entryId];
           return copy;
         });
       } else {
@@ -431,7 +421,7 @@ function MarketplaceContent() {
             </div>
             {/* Project Bar */}
 
-          {/* Meine Projekte & Angefragte Projekte als Komponente */}
+          {/* Meine Projekte & Angefragte Projekte */}
           {session?.user?.id && (
             <>
               <MarketplaceUserCard
@@ -440,49 +430,7 @@ function MarketplaceContent() {
                 userRequests={userRequests}
                 setEntries={setEntries}
                 setUserRequests={setUserRequests}
-                onEditProject={(entry) => {
-                  setEditProject(entry);
-                  setShowEditModal(true);
-                }}
               />
-              {showEditModal && editProject && (
-                <EditProjectModal
-                  project={editProject}
-                  onClose={() => setShowEditModal(false)}
-                  onSubmit={async (formData) => {
-                    // Patch-Request analog zum bisherigen Modal
-                    try {
-                      const res = await fetch(
-                        `/api/marketplace/${editProject.id}`,
-                        {
-                          method: "PATCH",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify(formData),
-                        }
-                      );
-                      if (res.ok) {
-                        setShowEditModal(false);
-                        // Aktualisiere die Einträge
-                        const entriesRes = await fetch("/api/marketplace");
-                        const data = await entriesRes.json();
-                        const enrichedData = await Promise.all(
-                          data.map(async (entry: any) => {
-                            const userName = await getUserNameById(
-                              entry.userId
-                            );
-                            return { ...entry, userName };
-                          })
-                        );
-                        setEntries(enrichedData);
-                      } else {
-                        alert("Fehler beim Bearbeiten des Eintrags.");
-                      }
-                    } catch (err) {
-                      alert("Fehler beim Bearbeiten des Eintrags.");
-                    }
-                  }}
-                />
-              )}
             </>
           )}
           <div className="bg-white p-5 rounded-lg shadow-sm mb-8">
@@ -567,13 +515,13 @@ function MarketplaceContent() {
               id="resultsGrid"
             >
               {paginatedEntries.map((entry) => {
-                const userRequest = userRequests[entry.id];
+        const userRequest = userRequests[entry.id];
                 const requestButton = userRequest ? (
                   <button
                     className="px-4 py-2 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 hover:shadow transition-colors cursor-pointer"
                     onClick={(e) => {
                       e.stopPropagation();
-                      openRequestModal(entry);
+          openInlineChat(entry);
                     }}
                   >
                     Bearbeiten
@@ -583,7 +531,7 @@ function MarketplaceContent() {
                     className="px-4 py-2 bg-[#e60000] text-white rounded-xl font-medium hover:bg-[#c01a1f] hover:shadow transition-colors cursor-pointer"
                     onClick={(e) => {
                       e.stopPropagation();
-                      openRequestModal(entry);
+          openInlineChat(entry);
                     }}
                   >
                     Anfragen
@@ -606,7 +554,7 @@ function MarketplaceContent() {
                     key={entry.id}
                     className="result-card bg-white rounded-lg cursor-pointer overflow-hidden flex flex-col h-full border border-gray-200 hover:bg-gray-50 hover:shadow-md transition-all"
                     onClick={(e) => {
-                      if ((e.target as HTMLElement).closest("button")) return;
+                      if ((e.target as HTMLElement).closest("button,textarea,input,label,a,select")) return;
                       router.push(`/boerse/${entry.id}`);
                     }}
                   >
@@ -636,7 +584,11 @@ function MarketplaceContent() {
                       </p>
                       <div className="flex justify-between items-center text-xs text-gray-600 mt-auto">
                         <div className="flex items-center gap-2">
-                          <span>{entry.userName}</span>
+                          <span>
+                            {entry.anonym
+                              ? ""
+                              : `${entry.company?.name || entry.user?.company?.[0]?.name || `${entry.user?.firstName ?? ""} ${entry.user?.lastName ?? ""}`.trim()}`}
+                          </span>
                         </div>
                         <span>
                           {timeAgo(new Date(entry.createdAt).getTime())}
@@ -652,6 +604,70 @@ function MarketplaceContent() {
                         {requestButton}
                       </div>
                     </div>
+                    {/* Inline Chat Input */}
+                    {openChatEntryId === entry.id && (
+                      <div className="p-4 border-t border-gray-200 bg-white">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          {userRequest ? "Anfrage bearbeiten" : "Nachricht an den Anbieter"}
+                        </label>
+                        <textarea
+                          className="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                          rows={4}
+                          placeholder="Ihre Nachricht..."
+                          value={draftMessages[entry.id] ?? ""}
+                          onChange={(e) =>
+                            setDraftMessages((prev) => ({ ...prev, [entry.id]: e.target.value }))
+                          }
+                          disabled={requestLoading || deleteLoading}
+                        />
+                        {requestError && (
+                          <div className="text-red-600 text-sm mt-2">{requestError}</div>
+                        )}
+                        {requestSuccess && (
+                          <div className="text-green-600 text-sm mt-2">{requestSuccess}</div>
+                        )}
+                        <div className="flex justify-end gap-2 mt-3">
+                          {userRequest && (
+                            <button
+                              className="px-4 py-2 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 cursor-pointer"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteRequest(entry.id);
+                              }}
+                              disabled={deleteLoading || requestLoading}
+                            >
+                              Löschen
+                            </button>
+                          )}
+                          <button
+                            className="px-4 py-2 rounded-xl border border-[#e31e24] bg-white text-[#e31e24] hover:bg-[#e31e24] hover:text-white transition-colors cursor-pointer"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenChatEntryId(null);
+                            }}
+                            disabled={requestLoading || deleteLoading}
+                          >
+                            Abbrechen
+                          </button>
+                          <button
+                            className={`px-4 py-2 rounded-xl text-white font-medium cursor-pointer ${
+                              userRequest ? "bg-red-600 hover:bg-red-700" : "bg-[#e60000] hover:bg-[#c01a1f]"
+                            }`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRequestSubmit(entry.id);
+                            }}
+                            disabled={
+                              requestLoading ||
+                              deleteLoading ||
+                              !(draftMessages[entry.id] ?? "").trim()
+                            }
+                          >
+                            {userRequest ? "Speichern" : "Senden"}
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -701,67 +717,7 @@ function MarketplaceContent() {
           </div>
         </div>
       )}
-      {/* Anfrage Modal für Listenansicht */}
-      {showRequestModal && activeEntry && (
-        <div className="relative min-h-screen bg-gray-50 pt-20">
-          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-            <div className="bg-white rounded-xl shadow-xl p-8 max-w-lg w-full">
-              <h2 className="text-lg font-bold mb-4">
-                {userRequests[activeEntry.id]
-                  ? "Anfrage bearbeiten"
-                  : "Projekt anfragen"}
-              </h2>
-              <textarea
-                className="w-full border rounded p-2 mb-4"
-                rows={4}
-                placeholder="Ihre Nachricht an den Anbieter..."
-                value={requestMessage}
-                onChange={(e) => setRequestMessage(e.target.value)}
-                disabled={requestLoading || deleteLoading}
-              />
-              {requestError && (
-                <div className="text-red-600 mb-2">{requestError}</div>
-              )}
-              {requestSuccess && (
-                <div className="text-green-600 mb-2">{requestSuccess}</div>
-              )}
-              <div className="flex gap-3 justify-end">
-                {userRequests[activeEntry.id] && (
-                  <button
-                    className="px-5 py-2 rounded bg-gray-100 text-gray-700 hover:bg-gray-200 cursor-pointer"
-                    onClick={handleDeleteRequest}
-                    disabled={deleteLoading || requestLoading}
-                  >
-                    Löschen
-                  </button>
-                )}
-                <button
-                  className="px-5 py-2 rounded bg-gray-100 text-gray-700 hover:bg-gray-200 cursor-pointer"
-                  onClick={() => setShowRequestModal(false)}
-                  disabled={requestLoading || deleteLoading}
-                >
-                  Abbrechen
-                </button>
-                <button
-                  className={`px-5 py-2 rounded cursor-pointer ${
-                    userRequests[activeEntry.id]
-                      ? "bg-red-600 hover:bg-red-700"
-                      : "bg-[#e60000] hover:bg-[#c01a1f]"
-                  } text-white font-medium hover:shadow transition-colors`}
-                  onClick={handleRequestSubmit}
-                  disabled={
-                    requestLoading || deleteLoading || !requestMessage.trim()
-                  }
-                >
-                  {userRequests[activeEntry.id]
-                    ? "Speichern"
-                    : "Anfrage senden"}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+  {/* Keine Modals mehr hier */}
     </>
   );
 }
