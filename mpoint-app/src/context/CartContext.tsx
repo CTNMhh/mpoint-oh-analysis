@@ -95,10 +95,10 @@ export function MiniCart({ message }: { message?: string }) {
       )}
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-bold text-gray-900">Warenkorb</h3>
-        <ShoppingCart className="h-6 w-6" />
+        <ShoppingCart className="h-6 w-6 text-[#e60000]" />
       </div>
       {items.length === 0 ? (
-        <div className="text-gray-500 mb-6">Keine Artikel im Warenkorb.</div>
+        <div className="text-gray-600 mb-6">Keine Artikel im Warenkorb.</div>
       ) : (
         <>
           <ul className="mb-6 space-y-4">
@@ -107,7 +107,7 @@ export function MiniCart({ message }: { message?: string }) {
                 <span>
                   <Link
                     href={`/events/${item.event?.id}`}
-                    className="text-[#e60000] hover:underline"
+                    className="text-gray-900 font-bold"
                   >
                     {item.event?.title}
                   </Link>
