@@ -114,10 +114,12 @@ export default function ChatSidebar({
 
     window.addEventListener("matches-updated", onUpdate);
     window.addEventListener("matching-requests-updated", onUpdate);
+    window.addEventListener("chat-conversations-changed", onUpdate);
     return () => {
       clearTimeout(timeoutId);
       window.removeEventListener("matches-updated", onUpdate);
       window.removeEventListener("matching-requests-updated", onUpdate);
+      window.removeEventListener("chat-conversations-changed", onUpdate);
     };
   }, [me, loadConversations]);
 

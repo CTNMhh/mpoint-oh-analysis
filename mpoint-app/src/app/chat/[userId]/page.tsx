@@ -99,6 +99,7 @@ export default function ChatPage() {
   const [messagesLoading, setMessagesLoading] = useState(false); // lädt History
   const [initialLoadComplete, setInitialLoadComplete] = useState(false); // NEU: Gesamtladestand
   const [isSending, startSending] = useTransition();
+  const [peerName, setPeerName] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [showEmoji, setShowEmoji] = useState(false);
@@ -165,6 +166,22 @@ export default function ChatPage() {
     }
   }, [loading, messagesLoading, session?.user, peerUserId]);
 
+  // Peer-Anzeigename laden
+  useEffect(() => {
+    if (!peerUserId || peerUserId === myUserId) {
+      setPeerName("");
+      return;
+    }
+    let ignore = false;
+    fetch(`/api/chat/user-summary?userId=${peerUserId}`)
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => {
+        if (!ignore && d?.displayName) setPeerName(d.displayName);
+      })
+      .catch(() => {});
+    return () => { ignore = true; };
+  }, [peerUserId, myUserId]);
+
   // Scroll nachladen
   useEffect(() => {
     if (messagesLoading) return;
@@ -196,6 +213,7 @@ export default function ChatPage() {
     if (!text.trim() || !peerUserId || !myUserId) return;
     const value = text.trim();
     setText("");
+    const wasEmptyBefore = messages.length === 0;
 
     // Optimistische Nachricht
     const optimisticId = "tmp-" + Date.now();
@@ -219,6 +237,11 @@ export default function ChatPage() {
       if (!res.ok) {
         // Optimistische entfernen (Fehler)
         setMessages(prev => prev.filter(m => m.id !== optimisticId));
+      } else {
+        if (wasEmptyBefore) {
+          // Neue Unterhaltung -> Sidebar aktualisieren
+          window.dispatchEvent(new Event("chat-conversations-changed"));
+        }
       }
       // Erfolgsfall: echte Nachricht ersetzt über SSE (Logik oben)
     });
@@ -271,7 +294,9 @@ export default function ChatPage() {
           {/* Header */}
             <div className="bg-white rounded-t-2xl shadow-sm border border-gray-200 px-6 py-4">
               <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold text-gray-800">Chat</h1>
+                <h1 className="text-2xl font-bold text-gray-800">
+                  Chat{peerName ? ` – ${peerName}` : ""}
+                </h1>
                 {messagesLoading && (
                   <div className="flex items-center gap-2 text-xs text-gray-500">
                     <div className="w-3 h-3 border-2 border-gray-300 border-t-[#e60000] rounded-full animate-spin" />

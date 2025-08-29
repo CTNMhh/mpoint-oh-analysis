@@ -100,7 +100,7 @@ export async function GET(_req: NextRequest) {
     select: { id: true, name: true, userId: true },
   });
 
-  // Matches (für Sicherheit / Status)
+  // Matches (Status nötig um nur CONNECTED als "match" zu markieren)
   const matches = await prisma.match.findMany({
     where: {
       status: { in: ACTIVE_MATCH_STATUSES },
@@ -109,7 +109,7 @@ export async function GET(_req: NextRequest) {
         { receiverUserId: me, senderUserId: { in: peers.map(p => p.peerUserId) } },
       ],
     },
-    select: { id: true, senderUserId: true, receiverUserId: true },
+    select: { id: true, senderUserId: true, receiverUserId: true, status: true },
   });
 
   const out = peers.map(p => {
@@ -124,7 +124,7 @@ export async function GET(_req: NextRequest) {
       peerUserId: p.peerUserId,
       name: c?.name || (u ? userDisplayName(u) : p.peerUserId),
       companyName: c?.name,
-      channelType: m ? "match" : "direct",
+      channelType: m && m.status === MatchStatus.CONNECTED ? "match" : "direct",
       lastAt: p.lastAt,
       lastContent: p.lastContent,
       matchId: m?.id || p.anyMatchId || null,
