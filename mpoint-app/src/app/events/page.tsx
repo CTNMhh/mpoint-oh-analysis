@@ -224,12 +224,12 @@ export default function EventsPage() {
 
   if (loading || status === "loading") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <main className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[rgb(228,25,31)] mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#e60000] mx-auto mb-4"></div>
           <p className="text-gray-600">Lädt Events...</p>
         </div>
-      </div>
+      </main>
 
     );
   }
@@ -809,7 +809,7 @@ export default function EventsPage() {
                             </Link>
                             <Link
                               href={`/events/${event.id}/edit`}
-                              className="flex align-center bg-sky-700 hover:bg-sky-800 text-white px-4 rounded-xl transition-all font-medium mb-2 py-2 text-center"
+                              className="flex align-center bg-[#e60000] hover:bg-red-700 text-white px-4 rounded-xl transition-all font-medium mb-2 py-2 text-center"
                             >
                               Bearbeiten
                             </Link>

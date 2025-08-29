@@ -184,12 +184,12 @@ export default function DashboardPage() {
   // Loading state
   if (status === "loading" || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <main className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[rgb(228,25,31)] mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#e60000] mx-auto mb-4"></div>
           <p className="text-gray-600">Lädt Dashboard...</p>
         </div>
-      </div>
+      </main>
     );
   }
 

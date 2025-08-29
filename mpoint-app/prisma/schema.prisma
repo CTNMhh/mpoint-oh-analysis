@@ -96,6 +96,8 @@ model User {
   transactions Transaction[] // <--- Gegenrelation für Transaction
   MarketplaceEntry    MarketplaceEntry[]
   notifications  Notification[]
+  sentMessages   Message[] @relation("MessageSenderUser")
+  receivedMessages Message[] @relation("MessageReceiverUser")
 }
 
 enum UserRole {
@@ -378,20 +380,23 @@ model Match {
 }
 
 model Message {
-  id                 String   @id @default(uuid())
-  matchId            String
-  match              Match    @relation(fields: [matchId], references: [id])
+  id               String    @id @default(uuid())
+  matchId          String?              // <- jetzt optional
+  match            Match?    @relation(fields: [matchId], references: [id])
 
-  senderUserId       String
-  senderCompanyId    String
-  receiverUserId     String
-  receiverCompanyId  String
-
-  content            String
-  createdAt          DateTime @default(now())
-  readAt             DateTime?
+  senderUserId     String
+  senderUser       User      @relation("MessageSenderUser", fields: [senderUserId], references: [id])
+  senderCompanyId  String
+  receiverUserId   String
+  receiverUser     User      @relation("MessageReceiverUser", fields: [receiverUserId], references: [id])
+  receiverCompanyId String
+  content          String
+  createdAt        DateTime  @default(now())
+  readAt           DateTime?
 
   @@index([matchId, createdAt])
+  @@index([senderUserId, receiverUserId, createdAt])       // Für direkte Chats ohne Match
+  @@index([receiverUserId, senderUserId, createdAt])       // (optional) für umgekehrte Richtung
 }
 
 model Event {
