@@ -115,7 +115,7 @@ export default function Wirtschaftswetter() {
 
             <div className="mt-8 text-center">
                 <a
-                    href="#wirtschaftsanalyse"
+                    href="/wirtschaftsanalyse"
                     className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all"
                 >
                     Detaillierte Wirtschaftsanalyse <ArrowRight className="w-4 h-4" />
