@@ -52,7 +52,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
   // Frühzeitige Returns NACH allen Hooks:
   if (status === "unauthenticated") {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-white">
+      <main className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-4 text-gray-900">
             Anmeldung erforderlich
@@ -73,8 +73,11 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
 
   if (loading) {
     return (
-      <main className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#e60000]"></div>
+      <main className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#e60000] mx-auto mb-4"></div>
+          <p className="text-gray-600">Lädt Event...</p>
+        </div>
       </main>
     );
   }
@@ -118,7 +121,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
           {/* Zurück zu Events */}
           <Link
             href="/events"
-            className="cursor-pointer gap-2 inline-flex items-center px-4 py-2 rounded-xl bg-gray-100 text-gray-700 hover:bg-red-700 hover:text-white transition-colors font-semibold shadow text-sm"
+            className="cursor-pointer gap-2 inline-flex items-center px-4 py-2 rounded-xl bg-[#e60000] text-white hover:bg-red-700 transition-all"
           >
             <ArrowLeft className="w-4 h-4" /> <span>Zurück zu Events</span>
           </Link>
@@ -165,8 +168,8 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                   {event.imageUrl && (
                     <div className="flex justify-end grow">
                       <img
-                        src="{event.imageUrl}"
-                        alt="{event.title}"
+                        src={event.imageUrl}
+                        alt={event.title}
                         className="rounded-lg h-40 w-40 object-cover border border-gray-200 bg-linear-to-r from-gray-200 to-gray-300"
                       />
                     </div>
@@ -240,7 +243,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                       <button
                         type="button"
                         onClick={() => setSpaces(Math.max(1, spaces - 1))}
-                        className="w-10 h-10 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center"
+                        className="w-10 h-10 rounded-full flex items-center justify-center transition-all bg-[#e60000] text-white hover:bg-red-700 cursor-pointer"
                       >
                         −
                       </button>
@@ -250,7 +253,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                       <button
                         type="button"
                         onClick={() => setSpaces(Math.min(10, spaces + 1))}
-                        className="w-10 h-10 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center"
+                        className="w-10 h-10 rounded-full flex items-center justify-center transition-all bg-[#e60000] text-white hover:bg-red-700 cursor-pointer"
                       >
                         +
                       </button>
