@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import UserNotificationsModal from "../notifications/UserNotificationsModal";
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<any[]>([]);
@@ -22,6 +23,11 @@ export default function AdminUsersPage() {
   });
 
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
+  // Notifications Modal State
+  const [notificationsModalUser, setNotificationsModalUser] = useState<any | null>(null);
+  function openUserNotifications(user: any) { setNotificationsModalUser(user); }
+  function closeNotificationsModal() { setNotificationsModalUser(null); }
 
   useEffect(() => {
     async function fetchUsers() {
@@ -409,6 +415,9 @@ export default function AdminUsersPage() {
                       )}
                     </div>
                   </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    Notifications
+                  </th>
                   <th className="px-6 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
                     Aktionen
                   </th>
@@ -461,6 +470,17 @@ export default function AdminUsersPage() {
                           })}
                         </div>
                       )}
+                    </td>
+                    <td className="px-6 py-4">
+                      <button
+                        onClick={() => openUserNotifications(user)}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 transition"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                        </svg>
+                        Anzeigen
+                      </button>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
                       <div className="flex items-center justify-end gap-2">
@@ -528,6 +548,12 @@ export default function AdminUsersPage() {
             </div>
           </div>
         )}
+
+        {/* Notifications Modal */}
+        <UserNotificationsModal
+          user={notificationsModalUser}
+          onClose={closeNotificationsModal}
+        />
       </div>
     </div>
   );

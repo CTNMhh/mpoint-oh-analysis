@@ -178,7 +178,11 @@ export default function MarketplaceDetailPage() {
           <span className="font-semibold">Kurzbeschreibung:</span> {entry.shortDescription}
         </div>
         <div className="prose prose-lg max-w-none mb-8" dangerouslySetInnerHTML={{ __html: entry.longDescription || "<em>Keine Detailbeschreibung vorhanden.</em>" }} />
-        <div className="text-sm text-gray-500 mb-2">Erstellt von: {entry.user?.firstName} {entry.user?.lastName}</div>
+        {!entry.anonym && (
+          <div className="text-sm text-gray-500 mb-2">
+            Anbieter: {entry.company?.name || entry.user?.company?.[0]?.name || `${entry.user?.firstName ?? ""} ${entry.user?.lastName ?? ""}`.trim()}
+          </div>
+        )}
         <div className="flex justify-between items-center mt-6">
           <div className="font-semibold text-primary text-lg">
             {/* Preis anzeigen falls vorhanden */}

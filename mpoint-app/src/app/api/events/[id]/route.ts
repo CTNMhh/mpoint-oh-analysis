@@ -4,73 +4,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../../auth/[...nextauth]/route";
-
+import { createNotification } from "../../../../lib/notifications";
+import { NotificationType } from "@prisma/client";// <-- Pfad anpassen falls anders
 const prisma = new PrismaClient();
 
 // 🛡️ Inline Logging mit Duplicate-Protection
-async function logEventActivity(
-  userId: string,
-  action: string,
-  eventId?: string,
-  metadata?: any,
-  request?: NextRequest
-) {
-  try {
-    console.log(`[EVENT LOG] ${action} - User: ${userId} - Event: ${eventId || 'none'}`);
 
-    const userAgent = request?.headers.get('user-agent') || undefined;
-    const ipAddress = request?.headers.get('x-forwarded-for') ||
-                     request?.headers.get('x-real-ip') ||
-                     request?.ip ||
-                     undefined;
-
-    let deviceType = 'UNKNOWN';
-    if (userAgent) {
-      if (/Mobile|Android|iPhone|iPad/.test(userAgent)) {
-        deviceType = /iPad/.test(userAgent) ? 'TABLET' : 'MOBILE';
-      } else {
-        deviceType = 'DESKTOP';
-      }
-    }
-
-    // 🛡️ Duplicate-Check: Prüfe letzte 10 Sekunden
-    const tenSecondsAgo = new Date(Date.now() - 10000);
-
-    const existingLog = await prisma.eventActivityLog.findFirst({
-      where: {
-        userId,
-        action: action as any,
-        eventId,
-        timestamp: { gte: tenSecondsAgo },
-        ipAddress // Extra Schutz
-      }
-    });
-
-    if (existingLog) {
-      console.log(`[EVENT LOG] Duplicate skipped: ${action}`);
-      return;
-    }
-
-    await prisma.eventActivityLog.create({
-      data: {
-        userId,
-        eventId,
-        action: action as any,
-        description: `User ${action.toLowerCase().replace('_', ' ')}`,
-        ipAddress,
-        userAgent,
-        deviceType: deviceType as any,
-        metadata,
-        timestamp: new Date()
-      }
-    });
-
-    console.log(`[EVENT LOG] Success: ${action}`);
-
-  } catch (error) {
-    console.error('Fehler beim Loggen der Event Activity:', error);
-  }
-}
 
 // GET: Einzelnes Event abrufen
 export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
@@ -100,22 +39,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
       return NextResponse.json({ error: "Event nicht gefunden." }, { status: 404 });
     }
 
-    // 🆕 NEU HINZUGEFÜGT: Log Event View (nur wenn User eingeloggt)
-    if (userId) {
-      await logEventActivity(
-        userId,
-        'EVENT_VIEWED',
-        id,
-        {
-          eventTitle: event.title,
-          eventType: event.ventType,
-          price: event.price,
-          startDate: event.startDate,
-          organizer: event.user.firstName + ' ' + event.user.lastName
-        },
-        request
-      );
-    }
+
 
     return NextResponse.json(event);
   } catch (error) {
@@ -180,38 +104,29 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
       }
     });
 
-    // 🆕 NEU HINZUGEFÜGT: Log Event Update mit Change-Details
-    await logEventActivity(
-      user.id,
-      'EVENT_UPDATED',
-      id,
-      {
-        changedFields: Object.keys(body),
-        changes: {
-          title: { old: existingEvent.title, new: updatedEvent.title },
-          price: { old: existingEvent.price, new: updatedEvent.price },
-          location: { old: existingEvent.location, new: updatedEvent.location },
-          maxParticipants: { old: existingEvent.maxParticipants, new: updatedEvent.maxParticipants }
-        }
-      },
-      request
-    );
+
+
+
+    // Notification bei erfolgreichem Update
+    try {
+      console.log("NotificationType available values:", NotificationType);
+      // Falls dein Enum keinen EVENT_UPDATED Wert hat, passe auf einen existierenden (z.B. EVENT_CREATED oder EVENT_CHANGE) an
+      const notificationType = (NotificationType as any).EVENT_UPDATED ?? NotificationType.EVENT_CREATED;
+      await createNotification({
+        userId: user.id,
+        type: notificationType,
+        title: "Event aktualisiert",
+        body: `Dein Event "${updatedEvent.title}" wurde erfolgreich aktualisiert.`,
+        url: `/events/${updatedEvent.id}`
+      });
+    } catch (e) {
+      console.error("Notification (EVENT_UPDATED) fehlgeschlagen:", e);
+    }
 
     return NextResponse.json(updatedEvent);
   } catch (error) {
     console.error('Fehler beim Bearbeiten des Events:', error);
 
-    // 🆕 NEU HINZUGEFÜGT: Log Failed Update
-    await logEventActivity(
-      user.id,
-      'EVENT_UPDATED',
-      id,
-      {
-        error: error.message,
-        attemptedChanges: Object.keys(body || {})
-      },
-      request
-    );
 
     return NextResponse.json({ error: "Fehler beim Bearbeiten des Events." }, { status: 500 });
   }
@@ -255,36 +170,27 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
       where: { id: id }
     });
 
-    // Log Event Deletion
-    await logEventActivity(
-      user.id,
-      'EVENT_DELETED',
-      id,
-      {
-        deletedEventTitle: existingEvent.title,
-        hadBookings: existingEvent.bookings.length > 0,
-        bookingsCount: existingEvent.bookings.length,
-        eventType: existingEvent.ventType,
-        wasScheduledFor: existingEvent.startDate,
-        price: existingEvent.price
-      },
-      request
-    );
+
+    try {
+      console.log("NotificationType available values:", NotificationType);
+
+      await createNotification({
+        userId: user.id,
+        type: NotificationType.SYSTEM,
+        title: "Event gelöscht",
+        body: `Dein Event "${existingEvent.title}" wurde gelöscht.`,
+        url: `/events`
+      });
+    } catch (e) {
+      console.error("Notification (EVENT_UPDATED) fehlgeschlagen:", e);
+    }
+
 
     return NextResponse.json({ message: "Event erfolgreich gelöscht." });
   } catch (error) {
     console.error('Fehler beim Löschen des Events:', error);
 
-    // Log Failed Deletion
-    await logEventActivity(
-      user.id,
-      'EVENT_DELETED',
-      id,
-      {
-        error: error.message
-      },
-      request
-    );
+
 
     return NextResponse.json({ error: "Fehler beim Löschen des Events." }, { status: 500 });
   }

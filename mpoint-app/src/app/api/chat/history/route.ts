@@ -1,51 +1,44 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../../auth/[...nextauth]/route";
-import { PrismaClient, MatchStatus } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
+import { resolveChatChannel } from "@/lib/chatChannel";
 
-const prisma = new PrismaClient();
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const me = (session as any)?.user?.id;
+  if (!me) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
-  const matchId = req.nextUrl.searchParams.get("matchId") || "";
-  const companyIdParam = req.nextUrl.searchParams.get("companyId") || "";
-  const userIdParam = req.nextUrl.searchParams.get("userId") || "";
+  const peerUserId = req.nextUrl.searchParams.get("peerUserId");
+  if (!peerUserId) return NextResponse.json({ error: "peerUserId required" }, { status: 400 });
+  if (peerUserId === me) return NextResponse.json({ error: "self not allowed" }, { status: 400 });
 
-  if (!matchId) return NextResponse.json({ error: "matchId required" }, { status: 400 });
+  const channel = await resolveChatChannel(me, peerUserId);
 
-  // companyId NICHT aus Session holen
-  let myCompanyId = companyIdParam;
-  if (!myCompanyId && userIdParam) {
-    const comp = await prisma.company.findFirst({ where: { userId: userIdParam }, select: { id: true } });
-    myCompanyId = comp?.id || "";
+  let messages;
+  if (channel.type === "match") {
+    messages = await prisma.message.findMany({
+      where: { matchId: channel.matchId },
+      orderBy: { createdAt: "asc" },
+      take: 300
+    });
+  } else {
+    // Direkt: beide Richtungen ohne matchId
+    messages = await prisma.message.findMany({
+      where: {
+        matchId: null,
+        OR: [
+          { senderUserId: me, receiverUserId: peerUserId },
+          { senderUserId: peerUserId, receiverUserId: me }
+        ]
+      },
+      orderBy: { createdAt: "asc" },
+      take: 300
+    });
   }
-  if (!myCompanyId) return NextResponse.json({ error: "companyId or userId required" }, { status: 400 });
 
-  const match = await prisma.match.findUnique({
-    where: { id: matchId },
-    include: { senderCompany: true, receiverCompany: true }
-  });
-  if (!match) return NextResponse.json({ error: "Match not found" }, { status: 404 });
-
-  const isParticipant = [match.senderCompanyId, match.receiverCompanyId].includes(myCompanyId);
-  if (!isParticipant || match.status !== MatchStatus.CONNECTED)
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-
-  const partnerCompany =
-    match.senderCompanyId === myCompanyId ? match.receiverCompany : match.senderCompany;
-
-  const messages = await prisma.message.findMany({
-    where: { matchId },
-    orderBy: { createdAt: "asc" },
-    take: 200
-  });
-
-  return NextResponse.json({
-    messages,
-    partner: partnerCompany ? { id: partnerCompany.id, name: partnerCompany.name } : null
-  });
+  return NextResponse.json({ channel, messages });
 }

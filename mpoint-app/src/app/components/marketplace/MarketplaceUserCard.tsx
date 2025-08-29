@@ -6,9 +6,8 @@ declare global {
     showMessageModal?: boolean;
   }
 }
-import EditRequestModal from "./EditRequestModal";
-import MessageModal from "./MessageModal";
-import { Pencil, MessageCircleQuestionMark, X } from "lucide-react";
+import { Pencil, MessageCircle, MessageCircleQuestionMark, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 // Typen und Hilfsfunktionen aus page.tsx
 export type PriceType = {
@@ -48,6 +47,21 @@ const typeColors: Record<string, string> = {
   "Anfrage": "bg-yellow-50 text-yellow-700",
   "Angebot": "bg-blue-50 text-blue-700",
 };
+
+// Freundliche deutsche Status-Labels
+function requestStatusLabel(status?: string): string {
+  const map: Record<string, string> = {
+  PENDING: "Offen",
+  DECLINED: "Abgelehnt",
+  APPROVED: "Angenommen",
+  ACCEPTED: "Angenommen",
+  CONFIRMED: "Bestätigt",
+  CANCELED: "Storniert",
+  CANCELLED: "Storniert",
+  };
+  if (!status) return "Gesendet";
+  return map[status] || status;
+}
 
 function timeAgo(timestamp: number): string {
   const now = Date.now();
@@ -107,28 +121,24 @@ interface Props {
   onEditRequest?: (project: any) => void;
 }
 
-const MarketplaceUserCard: React.FC<Props> = ({ session, entries, userRequests, setEntries, setUserRequests, editProjectModal, onEditProject, onEditRequest }) => {
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [editProject, setEditProject] = useState<any>(null);
+const MarketplaceUserCard: React.FC<Props> = ({ session, entries, userRequests, setEntries, setUserRequests }) => {
+  const router = useRouter();
   const [myProjects, setMyProjects] = useState<any[]>([]);
   const [requestedProjects, setRequestedProjects] = useState<any[]>([]);
   // Anzahl PENDING-Anfragen pro Projekt (für Badge)
   const [projectRequestCounts, setProjectRequestCounts] = useState<Record<string, number>>({});
   // Gesamtanzahl Anfragen pro Projekt (für Icon-Farbe/Klickbarkeit)
   const [projectTotalRequestCounts, setProjectTotalRequestCounts] = useState<Record<string, number>>({});
-  // State für Anfrage-Bearbeiten-Modal
-  const [showEditRequestModal, setShowEditRequestModal] = useState(false);
-  const [editRequestEntry, setEditRequestEntry] = useState<any>(null);
-  const [requestMessage, setRequestMessage] = useState("");
+  // Inline Edit für eigene Anfrage (statt Modal)
+  const [editDrafts, setEditDrafts] = useState<Record<string, string>>({});
   const [requestLoading, setRequestLoading] = useState(false);
   const [requestError, setRequestError] = useState<string | null>(null);
   const [requestSuccess, setRequestSuccess] = useState<string | null>(null);
 
-  // State für Nachrichten-Modal
-  const [showMessageModal, setShowMessageModal] = useState(false);
-  const [messageModalEntry, setMessageModalEntry] = useState<any>(null);
-  const [messageRequests, setMessageRequests] = useState<any[]>([]);
-  const [showModal, setShowModal] = useState(false);
+  // Aufklapper-Zustände trennen: links (Nachrichtenliste) vs. rechts (eigene Anfrage bearbeiten)
+  const [expandedProjectMessages, setExpandedProjectMessages] = useState<Record<string, boolean>>({});
+  const [projectRequests, setProjectRequests] = useState<Record<string, any[]>>({});
+  const [expandedEditRequests, setExpandedEditRequests] = useState<Record<string, boolean>>({});
 
   // --- Preis-Eingabe State für Modal ---
   const [priceInput, setPriceInput] = useState<PriceType>({});
@@ -184,22 +194,18 @@ const MarketplaceUserCard: React.FC<Props> = ({ session, entries, userRequests, 
       try {
         const res = await fetch("/api/marketplace");
         const data = await res.json();
-        const enrichedData = await Promise.all(data.map(async (entry) => {
-          const userName = await getUserNameById(entry.userId);
-          return { ...entry, userName };
-        }));
-        setEntries(enrichedData);
+        setEntries(() => data);
         // Hole alle User-Requests für die Einträge
         if (session?.user?.id) {
           const requests: Record<string, any> = {};
-          await Promise.all(enrichedData.map(async (entry: any) => {
+          await Promise.all(data.map(async (entry: any) => {
             try {
               const resReq = await fetch(`/api/marketplace/request?projectId=${entry.id}`);
               const dataReq = await resReq.json();
               if (dataReq.request) requests[entry.id] = dataReq.request;
             } catch {}
           }));
-          setUserRequests(requests);
+          setUserRequests(() => requests);
         }
       } catch (err) {
         console.error("Fehler beim Laden der Börsendaten:", err);
@@ -244,17 +250,8 @@ const MarketplaceUserCard: React.FC<Props> = ({ session, entries, userRequests, 
     }
   }
 
-  // Handler zum Öffnen des Modals
-  function handleEditRequest(entry: any) {
-    setEditRequestEntry(entry);
-    setRequestMessage(userRequests[entry.id]?.message || "");
-    setShowEditRequestModal(true);
-    setRequestError(null);
-    setRequestSuccess(null);
-  }
-
-  // Handler zum Absenden
-  async function handleRequestSubmit(msg: string) {
+  // Handler zum Absenden (Bearbeiten der eigenen Anfrage)
+  async function handleRequestSubmit(projectId: string, msg: string) {
     setRequestLoading(true);
     setRequestError(null);
     setRequestSuccess(null);
@@ -262,12 +259,12 @@ const MarketplaceUserCard: React.FC<Props> = ({ session, entries, userRequests, 
       const res = await fetch("/api/marketplace/request", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ projectId: editRequestEntry.id, message: msg }),
+        body: JSON.stringify({ projectId, message: msg }),
       });
       if (res.ok) {
         setRequestSuccess("Anfrage gespeichert.");
-        setUserRequests(prev => ({ ...prev, [editRequestEntry.id]: { ...prev[editRequestEntry.id], message: msg } }));
-        setShowEditRequestModal(false);
+        setUserRequests(prev => ({ ...prev, [projectId]: { ...prev[projectId], message: msg } }));
+        setEditDrafts(prev => ({ ...prev, [projectId]: msg }));
       } else {
         const err = await res.json();
         setRequestError(err.error || "Fehler beim Speichern.");
@@ -279,8 +276,8 @@ const MarketplaceUserCard: React.FC<Props> = ({ session, entries, userRequests, 
     }
   }
 
-  // Handler zum Löschen
-  async function handleDeleteRequest() {
+  // Handler zum Löschen der eigenen Anfrage
+  async function handleDeleteRequest(projectId: string) {
     setRequestLoading(true);
     setRequestError(null);
     setRequestSuccess(null);
@@ -288,15 +285,15 @@ const MarketplaceUserCard: React.FC<Props> = ({ session, entries, userRequests, 
       const res = await fetch("/api/marketplace/request", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ projectId: editRequestEntry.id }),
+        body: JSON.stringify({ projectId }),
       });
       if (res.ok) {
         setUserRequests(prev => {
           const copy = { ...prev };
-          delete copy[editRequestEntry.id];
+          delete copy[projectId];
           return copy;
         });
-        setShowEditRequestModal(false);
+        setEditDrafts(prev => ({ ...prev, [projectId]: "" }));
       } else {
         setRequestError("Fehler beim Löschen der Anfrage.");
       }
@@ -307,46 +304,35 @@ const MarketplaceUserCard: React.FC<Props> = ({ session, entries, userRequests, 
     }
   }
 
-  // Nachrichten-Modal öffnen und Anfragen laden
-  async function handleOpenMessages(entry: any) {
-    setMessageModalEntry(entry);
-    setShowMessageModal(true);
-    if (typeof window !== "undefined") {
-      window.showMessageModal = true;
-    }
-    try {
-      const res = await fetch(`/api/marketplace/request?projectId=${entry.id}&list=1`);
-      if (res.ok) {
-        const data = await res.json();
-        let reqs: any[] = [];
-        if (Array.isArray(data.requests)) {
-          reqs = data.requests;
-        } else if (data.request) {
-          reqs = Array.isArray(data.request) ? data.request : [data.request];
-        }
-        // Nutzername anreichern
-        const enriched = await Promise.all(reqs.map(async (r: any) => {
-          if (!r.userName && r.userId) {
-            const name = await getUserNameById(r.userId);
-            return { ...r, userName: name };
+  // Nachrichten aufklappen und laden
+  async function toggleMessages(entry: any) {
+    setExpandedProjectMessages(prev => ({ ...prev, [entry.id]: !prev[entry.id] }));
+    const isOpening = !expandedProjectMessages[entry.id];
+    if (isOpening && !projectRequests[entry.id]) {
+      try {
+        const res = await fetch(`/api/marketplace/request?projectId=${entry.id}&list=1`);
+        if (res.ok) {
+          const data = await res.json();
+          let reqs: any[] = [];
+          if (Array.isArray(data.requests)) {
+            reqs = data.requests;
+          } else if (data.request) {
+            reqs = Array.isArray(data.request) ? data.request : [data.request];
           }
-          return r;
-        }));
-        setMessageRequests(enriched);
-      } else {
-        setMessageRequests([]);
+          const enriched = await Promise.all(reqs.map(async (r: any) => {
+            if (!r.userName && r.userId) {
+              const name = await getUserNameById(r.userId);
+              return { ...r, userName: name };
+            }
+            return r;
+          }));
+          setProjectRequests(prev => ({ ...prev, [entry.id]: enriched }));
+        } else {
+          setProjectRequests(prev => ({ ...prev, [entry.id]: [] }));
+        }
+      } catch {
+        setProjectRequests(prev => ({ ...prev, [entry.id]: [] }));
       }
-    } catch {
-      setMessageRequests([]);
-    }
-  }
-
-  function handleCloseMessages() {
-    setShowMessageModal(false);
-    setMessageModalEntry(null);
-    setMessageRequests([]);
-    if (typeof window !== "undefined") {
-      window.showMessageModal = false;
     }
   }
 
@@ -367,18 +353,19 @@ const MarketplaceUserCard: React.FC<Props> = ({ session, entries, userRequests, 
   }
 
   // Anfrage ablehnen
-  async function handleRejectRequest(requestId: string) {
+  async function handleRejectRequest(requestId: string, projectId: string) {
     try {
       const res = await fetch("/api/marketplace/request", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ requestId, status: "DECLINED" }),
+        body: JSON.stringify({ requestId, status: "DECLINED" }),
       });
       if (res.ok) {
-  setMessageRequests(prev => prev.map(r => r.id === requestId ? { ...r, status: "DECLINED" } : r));
-        if (messageModalEntry?.id) {
-          refreshCountsForProject(messageModalEntry.id);
-        }
+        setProjectRequests(prev => ({
+          ...prev,
+          [projectId]: (prev[projectId] || []).map(r => r.id === requestId ? { ...r, status: "DECLINED" } : r)
+        }));
+        refreshCountsForProject(projectId);
       }
     } catch {}
   }
@@ -406,316 +393,16 @@ const MarketplaceUserCard: React.FC<Props> = ({ session, entries, userRequests, 
     }
   };
 
-  // --- NEU: Submit-Handler für das Modal-Formular ---
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const form = e.target as HTMLFormElement;
-    const formData = new FormData(form);
-    // Alle Felder aus dem Formular korrekt auslesen
-    const entryType = (form.elements.namedItem("entryType") as HTMLInputElement)?.value || null;
-    const title = (form.elements.namedItem("projectTitle") as HTMLInputElement)?.value.trim() || null;
-    const category = (form.elements.namedItem("projectCategory") as HTMLSelectElement)?.value.toUpperCase() || null;
-    const shortDescription = (form.elements.namedItem("projectShortDescription") as HTMLInputElement)?.value.trim() || null;
-    // longDescription aus contenteditable div
-    let longDescription: string | null = (form.querySelector("#projectLongDescription") as HTMLDivElement)?.innerHTML?.trim() || null;
-    if (longDescription === "" || longDescription === "<br>") longDescription = null;
-    const location = (form.elements.namedItem("projectLocation") as HTMLInputElement)?.value.trim() || null;
-    const deadlineRaw = (form.elements.namedItem("projectDeadline") as HTMLInputElement)?.value;
-    const deadline = deadlineRaw ? new Date(deadlineRaw).toISOString() : null;
-    const skills = (form.elements.namedItem("projectSkills") as HTMLInputElement)?.value.trim() || null;
-    const email = (form.elements.namedItem("contactEmail") as HTMLInputElement)?.value.trim() || null;
-    const publicEmail = (form.elements.namedItem("allowContact") as HTMLInputElement)?.checked || false;
-    // Preis aus State
-    const price = Object.keys(priceInput).length > 0 ? priceInput : null;
-
-    // Userdaten aus Session
-    const user = session?.user;
-    if (!user?.id) {
-      alert("Nicht eingeloggt. Bitte zuerst anmelden.");
-      return;
-    }
-
-    // Payload für MarketplaceEntry
-    const payload = {
-      userId: user.id,
-      category,
-      title,
-      shortDescription,
-      longDescription,
-      price,
-      type: entryType,
-      email,
-      publicEmail,
-      location,
-      deadline,
-      skills,
-    };
-    try {
-      const res = await fetch("/api/marketplace", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (res.ok) {
-        setShowModal(false);
-        // Nach dem Anlegen neu laden
-        const entriesRes = await fetch("/api/marketplace");
-        const data = await entriesRes.json();
-        const enrichedData = await Promise.all(data.map(async (entry: any) => {
-          const userName = await getUserNameById(entry.userId);
-          return { ...entry, userName };
-        }));
-        setEntries(enrichedData);
-      } else {
-        alert("Fehler beim Anlegen des Eintrags.");
-      }
-    } catch (err) {
-      alert("Fehler beim Anlegen des Eintrags.");
-    }
-  }
+  // Create/Edit Form ist jetzt eigene Seite – kein Modal mehr
 
   return (
     <div className="bg-white rounded-lg shadow-sm mb-8 p-6 flex flex-col md:flex-row gap-8">
-      {/* Modal (außerhalb des Seiten-Containers platzieren) */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 backdrop-blur-sm">
-          <div className="bg-white rounded-xl w-11/12 max-w-2xl max-h-screen overflow-y-auto shadow-2xl">
-            {/* Modal Header */}
-            <div className="flex justify-between items-center p-6 border-b border-gray-200">
-              <h2 className="text-2xl font-semibold text-gray-900">Neues Projekt einstellen</h2>
-              <button
-                className="text-gray-600 hover:text-gray-700 text-2xl p-1 hover:bg-gray-100 rounded-xl  cursor-pointer"
-                onClick={() => setShowModal(false)}
-                aria-label="Schließen"
-              >
-                ×
-              </button>
-            </div>
-            {/* Modal Body */}
-            <div className="p-6">
-              <form onSubmit={handleSubmit}>
-                {/* Typ-Auswahl Angebot/Anfrage */}
-                <div className="mb-5">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Typ <span className="text-primary">*</span></label>
-                  <div className="flex gap-3">
-                    <label className="flex items-center gap-2 text-sm cursor-pointer px-3 py-2 rounded-lg border border-yellow-200 bg-yellow-50 text-yellow-700">
-                      <input type="radio" name="entryType" value="Anfrage" defaultChecked /> Anfrage
-                    </label>
-                    <label className="flex items-center gap-2 text-sm cursor-pointer px-3 py-2 rounded-lg border border-blue-200 bg-blue-50 text-blue-700">
-                      <input type="radio" name="entryType" value="Angebot" /> Angebot
-                    </label>
-                  </div>
-                </div>
-                {/* Projekttitel */}
-                <div className="mb-5">
-                  <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="projectTitle">
-                    Projekttitel <span className="text-primary">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="projectTitle"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                    placeholder="z.B. Website-Relaunch für Startup"
-                    required
-                  />
-                </div>
-                {/* Kategorie */}
-                <div className="mb-5">
-                  <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="projectCategory">
-                    Kategorie <span className="text-primary">*</span>
-                  </label>
-                  <select id="projectCategory" className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" required>
-                    <option value="">Kategorie auswählen</option>
-                    <option value="dienstleistung">Dienstleistung</option>
-                    <option value="produkt">Produkt</option>
-                    <option value="digitalisierung">Digitalisierung</option>
-                    <option value="nachhaltigkeit">Nachhaltigkeit</option>
-                    <option value="management">Management</option>
-                    <option value="marketing">Marketing</option>
-                    <option value="consulting">Consulting</option>
-                  </select>
-                </div>
-                {/* Beschreibung (kurz) */}
-                <div className="mb-5">
-                  <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="projectShortDescription">
-                    Beschreibung (kurz) <span className="text-primary">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="projectShortDescription"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                    placeholder="Kurze Projektbeschreibung..."
-                    required
-                  />
-                </div>
-
-                {/* Beschreibung (lang) WYSIWYG Editor */}
-                <div className="mb-5">
-                  <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="projectLongDescription">
-                    Beschreibung (lang) <span className="text-primary">*</span>
-                  </label>
-                  {/* Simple WYSIWYG Editor: contenteditable div, kann später durch ein echtes Editor-Component ersetzt werden */}
-                  <div
-                    id="projectLongDescription"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm min-h-24 bg-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                    contentEditable={true}
-                    style={{ minHeight: "96px" }}
-                    suppressContentEditableWarning={true}
-                  >
-                  </div>
-                </div>
-                {/* Standort und Deadline */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="projectLocation">
-                      Standort
-                    </label>
-                    <input
-                      type="text"
-                      id="projectLocation"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                      placeholder="z.B. München, Remote"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="projectDeadline">
-                      Deadline <span className="text-primary">*</span>
-                    </label>
-                    <input
-                      type="date"
-                      id="projectDeadline"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                      required
-                    />
-                  </div>
-                </div>
-                {/* Budget / Preis-Eingabe */}
-                <div className="mb-5">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Budget / Preis <span className="text-primary">*</span></label>
-                  <div className="flex gap-4 mb-3 flex-wrap">
-                    <label className="flex items-center gap-2 text-sm cursor-pointer">
-                      <input type="radio" name="priceMode" value="fixed" checked={priceMode === "fixed"} onChange={() => handlePriceModeChange("fixed")} />
-                      Festpreis
-                    </label>
-                    <label className="flex items-center gap-2 text-sm cursor-pointer">
-                      <input type="radio" name="priceMode" value="ab" checked={priceMode === "ab"} onChange={() => handlePriceModeChange("ab")} />
-                      ab Preis
-                    </label>
-                    <label className="flex items-center gap-2 text-sm cursor-pointer">
-                      <input type="radio" name="priceMode" value="range" checked={priceMode === "range"} onChange={() => handlePriceModeChange("range")} />
-                      von ... bis ...
-                    </label>
-                    <label className="flex items-center gap-2 text-sm cursor-pointer">
-                      <input type="radio" name="priceMode" value="perHour" checked={priceMode === "perHour"} onChange={() => handlePriceModeChange("perHour")} />
-                      pro Stunde
-                    </label>
-                    <label className="flex items-center gap-2 text-sm cursor-pointer">
-                      <input type="radio" name="priceMode" value="perWeek" checked={priceMode === "perWeek"} onChange={() => handlePriceModeChange("perWeek")} />
-                      pro Woche
-                    </label>
-                    <label className="flex items-center gap-2 text-sm cursor-pointer">
-                      <input type="radio" name="priceMode" value="perMonth" checked={priceMode === "perMonth"} onChange={() => handlePriceModeChange("perMonth")} />
-                      pro Monat
-                    </label>
-                    <label className="flex items-center gap-2 text-sm cursor-pointer">
-                      <input type="radio" name="priceMode" value="onRequest" checked={priceMode === "onRequest"} onChange={() => handlePriceModeChange("onRequest")} />
-                      Auf Anfrage
-                    </label>
-                  </div>
-                  {/* Preisfelder je nach Modus */}
-                  {priceMode !== "onRequest" && (
-                    <div className="flex items-center gap-3 mb-2 flex-wrap">
-                      {(priceMode === "fixed" || priceMode === "ab" || priceMode === "perHour" || priceMode === "perWeek" || priceMode === "perMonth") && (
-                        <input
-                          type="number"
-                          className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                          placeholder={priceMode === "ab" ? "ab Preis" : "Preis"}
-                          min="0"
-                          step="0.01"
-                          value={priceInput.from ?? ""}
-                          onChange={e => handlePriceChange("from", e.target.value ? Number(e.target.value) : undefined)}
-                          required
-                        />
-                      )}
-                      {priceMode === "range" && (
-                        <>
-                          <input
-                            type="number"
-                            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                            placeholder="Von"
-                            min="0"
-                            step="0.01"
-                            value={priceInput.from ?? ""}
-                            onChange={e => handlePriceChange("from", e.target.value ? Number(e.target.value) : undefined)}
-                            required
-                          />
-                          <span className="text-gray-600">bis</span>
-                          <input
-                            type="number"
-                            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                            placeholder="Bis"
-                            min="0"
-                            step="0.01"
-                            value={priceInput.to ?? ""}
-                            onChange={e => handlePriceChange("to", e.target.value ? Number(e.target.value) : undefined)}
-                            required
-                          />
-                        </>
-                      )}
-                      <span className="text-gray-600">€</span>
-                    </div>
-                  )}
-                  {/* Zusatzoptionen entfernt, Flags werden automatisch gesetzt */}
-                  {/* Preisvorschau */}
-                  <div className="mt-2 text-xs text-gray-600">
-                    <span className="font-semibold">Preisvorschau:</span> {priceDataToString(priceInput)}
-                  </div>
-                </div>
-                {/* Benötigte Fähigkeiten */}
-                <div className="mb-5">
-                  <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="projectSkills">
-                    Benötigte Fähigkeiten
-                  </label>
-                  <input
-                    type="text"
-                    id="projectSkills"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                    placeholder="z.B. JavaScript, React, Design, SEO (mit Komma trennen)"
-                  />
-                </div>
-                {/* Form Actions */}
-                {/* Dummy Checkbox: Anonym einstellen */}
-                {/*
-                <div className="mb-4">
-                  <label className="flex items-center gap-3 cursor-pointer">
-                    <input type="checkbox" id="anonymous" name="anonymous" className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary" />
-                    <span className="text-sm">Anonym einstellen (Unternehmensname wird nicht angezeigt)</span>
-                  </label>
-                </div>
-                */}
-                <div className="flex flex-col sm:flex-row gap-3 justify-end pt-5 border-t border-gray-200">
-                  <button
-                    type="button"
-                    className="px-6 py-3 border border-[#e31e24] bg-white text-[#e31e24] rounded-lg font-medium hover:bg-[#e31e24] hover:text-white hover:shadow transition-colors"
-                    onClick={() => setShowModal(false)}
-                  >
-                    Abbrechen
-                  </button>
-                  <button type="submit" className="px-6 py-3 bg-[#e60000] text-white rounded-lg font-medium hover:bg-[#c01a1f] hover:shadow transition-colors cursor-pointer">
-                    Projekt veröffentlichen
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
       <div className="flex-1">
         <h2 className="text-xl font-bold text-gray-900 mb-4">Meine Projekte</h2>
         <div className="mb-5">
           <button
             className="bg-[#e60000] text-white px-4 py-2 rounded-xl font-medium hover:bg-[#c01a1f] transition-colors shadow  cursor-pointer"
-            onClick={() => setShowModal(true)}
+            onClick={() => router.push("/boerse/new")}
           >
             Eigenes Projekt einstellen
           </button>
@@ -726,42 +413,105 @@ const MarketplaceUserCard: React.FC<Props> = ({ session, entries, userRequests, 
         ) : (
           <ul className="space-y-2">
             {myProjects.map(entry => (
-              <li key={entry.id} className="flex items-center justify-between gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 hover:shadow-md transition-all">
-                <a href={`/boerse/${entry.id}`} className="text-primary hover:underline font-medium">{entry.title}</a>
-                <div className="flex items-center gap-1 relative">
-                  <button
-                    className={`relative text-lg px-2 cursor-pointer ${((projectTotalRequestCounts[entry.id] ?? 0) > 0) ? 'text-blue-600 hover:text-blue-700' : 'text-gray-300 cursor-not-allowed'}`}
-                    title="Mitteilungen"
-                    onClick={e => {
-                      e.preventDefault();
-                      const total = projectTotalRequestCounts[entry.id] ?? 0;
-                      if (total > 0) {
-                        handleOpenMessages(entry);
-                      }
-                    }}
-                  >
-                    <MessageCircleQuestionMark className="w-5 h-5" />
-                    {typeof projectRequestCounts[entry.id] === 'number' && projectRequestCounts[entry.id] > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-[#e60000] text-white text-xs rounded-full px-1.5 py-0.5 min-w-[18px] text-center font-bold">
-                        {projectRequestCounts[entry.id]}
-                      </span>
-                    )}
-                  </button>
-                  <button
-                    className="text-gray-600 hover:text-blue-600 text-lg px-2 cursor-pointer"
-                    title="Projekt bearbeiten"
-                    onClick={e => { e.preventDefault(); onEditProject ? onEditProject(entry) : (setEditProject(entry), setShowEditModal(true)); }}
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </button>
-                  <button
-                    className="text-[#e60000] hover:text-[#c01a1f] text-lg px-2 cursor-pointer"
-                    title="Projekt entfernen"
-                    onClick={e => { e.preventDefault(); handleRemoveProject(entry.id); }}
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
+              <li key={entry.id} className="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 hover:shadow-md transition-all">
+                <div className="flex items-center justify-between gap-2">
+                  <a href={`/boerse/${entry.id}`} className="text-primary hover:underline font-medium">{entry.title}</a>
+                  <div className="flex items-center gap-1 relative">
+                    <button
+                      className={`relative text-lg px-2 cursor-pointer ${((projectTotalRequestCounts[entry.id] ?? 0) > 0) ? 'text-blue-600 hover:text-blue-700' : 'text-gray-300 cursor-not-allowed'}`}
+                      title="Anfragen anzeigen"
+                      onClick={e => {
+                        e.preventDefault();
+                        const total = projectTotalRequestCounts[entry.id] ?? 0;
+                        if (total > 0) {
+                          toggleMessages(entry);
+                        }
+                      }}
+                    >
+                      <MessageCircleQuestionMark className="w-5 h-5" />
+                      {typeof projectRequestCounts[entry.id] === 'number' && projectRequestCounts[entry.id] > 0 && (
+                        <span className="absolute -top-2 -right-2 bg-[#e60000] text-white text-xs rounded-full px-1.5 py-0.5 min-w-[18px] text-center font-bold">
+                          {projectRequestCounts[entry.id]}
+                        </span>
+                      )}
+                    </button>
+                    <button
+                      className="text-gray-600 hover:text-blue-600 text-lg px-2 cursor-pointer"
+                      title="Projekt bearbeiten"
+                      onClick={e => { e.preventDefault(); router.push(`/boerse/${entry.id}/edit`); }}
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
+                      className="text-[#e60000] hover:text-[#c01a1f] text-lg px-2 cursor-pointer"
+                      title="Projekt entfernen"
+                      onClick={e => { e.preventDefault(); handleRemoveProject(entry.id); }}
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
+                {/* Aufklapper: Anfragenliste */}
+                {expandedProjectMessages[entry.id] && (
+                  <div className="mt-3 border-t border-gray-200 pt-3">
+                    <h4 className="text-sm font-semibold text-gray-800 mb-2">Anfragen</h4>
+                    {(projectRequests[entry.id] ?? []).length === 0 ? (
+                      <div className="text-sm text-gray-600">Keine Anfragen vorhanden.</div>
+                    ) : (
+                      <ul className="space-y-2">
+                        {(projectRequests[entry.id] ?? [])
+                          // Abgelehnte nach unten sortieren
+                          .slice()
+                          .sort((a: any, b: any) => {
+                            const aDecl = a.status === 'DECLINED';
+                            const bDecl = b.status === 'DECLINED';
+                            if (aDecl && !bDecl) return 1;
+                            if (!aDecl && bDecl) return -1;
+                            return 0;
+                          })
+                          .map((r: any) => (
+                          <li key={r.id} className="p-3 border border-gray-200 rounded-lg bg-white">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2 text-sm">
+                                <span className="font-medium text-gray-900">{r.userName || r.userId}</span>
+                                <span className={`border text-xs font-medium px-2.5 py-0.5 rounded-full ${
+                                  r.status === 'PENDING' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                                  r.status === 'DECLINED' ? 'bg-red-50 text-red-700 border-red-200' :
+                                  (r.status === 'CANCELED' || r.status === 'CANCELLED') ? 'bg-gray-50 text-gray-700 border-gray-200' :
+                                  'bg-green-50 text-green-700 border-green-200'
+                                }`}>
+                                  {requestStatusLabel(r.status)}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                {r.status === 'PENDING' && (
+                                  <button
+                                    className="text-xs px-3 py-1 rounded-xl bg-white border border-gray-300 hover:border-red-300 hover:text-red-700 cursor-pointer"
+                                    onClick={(e) => { e.preventDefault(); handleRejectRequest(r.id, entry.id); }}
+                                  >
+                                    Ablehnen
+                                  </button>
+                                )}
+                                <button
+                                  className="text-xs px-3 py-1 rounded-xl bg-white border border-gray-300 hover:border-gray-400 cursor-pointer inline-flex items-center justify-center"
+                                  title="Chat starten"
+                                  aria-label="Chat starten"
+                                  onClick={(e) => { e.preventDefault(); /* TODO: Chat öffnen */ }}
+                                >
+                                  <MessageCircle className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+                            {r.message && (
+                              <p className="text-sm text-gray-700 mt-2 whitespace-pre-wrap">{r.message}</p>
+                            )}
+                            <div className="text-xs text-gray-500 mt-2">{r.createdAt ? timeAgo(new Date(r.createdAt).getTime()) : ''}</div>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
               </li>
             ))}
           </ul>
@@ -774,51 +524,66 @@ const MarketplaceUserCard: React.FC<Props> = ({ session, entries, userRequests, 
         ) : (
           <ul className="space-y-2">
             {requestedProjects.map(entry => (
-              <li key={entry.id} className="flex items-center justify-between gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 hover:shadow-md transition-all">
-                <a href={`/boerse/${entry.id}`} className="text-primary hover:underline font-medium">{entry.title}</a>
-                <div className="flex items-center gap-1">
-                  <button
-                    className="text-gray-600 hover:text-blue-600 text-lg px-2 cursor-pointer"
-                    title="Anfrage bearbeiten"
-                    onClick={e => { e.preventDefault(); handleEditRequest(entry); }}
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </button>
-                  <button
-                    className="text-[#e60000] hover:text-[#c01a1f] text-lg px-2 cursor-pointer"
-                    title="Anfrage entfernen"
-                    onClick={e => { e.preventDefault(); handleRemoveRequest(entry.id); }}
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
+              <li key={entry.id} className="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 hover:shadow-md transition-all">
+                <div className="flex items-center justify-between gap-2">
+                  <a href={`/boerse/${entry.id}`} className="text-primary hover:underline font-medium">{entry.title}</a>
+                  <div className="flex items-center gap-1">
+          <button
+                      className="text-gray-600 hover:text-blue-600 text-lg px-2 cursor-pointer"
+                      title="Anfrage bearbeiten"
+                      onClick={e => {
+                        e.preventDefault();
+                        setEditDrafts(prev => ({ ...prev, [entry.id]: prev[entry.id] ?? (userRequests[entry.id]?.message || '') }));
+            // Nur den rechten Aufklapper togglen
+            setExpandedEditRequests(prev => ({ ...prev, [entry.id]: !prev[entry.id] }));
+                      }}
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
+                      className="text-[#e60000] hover:text-[#c01a1f] text-lg px-2 cursor-pointer"
+                      title="Anfrage entfernen"
+                      onClick={e => { e.preventDefault(); handleRemoveRequest(entry.id); }}
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
+                {/* Aufklapper: Anfrage bearbeiten */}
+                {expandedEditRequests[entry.id] && (
+                  <div className="mt-3 border-t border-gray-200 pt-3">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Eigene Nachricht</label>
+                    <textarea
+                      className="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                      rows={3}
+                      value={editDrafts[entry.id] ?? ""}
+                      onChange={(e) => setEditDrafts(prev => ({ ...prev, [entry.id]: e.target.value }))}
+                      placeholder="Nachricht aktualisieren..."
+                    />
+                    <div className="flex justify-end gap-2 mt-2">
+                      <button
+                        className="px-4 py-2 rounded-xl bg-white border border-gray-300 hover:border-gray-400 cursor-pointer"
+                        onClick={(e) => { e.preventDefault(); setExpandedEditRequests(prev => ({ ...prev, [entry.id]: false })); }}
+                      >
+                        Schließen
+                      </button>
+                      <button
+                        className="px-4 py-2 rounded-xl bg-[#e60000] text-white hover:bg-[#c01a1f] cursor-pointer"
+                        onClick={(e) => { e.preventDefault(); handleRequestSubmit(entry.id, (editDrafts[entry.id] || '').trim()); }}
+                        disabled={requestLoading || !(editDrafts[entry.id] || '').trim()}
+                      >
+                        Speichern
+                      </button>
+                    </div>
+                    {requestError && <div className="text-sm text-red-600 mt-2">{requestError}</div>}
+                    {requestSuccess && <div className="text-sm text-green-600 mt-2">{requestSuccess}</div>}
+                  </div>
+                )}
               </li>
             ))}
           </ul>
         )}
       </div>
-      {showEditModal && editProject && editProjectModal}
-      {showEditRequestModal && editRequestEntry && (
-        <EditRequestModal
-          message={requestMessage}
-          onClose={() => setShowEditRequestModal(false)}
-          onSubmit={handleRequestSubmit}
-          onDelete={handleDeleteRequest}
-          loading={requestLoading}
-          error={requestError}
-          success={requestSuccess}
-          isEdit={true}
-        />
-      )}
-        {/* Nachrichten-Modal anzeigen */}
-        {showMessageModal && messageModalEntry && (
-          <MessageModal
-            project={messageModalEntry}
-            requests={messageRequests}
-            onClose={handleCloseMessages}
-            onReject={handleRejectRequest}
-          />
-        )}
     </div>
   );
 };
