@@ -9,7 +9,17 @@ export async function GET(req: NextRequest) {
   const userId = req.nextUrl.searchParams.get("userId");
   if (!userId) return NextResponse.json({ error: "missing userId" }, { status: 400 });
 
-  const u: any = await prisma.user.findUnique({ where: { id: userId } });
+  const u: any = await prisma.user.findUnique({
+    where: { id: userId },
+    include: {
+      // User kann mehrere Companies haben – wir nehmen die erste
+      company: {
+        select: { id: true, name: true },
+        orderBy: { createdAt: "asc" }
+      }
+    }
+  });
+
   if (!u) return NextResponse.json({ error: "not found" }, { status: 404 });
 
   const displayName =
@@ -21,5 +31,16 @@ export async function GET(req: NextRequest) {
     (typeof u.email === "string" ? u.email.split("@")[0] : "") ||
     u.id;
 
-  return NextResponse.json({ id: u.id, displayName });
+  // Falls Relation als Array (user.company[0]) oder als Objekt (user.company) vorliegt
+  const companyEntry =
+    Array.isArray(u.company) ? u.company[0] : u.company || null;
+  const companyName = companyEntry?.name || null;
+  const companyId = companyEntry?.id || null;
+
+  return NextResponse.json({
+    id: u.id,
+    displayName,
+    companyId,
+    companyName
+  });
 }
