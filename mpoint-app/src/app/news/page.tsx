@@ -104,7 +104,7 @@ export default function NewsPage() {
                     }}
                   />
                 </div>
-                <div className="flex items-center gap-2 bg-white rounded-lg shadow-sm px-3">
+                <div className="flex items-center gap-2 bg-white rounded-lg shadow-sm px-3 focus-within:outline-none focus-within:ring-2 focus-within:ring-red-300">
                   <Filter className="w-5 h-5 text-gray-400" />
                   <select
                     className="pe-3 py-2 text-gray-900"
@@ -255,7 +255,7 @@ export default function NewsPage() {
               />
             </div>
 
-            <div className="mt-6 text-center">
+            <div className="mt-4 text-center">
               <a
                 href="#articles"
                 className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all"

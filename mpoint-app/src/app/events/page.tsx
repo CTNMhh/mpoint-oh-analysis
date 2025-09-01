@@ -230,7 +230,6 @@ export default function EventsPage() {
           <p className="text-gray-600">Lädt Events...</p>
         </div>
       </main>
-
     );
   }
 
@@ -740,10 +739,10 @@ export default function EventsPage() {
                             <img
                               src={event.imageUrl}
                               alt={event.title}
-                              className="mb-4 h-40 object-cover w-full rounded-t-lg bg-linear-to-r from-gray-200 to-gray-300"
+                              className="h-40 object-cover w-full rounded-t-lg bg-linear-to-r from-gray-200 to-gray-300"
                             />
                           )}
-                          <h3 className="text-lg font-bold mb-2 px-4">
+                          <h3 className="text-lg font-bold mb-2 px-4 pt-4">
                             {event.title}
                             {event.user.email === session?.user?.email ? (
                               <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-semibold">
@@ -844,16 +843,16 @@ export default function EventsPage() {
                     return (
                       <div
                         key={event.id}
-                        className="flex flex-col bg-white rounded-lg border border-gray-200 hover:bg-gray-50 hover:shadow-md p-4 transition-all"
+                        className="flex flex-col rounded-lg bg-white border border-gray-200 hover:bg-gray-50 hover:shadow-md transition-all"
                       >
                         {event.imageUrl && (
                           <img
                             src={event.imageUrl}
                             alt={event.title}
-                            className="rounded-t-lg -mt-4 -mx-4 mb-4 h-40 object-cover bg-linear-to-r from-gray-200 to-gray-300"
+                            className="h-40 object-cover w-full rounded-t-lg bg-linear-to-r from-gray-200 to-gray-300"
                           />
                         )}
-                        <h3 className="text-lg font-bold mb-2">
+                        <h3 className="text-lg font-bold mb-2 px-4 pt-4">
                           {event.title}
                           {(event.status === EventStatus.FULL ||
                             event.status === EventStatus.CANCELLED) && (
@@ -864,39 +863,39 @@ export default function EventsPage() {
                         </h3>
 
                         {/* NEU: Platz-Verfügbarkeit für verfügbare Events */}
-                        <div className="mb-3">
+                        <div className="mb-3 px-4">
                           <PlaceAvailability event={enrichedEvent} />
                         </div>
 
-                        <div className="text-gray-600 mb-2">
+                        <div className="text-gray-600 mb-2 px-4">
                           {new Date(event.startDate).toLocaleString()}
                           {event.endDate && (
                             <> – {new Date(event.endDate).toLocaleString()}</>
                           )}{" "}
                           – {event.location}
                         </div>
-                        <div className="text-gray-700 font-medium mb-2">
-                          Preis:{" "}
-                          {event.price === 0 ? (
-                            <span className="text-green-700 font-semibold">
-                              Kostenlos
-                            </span>
-                          ) : (
+                        {!event.chargeFree && event.price > 0 ? (
+                          <div className="text-gray-700 font-medium mb-2 px-4">
+                            Preis:{" "}
                             <span className="font-semibold">
                               {event.price} €
                             </span>
-                          )}
-                        </div>
-                        <div className="text-gray-500 text-sm mb-2">
+                          </div>
+                        ) : event.chargeFree ? (
+                          <div className="text-green-700 font-bold mb-2 px-4">
+                            ✓ Kostenfrei
+                          </div>
+                        ) : null}
+                        <div className="text-gray-500 text-sm mb-2 px-4">
                           Veranstalter:{" "}
                           <span className="font-semibold">
                             {event.ventType}
                           </span>
                         </div>
-                        <div className="mb-4 line-clamp-3">
+                        <div className="mb-4 line-clamp-3 px-4">
                           {event.description}
                         </div>
-                        <div className="flex flex-wrap gap-2 mb-4">
+                        <div className="flex flex-wrap gap-2 mb-2 px-4">
                           {event.categories.map((cat) => (
                             <span
                               key={cat}
@@ -906,16 +905,16 @@ export default function EventsPage() {
                             </span>
                           ))}
                         </div>
-                        <div className="mt-auto flex justify-end">
+                        <div className="flex flex-row flex-wrap mt-auto gap-2 px-4 pb-2 justify-end content-end grow">
                           <Link
                             href={`/events/${event.id}`}
-                            className={`${
-                              event.isFullyBooked
+                            className={`flex align-center text-white px-4 rounded-xl transition-all font-medium mb-2 py-2 text-center ${
+                              enrichedEvent.isFullyBooked
                                 ? "bg-gray-400 cursor-not-allowed"
                                 : "bg-[#e60000] hover:bg-red-700 cursor-pointer"
-                            } text-white px-4 py-2 rounded-xl transition`}
+                            }`}
                           >
-                            {event.isFullyBooked
+                            {enrichedEvent.isFullyBooked
                               ? "Ausgebucht"
                               : "Details & Anmeldung"}
                           </Link>
