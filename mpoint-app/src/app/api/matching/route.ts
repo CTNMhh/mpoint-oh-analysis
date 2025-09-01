@@ -7,6 +7,7 @@ export async function GET(request: NextRequest) {
   const myCompanyId = request.nextUrl.searchParams.get("companyId");
   const limit = parseInt(request.nextUrl.searchParams.get("limit") || "10");
   const excludeExisting = request.nextUrl.searchParams.get("excludeExisting") === "true";
+  const layout = request.nextUrl.searchParams.get("layout"); // "netzwerk" optional
   
   if (!myCompanyId) {
     return NextResponse.json({ error: "companyId required" }, { status: 400 });
@@ -502,6 +503,36 @@ user: { is: { id: { not: undefined } } }
           }
         }
       });
+    }
+
+    if (layout === "netzwerk") {
+      const simplified = formattedMatches.map((m: any) => ({
+        companyId: m.company.id,
+        companyName: m.company.name,
+        legalForm: m.company.legalForm,
+        district: m.company.district,
+        userId: m.company.user?.id,
+        firstName: m.company.user?.firstName,
+        lastName: m.company.user?.lastName,
+        score: m.matching.score,
+        percentage: m.matching.percentage,
+        type: m.matching.type,
+        status: m.matchStatus,
+        reasons: m.matching.reasons?.slice(0, 5) || [],
+        commonInterests: m.matching.commonInterests?.slice(0, 5) || [],
+        potentialSynergies: m.matching.potentialSynergies?.slice(0, 3) || [],
+        lastActivedays: m.matching.lastActivedays,
+        isRecentlyActive: m.matching.isRecentlyActive,
+      }));
+      return NextResponse.json({ success: true, matches: simplified, meta: {
+        totalCandidates: candidates.length,
+        matchesReturned: simplified.length,
+        searchCriteria: {
+          excludedExisting: excludeExisting,
+          limit: limit
+        },
+        timestamp: new Date().toISOString()
+      } });
     }
 
     return NextResponse.json({

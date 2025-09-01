@@ -23,13 +23,15 @@ import {
   Activity
 } from "lucide-react";
 import { useSession } from "next-auth/react";
+import NetworkSidebar from "../components/network/NetworkSidebar";
+ import MatchingList from "../dashboard/MatchingList"
 
 export default function NetzwerkPage() {
+ 
   const [activeTab, setActiveTab] = useState<
     "invitations" | "messages" | "connections" | "groups"
   >("invitations");
   const { data: session, status } = useSession();
-
   if (status === "unauthenticated") {
     return (
       <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-white">
@@ -69,42 +71,7 @@ export default function NetzwerkPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 gap-6 pb-8 flex flex-col lg:flex-row">
         {/* Left Sidebar */}
         <aside className="w-full lg:w-72 flex-shrink-0 space-y-6">
-          <div className="bg-white/80 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-6 border border-white/50">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-gray-900">
-                Ihr Netzwerk
-              </h2>
-              <Network className="w-6 h-6 text-[#e60000]" />
-            </div>
-
-            <div className="space-y-3">
-              <SidebarStat
-                label="M-POINT Kontakte"
-                icon={<Users className="w-5 h-5 text-[#e60000]" />}
-                count={256}
-              />
-              <SidebarStat
-                label="Folgen & Follower"
-                icon={<UserPlus className="w-5 h-5 text-purple-500" />}
-                count={142}
-              />
-              <SidebarStat
-                label="Gruppen"
-                icon={<Hash className="w-5 h-5 text-blue-500" />}
-                count={12}
-              />
-              <SidebarStat
-                label="Events"
-                icon={<Calendar className="w-5 h-5 text-green-500" />}
-                count={8}
-              />
-              <SidebarStat
-                label="Unternehmen"
-                icon={<Building2 className="w-5 h-5 text-orange-500" />}
-                count={15}
-              />
-            </div>
-          </div>
+              <NetworkSidebar />
 
           <div className="bg-white/80 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-6 border border-white/50">
             <div className="flex items-center justify-between mb-6">
@@ -231,21 +198,8 @@ export default function NetzwerkPage() {
               <Sparkles className="w-6 h-6 text-[#e60000]" />
             </div>
             <div className="space-y-4">
-              <SuggestionItem
-                name="Dr. Lisa Chen"
-                title="CEO • AI Solutions GmbH"
-                match={95}
-              />
-              <SuggestionItem
-                name="Thomas Berg"
-                title="CTO • TechStart Berlin"
-                match={88}
-              />
-              <SuggestionItem
-                name="Julia Hoffmann"
-                title="Investor • NRW Ventures"
-                match={82}
-              />
+            <MatchingList layout="netzwerk" limit={3} />
+
             </div>
             <div className="text-center mt-6">
               <a
