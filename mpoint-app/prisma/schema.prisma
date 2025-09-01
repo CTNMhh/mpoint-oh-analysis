@@ -718,6 +718,7 @@ enum NotificationType {
   EVENT_CREATED
   EVENT_UPDATED
   EVENT_Booking_Confirmed
+  GROUP_INVITE
 }
 
 model Notification {
