@@ -169,7 +169,7 @@ export default function EditMarketplaceEntryPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pt-20">
-      <div className="max-w-3xl mx-auto bg-white border border-gray-200 rounded-xl shadow-sm p-6">
+      <div className="max-w-3xl mx-auto bg-white border border-gray-200 rounded-xl shadow-sm p-6 mb-6 mt-6">
         <h1 className="text-2xl font-bold text-gray-900 mb-6">Eintrag bearbeiten</h1>
         <form onSubmit={onSubmit} className="space-y-4">
           <div className="flex gap-4 flex-wrap">

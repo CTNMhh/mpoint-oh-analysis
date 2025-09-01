@@ -1,8 +1,9 @@
 // src/app/api/marketplace/request.ts
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, NotificationType } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { createNotification } from "@/lib/notifications";
 
 const prisma = new PrismaClient();
 
@@ -174,6 +175,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "projectId fehlt" }, { status: 400 });
     }
 
+    // Projekt ermitteln (für Owner und Titel)
+    const project = await prisma.marketplaceEntry.findUnique({
+      where: { id: projectId },
+      select: { id: true, title: true, userId: true },
+    });
+    if (!project) {
+      return NextResponse.json({ error: "Projekt nicht gefunden" }, { status: 404 });
+    }
+
     // Prüfe, ob bereits eine Anfrage existiert
     const existing = await prisma.marketplaceRequest.findUnique({
       where: {
@@ -196,6 +206,27 @@ export async function POST(req: Request) {
         status: "PENDING",
       },
     });
+
+    // Benachrichtige den Projekt-Eigentümer (nur beim Erstellen)
+    try {
+      // Name des Anfragenden für die Nachricht
+      const requester = await prisma.user.findUnique({ where: { id: session.user.id } });
+      const requesterDisplayName =
+        [requester?.firstName, requester?.lastName].filter(Boolean).join(" ") ||
+        requester?.name ||
+        requester?.email ||
+        "Ein Nutzer";
+
+      await createNotification({
+        userId: project.userId,
+        type: NotificationType.SYSTEM,
+        title: "Neue Anfrage zu Ihrem Marktplatz‑Projekt",
+        body: `${requesterDisplayName} hat Ihnen eine Anfrage zu "${project.title}" gesendet.`,
+        url: `/marketplace/${project.id}`,
+      });
+    } catch (e) {
+      console.error("Notification (MARKETPLACE REQUEST) fehlgeschlagen:", e);
+    }
     return NextResponse.json({ success: true, request });
   } catch (error) {
     return NextResponse.json({ error: "Fehler beim Absenden der Anfrage." }, { status: 500 });
