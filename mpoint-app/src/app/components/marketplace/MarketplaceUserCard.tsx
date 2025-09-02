@@ -165,24 +165,30 @@ const MarketplaceUserCard: React.FC<Props> = ({ session, entries, userRequests, 
       if (!myProjects.length) return;
       const pendingCounts: Record<string, number> = {};
       const totalCounts: Record<string, number> = {};
-      await Promise.all(myProjects.map(async (entry) => {
-        try {
-          // PENDING Count für Badge
-          const resPending = await fetch(`/api/marketplace/request?countRequestId=${entry.id}&status=PENDING`);
-          const dataPending = await resPending.json();
-          pendingCounts[entry.id] = dataPending.count ?? 0;
-        } catch {
-          pendingCounts[entry.id] = 0;
-        }
-        try {
-          // Gesamtcount für Icon-Farbe/Klickbarkeit
-          const resTotal = await fetch(`/api/marketplace/request?countRequestId=${entry.id}`);
-          const dataTotal = await resTotal.json();
-          totalCounts[entry.id] = dataTotal.count ?? 0;
-        } catch {
-          totalCounts[entry.id] = 0;
-        }
-      }));
+      await Promise.all(
+        myProjects.map(async (entry) => {
+          try {
+            // PENDING Count für Badge
+            const resPending = await fetch(
+              `/api/marketplace/request?countRequestId=${entry.id}&status=PENDING`
+            );
+            const dataPending = await resPending.json();
+            pendingCounts[entry.id] = dataPending.count ?? 0;
+          } catch {
+            pendingCounts[entry.id] = 0;
+          }
+          try {
+            // Gesamtcount für Icon-Farbe/Klickbarkeit
+            const resTotal = await fetch(
+              `/api/marketplace/request?countRequestId=${entry.id}`
+            );
+            const dataTotal = await resTotal.json();
+            totalCounts[entry.id] = dataTotal.count ?? 0;
+          } catch {
+            totalCounts[entry.id] = 0;
+          }
+        })
+      );
       setProjectRequestCounts(pendingCounts);
       setProjectTotalRequestCounts(totalCounts);
     }
@@ -219,7 +225,7 @@ const MarketplaceUserCard: React.FC<Props> = ({ session, entries, userRequests, 
     try {
       const res = await fetch(`/api/marketplace/${projectId}`, { method: "DELETE" });
       if (res.ok) {
-        setEntries(prev => prev.filter(e => e.id !== projectId));
+        setEntries(prev => prev.filter((e: any) => e.id !== projectId));
       } else {
         alert("Fehler beim Löschen des Projekts.");
       }
@@ -492,14 +498,29 @@ const MarketplaceUserCard: React.FC<Props> = ({ session, entries, userRequests, 
                                     Ablehnen
                                   </button>
                                 )}
-                                <button
-                                  className="text-xs px-3 py-1 rounded-xl bg-white border border-gray-300 hover:border-gray-400 cursor-pointer inline-flex items-center justify-center"
-                                  title="Chat starten"
-                                  aria-label="Chat starten"
-                                  onClick={(e) => { e.preventDefault(); /* TODO: Chat öffnen */ }}
-                                >
-                                  <MessageCircle className="w-3.5 h-3.5" />
-                                </button>
+                                {(() => {
+                                  const isSelf = session?.user?.id && r?.userId && session.user.id === r.userId;
+                                  const chatHref = `/chat/${encodeURIComponent(r.userId)}?projectId=${encodeURIComponent(entry.id)}`;
+                                  return (
+                                    <button
+                                      className={`text-xs px-3 py-1 rounded-xl bg-white border inline-flex items-center justify-center ${
+                                        isSelf
+                                          ? 'opacity-50 cursor-not-allowed border-gray-200 text-gray-300'
+                                          : 'border-gray-300 hover:border-gray-400 cursor-pointer'
+                                      }`}
+                                      title={isSelf ? 'Eigene Anfrage – Chat deaktiviert' : 'Chat starten'}
+                                      aria-label={isSelf ? 'Chat deaktiviert' : 'Chat starten'}
+                                      aria-disabled={isSelf ? true : undefined}
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        if (isSelf) return;
+                                        router.push(chatHref);
+                                      }}
+                                    >
+                                      <MessageCircle className="w-3.5 h-3.5" />
+                                    </button>
+                                  );
+                                })()}
                               </div>
                             </div>
                             {r.message && (
