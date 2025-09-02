@@ -176,9 +176,18 @@ export default function ChatPage() {
     fetch(`/api/chat/user-summary?userId=${peerUserId}`)
       .then(r => (r.ok ? r.json() : null))
       .then(d => {
-        if (!ignore && d?.displayName) setPeerName(d.displayName);
+        if (ignore || !d) return;
+        // Bevorzuge Firmenname, sonst DisplayName, sonst ID
+        const preferred =
+          d.companyName?.trim() ||
+          d.displayName?.trim() ||
+          d.id ||
+          "";
+        setPeerName(preferred);
       })
-      .catch(() => {});
+      .catch(() => {
+        if (!ignore) setPeerName("");
+      });
     return () => { ignore = true; };
   }, [peerUserId, myUserId]);
 
@@ -286,6 +295,7 @@ export default function ChatPage() {
       <div className="max-w-5xl mx-auto h[calc(100vh-6rem)] md:h-[calc(100vh-6rem)] flex gap-4 px-4">
         {/* Sidebar links (behält Layout; aktive ID hier peerUserId) */}
         <div className="hidden md:block w-72 shrink-0">
+          
           <ChatSidebar companyId={companyId} activePeerUserId={peerUserId}  />
         </div>
 

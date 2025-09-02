@@ -120,7 +120,16 @@ export default function CheckoutPage() {
     }
   }
 
-  if (loading) return <div className="py-8 text-center">Lädt...</div>;
+  if (loading) {
+    return (
+      <main className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#e60000] mx-auto mb-4"></div>
+          <p className="text-gray-600">Lädt Checkout...</p>
+        </div>
+      </main>
+    );
+  }
 
   // Meldungs-Block immer vor dem eigentlichen Content!
   const messageBlock = message && (
@@ -135,12 +144,12 @@ export default function CheckoutPage() {
 
   if (!cart || !cart.items || cart.items.length === 0) {
     return (
-      <>
+      <main className="min-h-screen flex items-center justify-center bg-gray-50">
         {messageBlock}
         <div className="mt-20 py-8 text-gray-500 text-center">
           Es sind keine Event-Buchungen im Warenkorb vorhanden
         </div>
-      </>
+      </main>
     );
   }
 
@@ -173,7 +182,7 @@ export default function CheckoutPage() {
                     <button
                       id="cart-item-remove-button"
                       onClick={() => handleRemoveCartItem(item.id)}
-                      className="inline-flex items-center justify-center bg-red-500 text-white px-2 py-1 rounded hover:bg-red-700"
+                      className="inline-flex items-center justify-center bg-[#e60000] text-white px-2 py-1 rounded hover:bg-red-700"
                       title="Entfernen"
                     >
                       <Trash2 size={16} />
@@ -195,7 +204,7 @@ export default function CheckoutPage() {
         {step === 1 && (
           <div id="checkout-step1-container">
             <form
-              className="max-w-lg mx-auto bg-white p-6 rounded-xl shadow"
+              className="bg-white p-6 rounded-xl shadow-sm"
               onSubmit={async e => {
                 e.preventDefault();
                 if (!form.paymentMethod || !form.name || !form.street || !form.zipCode || !form.city || !form.country) {
@@ -229,56 +238,58 @@ export default function CheckoutPage() {
               <h2 className="text-xl font-bold mb-4">Zahlungsdaten</h2>
               <div className="mb-4">
                 <label className="block mb-1 font-semibold">Zahlungsmethode</label>
-                <select
-                  required
-                  className="w-full border px-2 py-1 rounded"
-                  value={form.paymentMethod}
-                  onChange={e => setForm({ ...form, paymentMethod: e.target.value })}
-                >
-                  <option value="">Bitte wählen</option>
-                  <option value="BANK_TRANSFER">Überweisung</option>
-                  <option value="INVOICE">Rechnung</option>
-                  <option value="PAYPAL">PayPal</option>
-                </select>
+                <div  className="flex items-center gap-2 bg-white rounded-lg shadow-sm px-3 focus-within:outline-none focus-within:ring-2 focus-within:ring-red-300">
+                  <select
+                    required
+                    className="w-full pe-3 py-2 text-gray-900 focus:outline-none"
+                    value={form.paymentMethod}
+                    onChange={e => setForm({ ...form, paymentMethod: e.target.value })}
+                  >
+                    <option value="">Bitte wählen</option>
+                    <option value="BANK_TRANSFER">Überweisung</option>
+                    <option value="INVOICE">Rechnung</option>
+                    <option value="PAYPAL">PayPal</option>
+                  </select>
+                </div>
               </div>
               <h2 className="text-xl font-bold mb-4">Rechnungsadresse</h2>
               <input
-                className="mb-2 w-full border px-2 py-1"
+                className="mb-2 w-full bg-white rounded-lg shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
                 required
                 value={form.name}
                 onChange={e => setForm({ ...form, name: e.target.value })}
                 placeholder="Name"
               />
               <input
-                className="mb-2 w-full border px-2 py-1"
+                className="mb-2 w-full bg-white rounded-lg shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
                 required
                 value={form.street}
                 onChange={e => setForm({ ...form, street: e.target.value })}
                 placeholder="Straße"
               />
               <input
-                className="mb-2 w-full border px-2 py-1"
+                className="mb-2 w-full bg-white rounded-lg shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
                 required
                 value={form.zipCode}
                 onChange={e => setForm({ ...form, zipCode: e.target.value })}
                 placeholder="PLZ"
               />
               <input
-                className="mb-2 w-full border px-2 py-1"
+                className="mb-2 w-full bg-white rounded-lg shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
                 required
                 value={form.city}
                 onChange={e => setForm({ ...form, city: e.target.value })}
                 placeholder="Ort"
               />
               <input
-                className="mb-2 w-full border px-2 py-1"
+                className="mb-2 w-full bg-white rounded-lg shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
                 required
                 value={form.country}
                 onChange={e => setForm({ ...form, country: e.target.value })}
                 placeholder="Land"
               />
               <input
-                className="mb-2 w-full border px-2 py-1"
+                className="mb-2 w-full bg-white rounded-lg shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
                 required
                 type="email"
                 value={form.email}
@@ -288,12 +299,12 @@ export default function CheckoutPage() {
               {error && <div className="text-red-600 mb-2">{error}</div>}
 
               <div className="flex justify-end gap-4 mt-4">
-                <button type="button" className="px-4 py-2 bg-gray-300 rounded" onClick={() => window.location.href = "/cart"}>Abbrechen</button>
+                <button type="button" className="px-4 py-2 bg-gray-300 rounded-xl cursor-pointer" onClick={() => window.location.href = "/cart"}>Abbrechen</button>
                 {/* Button nur anzeigen, wenn NICHT PayPal */}
                 {form.paymentMethod !== "PAYPAL" && (
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700"
+                    className="px-4 py-2 bg-[#e60000] text-white rounded-xl hover:bg-red-700 cursor-pointer"
                   >
                     Zahlung bestätigen
                   </button>
@@ -315,7 +326,7 @@ export default function CheckoutPage() {
               className="max-w-lg mx-auto bg-white p-6 rounded-xl shadow text-center">
               <h2 className="text-2xl font-bold mb-4 text-green-700">Vielen Dank für Ihre Buchung!</h2>
               <div className="mb-4">Ihre Zahlung war erfolgreich.</div>
-              <button className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700" onClick={() => window.location.href = "/events"}>
+              <button className="px-4 py-2 bg-[#e60000] text-white rounded-xl hover:bg-red-700 cursor-pointer" onClick={() => window.location.href = "/events"}>
                 Zurück zu Events
               </button>
             </div>
