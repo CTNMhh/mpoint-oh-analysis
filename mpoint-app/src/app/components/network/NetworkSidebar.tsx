@@ -293,10 +293,37 @@ export default function ChatSidebar({
   // Render Loading State (nur beim initialen Laden)
   const showLoading = loading && items.length === 0;
 
+  // Mobile Toggle für Netzwerk-Block
+  const [showNetworkMobile, setShowNetworkMobile] = useState(false);
+
   return (
     <aside className="w-full lg:w-72 flex-shrink-0 space-y-4">
+      {/* Mobile Toggle Bar */}
+      <div className="flex lg:hidden gap-2">
+        <button
+          onClick={() => setShowNetworkMobile(false)}
+          className={`flex-1 py-2 rounded-lg text-sm font-medium transition ${
+            !showNetworkMobile ? "bg-[#e60000] text-white" : "bg-white text-gray-700 border"
+          }`}
+        >
+          Chats
+        </button>
+        <button
+          onClick={() => setShowNetworkMobile(true)}
+          className={`flex-1 py-2 rounded-lg text-sm font-medium transition ${
+            showNetworkMobile ? "bg-[#e60000] text-white" : "bg-white text-gray-700 border"
+          }`}
+        >
+          Netzwerk
+        </button>
+      </div>
+
       {/* Chat Section */}
-      <div className="bg-white/80 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-6 border border-white/50">
+      <div
+        className={`bg-white/80 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-5 border border-white/50 ${
+          showNetworkMobile ? "hidden lg:block" : "block"
+        }`}
+      >
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-gray-900">Chats</h2>
@@ -344,70 +371,73 @@ export default function ChatSidebar({
           )}
 
           {!showLoading && filtered.length > 0 && (
-            <div className="max-h-[400px] overflow-y-auto space-y-2">
+            <div className="max-h-[420px] overflow-y-auto space-y-2 pr-1 scrollbar-thin scrollbar-thumb-gray-300">
               {filtered.map((m) => {
                 const active = m.peerUserId === activePeerUserId;
                 const displayName = m.name || m.companyName || "Unbekannt";
                 const initials = getInitials(displayName);
-                
+                // Kürze Vorschautext zusätzlich server-unabhängig
+                const preview =
+                  (m.lastContent || "")
+                    .replace(/\s+/g, " ")
+                    .trim()
+                    .slice(0, 70) + ((m.lastContent || "").length > 70 ? "…" : "");
+
                 return (
-                  <div
+                  <button
                     key={m.peerUserId}
                     onClick={() => handleChatClick(m.peerUserId)}
-                    className={`flex items-center justify-between px-4 py-3 rounded-lg border cursor-pointer transition-all group ${
+                    className={`w-full text-left flex items-center gap-3 px-3 py-3 rounded-2xl border transition-all group ${
                       active
-                        ? "border-[#e60000] bg-[#e60000]/5 shadow-md"
-                        : "border-gray-200 hover:bg-gray-50 hover:shadow-md"
+                        ? "border-[#e60000] bg-gradient-to-r from-[#e60000]/10 to-[#e60000]/5 shadow"
+                        : "border-gray-200 hover:border-[#e60000]/50 hover:bg-gray-50"
                     }`}
+                    title={displayName}
                   >
-                    <span className={`flex items-center gap-3 font-medium transition-colors ${
-                      active 
-                        ? "text-[#e60000]" 
-                        : "text-gray-700 group-hover:text-gray-900"
-                    }`}>
-                      {/* Avatar */}
-                      <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
-                          active
-                            ? "bg-gradient-to-br from-[#e60000] to-[#c00000] text-white shadow-lg"
-                            : "bg-gradient-to-br from-gray-200 to-gray-300 text-gray-700 group-hover:from-gray-300 group-hover:to-gray-400"
-                        }`}
-                      >
-                        {initials}
-                      </div>
-                      
-                      {/* Name und Details */}
-                      <div className="min-w-0 flex-1">
-                        <div className="truncate">
+                    <div
+                      className={`flex-shrink-0 w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold ${
+                        active
+                          ? "bg-[#e60000] text-white"
+                          : "bg-gray-200 text-gray-700 group-hover:bg-gray-300"
+                      }`}
+                    >
+                      {initials}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className={`font-medium text-sm overflow-hidden text-ellipsis whitespace-nowrap max-w-[140px] sm:max-w-[160px] lg:max-w-[120px] ${
+                          active ? "text-[#b90000]" : "text-gray-800 group-hover:text-gray-900"
+                        }`}>
                           {displayName}
-                        </div>
-                        {m.lastContent && (
-                          <div className="text-xs text-gray-400 truncate mt-0.5">
-                            {m.lastContent}
-                          </div>
+                        </span>
+                        <span
+                          className={`text-[10px] px-2 py-0.5 rounded-full font-semibold tracking-wide ${
+                            m.channelType === "match"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-blue-100 text-blue-700"
+                          }`}
+                        >
+                          {m.channelType === "match" ? "Match" : "Direkt"}
+                        </span>
+                        {m.lastAt && (
+                          <span className="ml-auto text-[10px] text-gray-400 flex-shrink-0">
+                            {new Date(m.lastAt).toLocaleDateString("de-DE", {
+                              day: "2-digit",
+                              month: "2-digit",
+                            })}
+                          </span>
                         )}
                       </div>
-                    </span>
-                    
-                    {/* Meta Info Badge */}
-                    <div className="flex flex-col items-end gap-1">
-                      <span className={`font-bold px-3 py-1 rounded-lg text-xs ${
-                        active 
-                          ? "bg-[#e60000] text-white" 
-                          : "bg-gray-100 text-gray-900"
-                      }`}>
-                        {m.channelType === "match" ? "Match" : "Direkt"}
-                      </span>
-                      {m.lastAt && (
-                        <span className="text-xs text-gray-400">
-                          {new Date(m.lastAt).toLocaleDateString("de-DE", {
-                            day: "2-digit",
-                            month: "2-digit",
-                          })}
-                        </span>
+                      {preview && (
+                        <div
+                          className="text-xs text-gray-400 mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap"
+                          title={m.lastContent}
+                        >
+                          {preview}
+                        </div>
                       )}
                     </div>
-                  </div>
+                  </button>
                 );
               })}
             </div>
@@ -416,7 +446,11 @@ export default function ChatSidebar({
       </div>
 
       {/* Network Section */}
-      <div className="bg-white/80 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-6 border border-white/50">
+      <div
+        className={`bg-white/80 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-6 border border-white/50 ${
+          showNetworkMobile ? "block" : "hidden lg:block"
+        }`}
+      >
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-gray-900">
             Ihr Netzwerk
