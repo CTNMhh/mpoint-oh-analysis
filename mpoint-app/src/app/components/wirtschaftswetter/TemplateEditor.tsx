@@ -2,20 +2,8 @@
 
 import React from "react";
 import Wirtschaftsmeter from "./Wirtschaftsmeter";
-import { X } from "lucide-react";
+import { X, Info } from "lucide-react";
 import { useTemplate, TEMPLATE_NEW } from "./TemplateContext";
-
-// Helper to generate stable pseudo-random factor values per region+factor
-function factorValue(region: string, factorName: string): number {
-  const seedStr = `${region}:${factorName}`;
-  let seed = 0;
-  for (let i = 0; i < seedStr.length; i++) seed = (seed * 31 + seedStr.charCodeAt(i)) >>> 0;
-  let val = seed % 1000;
-  // simple LCG to spread values
-  val = (val * 9301 + 49297) % 233280;
-  const norm = val / 233280; // 0..1
-  return Math.round(20 + norm * 70); // range ~20..90 to avoid extremes
-}
 
 export default function TemplateEditor() {
   const {
@@ -62,7 +50,7 @@ export default function TemplateEditor() {
           value={name}
           onChange={(e) => setName(e.target.value)}
           readOnly={readonly}
-          placeholder="Name des Templates"
+          placeholder="Template Name"
           className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm disabled:bg-gray-50"
         />
       </div>
@@ -114,7 +102,7 @@ export default function TemplateEditor() {
                             onClick={() => updateMode(idx, "avg")}
                             className={`px-2 py-1 text-xs ${row.mode === "avg" ? "bg-[rgb(228,25,31)] text-white" : "bg-white text-gray-700"}`}
                           >
-                            Durchschnitt
+                            Trend
                           </button>
                         </div>
                       </div>
@@ -122,7 +110,7 @@ export default function TemplateEditor() {
                     <div className="mt-2 flex items-center justify-between gap-3">
                       <div className="flex items-center gap-2 text-xs">
                         <span className="px-2 py-1 rounded-full bg-gray-100 text-gray-700">
-                          {row.mode === "latest" ? "Aktuell" : "Durchschnitt"}: {row.mode === "latest" ? vals.latest : vals.avg}
+                          {row.mode === "latest" ? "Aktuell" : "Trend"}: {row.mode === "latest" ? vals.latest : vals.avg}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
@@ -145,7 +133,10 @@ export default function TemplateEditor() {
             );
           })}
           {rows.length === 0 && (
-            <div className="p-4 text-sm text-gray-500">Keine Faktoren im Template.</div>
+            <div className="p-4 text-sm text-gray-600 bg-gray-50 flex items-center gap-2">
+              <Info className="h-4 w-4 text-gray-400" />
+              Keine Faktoren im Template. Füge Elemente über die Faktorenliste links hinzu.
+            </div>
           )}
         </div>
       </div>

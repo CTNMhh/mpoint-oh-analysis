@@ -30,12 +30,6 @@ export default function WirtschaftsanalysePage() {
             <aside className="lg:col-span-1 space-y-4">
               <WetterVergleich />
               <TemplateEditor />
-              <div className="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-5">
-                <h2 className="text-sm font-semibold text-gray-900">Hinweis</h2>
-                <p className="mt-2 text-sm text-gray-600">
-                  Diese Seite zeigt eine Liste möglicher Einflussfaktoren mit Suche, Filter und Paginierung. Der Inhalt der Faktoren ist aktuell ein Dummy und wird später mit echten Daten ergänzt.
-                </p>
-              </div>
             </aside>
           </div>
         </TemplateProvider>

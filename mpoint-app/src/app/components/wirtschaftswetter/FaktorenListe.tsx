@@ -2,20 +2,13 @@
 
 import React, { useMemo, useState } from "react";
 import FaktorListenElement, { Faktor } from "./FaktorListenElement";
+import data from "./wirtschaftswetter.data.json";
 import { Search, SlidersHorizontal } from "lucide-react";
 
-// Dummy data for now
-const ALL_FAKTOREN: Faktor[] = Array.from({ length: 23 }).map((_, i) => ({
-  id: String(i + 1),
-  name: `Faktor ${i + 1}`,
-  beschreibung:
-    "Kurzbeschreibung des Faktors als Platzhaltertext. Dies wird später durch echte Inhalte ersetzt.",
-  quelle: i % 3 === 0 ? "Destatis" : i % 3 === 1 ? "Bundesbank" : "Ifo Institut",
-  kategorie: ["Konjunktur", "Arbeitsmarkt", "Finanzen"][i % 3],
-  werte: Array.from({ length: 12 }, () => Math.round(Math.random() * 100)),
-}));
+// Centralized dummy factors from shared JSON file
+const ALL_FAKTOREN: Faktor[] = (data as any).faktoren ?? [];
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 6;
 
 export default function FaktorenListe() {
   const [query, setQuery] = useState("");

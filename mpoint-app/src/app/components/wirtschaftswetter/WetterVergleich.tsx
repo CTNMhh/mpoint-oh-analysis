@@ -35,6 +35,11 @@ export default function WetterVergleich() {
   }, [regionA, regionB, regions]);
 
   const rows = React.useMemo(() => {
+    const toScore = (n: number) => {
+      if (!isFinite(n)) return 0;
+      const r = Math.round(n);
+      return Math.max(0, Math.min(100, r));
+    };
     const a = (rueckblick[regionA] ?? []) as Array<{ label: string; value: number }>;
     const b = (rueckblick[regionB] ?? []) as Array<{ label: string; value: number }>;
     const mapA = new Map(a.map((x) => [x.label, x.value]));
@@ -44,8 +49,8 @@ export default function WetterVergleich() {
       .filter((l) => mapB.has(l)); // intersection by label
 
     return labels.map((label) => {
-      const valA = mapA.get(label) ?? 0;
-      const valB = mapB.get(label) ?? 0;
+      const valA = toScore(mapA.get(label) ?? 0);
+      const valB = toScore(mapB.get(label) ?? 0);
       return { label, a: valA, b: valB, diff: valA - valB };
     });
   }, [regionA, regionB, rueckblick]);

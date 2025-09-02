@@ -27,23 +27,34 @@ export type TemplateContextType = {
 
 const TemplateContext = React.createContext<TemplateContextType | null>(null);
 
-// Generate a stable synthetic series per (template, factor)
-function factorSeries(templateName: string, factorName: string, points = 12): number[] {
-  const seedStr = `${templateName}:${factorName}`;
-  let seed = 0;
-  for (let i = 0; i < seedStr.length; i++) seed = (seed * 31 + seedStr.charCodeAt(i)) >>> 0;
-  const arr: number[] = [];
-  let val = seed % 1000;
-  for (let i = 0; i < points; i++) {
-    val = (val * 9301 + 49297) % 233280;
-    const norm = val / 233280;
-    arr.push(Math.round(20 + norm * 70));
+// Resolve factor score series (0-100) from JSON; fallback to normalized werte or neutral 50
+function getFactorScoreSeries(factorName: string): number[] {
+  const faktoren = ((data as any).faktoren ?? []) as Array<{
+    name?: string;
+    scores?: number[];
+    werte?: number[];
+  }>;
+  const f = faktoren.find((x) => x?.name === factorName);
+  if (f?.scores && f.scores.length > 0) return f.scores.map((n) => clamp01(n));
+  if (f?.werte && f.werte.length > 0) {
+    const min = Math.min(...f.werte);
+    const max = Math.max(...f.werte);
+    const range = max - min;
+    if (range === 0) return new Array(f.werte.length).fill(50);
+    return f.werte.map((v) => clamp01(((v - min) / range) * 100));
   }
-  return arr;
+  // default: neutral baseline
+  return new Array(12).fill(50);
 }
 
-function factorValueFromMode(templateName: string, factorName: string, mode: "latest" | "avg"): number {
-  const series = factorSeries(templateName, factorName);
+function clamp01(n: number): number {
+  if (!isFinite(n)) return 0;
+  const r = Math.round(n);
+  return Math.max(0, Math.min(100, r));
+}
+
+function factorValueFromMode(_templateName: string, factorName: string, mode: "latest" | "avg"): number {
+  const series = getFactorScoreSeries(factorName);
   if (mode === "avg") {
     const sum = series.reduce((a, v) => a + v, 0);
     return Math.round(sum / (series.length || 1));
@@ -59,15 +70,16 @@ export function TemplateProvider({ children }: { children: React.ReactNode }) {
   const [selected, setSelected] = React.useState<string>(
     initialTemplate && templates.includes(initialTemplate) ? initialTemplate : (templates[0] ?? TEMPLATE_NEW)
   );
-  const [name, setName] = React.useState<string>(selected === TEMPLATE_NEW ? "Neues Template" : selected);
+  const [name, setName] = React.useState<string>(selected === TEMPLATE_NEW ? "" : selected);
   const [rows, setRows] = React.useState<Row[]>(() => (indexFactors[selected] ?? []).map((n) => ({ name: n, weight: 1, mode: "latest" })));
 
   const isReadonly = selected !== TEMPLATE_NEW;
 
   React.useEffect(() => {
     if (selected === TEMPLATE_NEW) {
-      setName((prev) => (prev && prev !== "" && prev !== selected ? prev : "Neues Template"));
-      // keep rows as-is when switching to new
+      // For a new template, reset name and start with an empty factor list
+      setName("");
+      setRows([]);
     } else {
       setName(selected);
   setRows((indexFactors[selected] ?? []).map((n) => ({ name: n, weight: 1, mode: "latest" })));
@@ -106,13 +118,12 @@ export function TemplateProvider({ children }: { children: React.ReactNode }) {
 
   const getFactorValues = React.useCallback(
     (factorName: string): { latest: number; avg: number } => {
-      const seedName = isReadonly ? selected : (name || "Neues Template");
-      const series = factorSeries(seedName, factorName);
+      const series = getFactorScoreSeries(factorName);
       const latest = series[series.length - 1] ?? 0;
       const avg = Math.round(series.reduce((a, v) => a + v, 0) / (series.length || 1));
       return { latest, avg };
     },
-    [isReadonly, selected, name]
+    []
   );
 
   const value: TemplateContextType = {
