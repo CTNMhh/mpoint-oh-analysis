@@ -3,7 +3,7 @@
 import React from "react";
 import { useEffect, useRef, useState, useMemo, useCallback, useTransition } from "react";
 import { useSession } from "next-auth/react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import ChatSidebar from "../ChatSidebar";
 import dynamic from "next/dynamic";
 
@@ -89,6 +89,8 @@ const MessageBubble = React.memo(function MessageBubble({
 export default function ChatPage() {
   const { userId: peerUserId } = useParams<{ userId: string }>();
   const { data: session } = useSession();
+  const searchParams = useSearchParams();
+  const projectIdParam = searchParams.get("projectId");
   const myUserId = session?.user?.id;
 
   // Zustand wie im alten Layout
@@ -106,6 +108,11 @@ export default function ChatPage() {
   const emojiBtnRef = useRef<HTMLButtonElement>(null);
   const emojiWrapRef = useRef<HTMLDivElement>(null);
 
+  const [linkedProjectId, setLinkedProjectId] = useState<string | null>(null);
+  const [linkedProjectTitle, setLinkedProjectTitle] = useState<string>("");
+  const [projectTitleLoaded, setProjectTitleLoaded] = useState(false); // signal: Titel (oder Fallback) ermittelt
+  const [projectPrefillDone, setProjectPrefillDone] = useState<boolean>(false);
+
   // companyId laden (nur Layout / gleiche Optik; Funktionalität bleibt peerUserId-basiert)
   useEffect(() => {
     const userId = session?.user?.id;
@@ -119,6 +126,83 @@ export default function ChatPage() {
       })
       .finally(() => setLoading(false));
   }, [session?.user?.id]);
+
+  // Projekt-Kontext aus ?projectId=... übernehmen
+  useEffect(() => {
+    if (!projectIdParam) {
+      setLinkedProjectId(null);
+      return;
+    }
+    setLinkedProjectId(projectIdParam);
+  }, [projectIdParam]);
+
+  // Projektdetails laden (nur Titel für Prefill)
+  useEffect(() => {
+    if (!linkedProjectId || !session?.user?.id) return;
+    let aborted = false;
+    setProjectTitleLoaded(false);
+    (async () => {
+      try {
+        const res = await fetch(`/api/marketplace/${linkedProjectId}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (!aborted) {
+            const raw =
+              (data?.title ||
+                data?.entry?.title ||
+                data?.project?.title ||
+                data?.data?.title) ?? "";
+            const title = String(raw).trim();
+            setLinkedProjectTitle(title.length ? title : `Projekt ${linkedProjectId.substring(0, 6)}`);
+          }
+        } else if (!aborted) {
+          setLinkedProjectTitle(`Projekt ${linkedProjectId.substring(0, 6)}`);
+        }
+      } catch {
+        if (!aborted) {
+          setLinkedProjectTitle(`Projekt ${linkedProjectId.substring(0, 6)}`);
+        }
+      } finally {
+        if (!aborted) setProjectTitleLoaded(true);
+      }
+    })();
+    return () => { aborted = true; };
+  }, [linkedProjectId, session?.user?.id]);
+
+  // Chat-Text einmalig mit fertiger Projekt-Nachricht vorbefüllen
+  useEffect(() => {
+    // Warten bis Titel (oder Fallback) geladen
+    if (!linkedProjectId || !projectTitleLoaded) return;
+    if (projectPrefillDone) return;
+    if (text.trim().length === 0 && messages.length === 0) {
+      const finalTitle = linkedProjectTitle || "Projekt";
+      const tpl = `Danke für Ihre Anfrage zu "${finalTitle}". Können wir uns hierzu austauschen?`;
+      setText(tpl);
+      setProjectPrefillDone(true);
+    }
+  }, [
+    linkedProjectId,
+    projectTitleLoaded,
+    linkedProjectTitle,
+    projectPrefillDone,
+    text,
+    messages.length
+  ]);
+
+  // Falls der Prefill schon mit generischem "Projekt" gesetzt wurde und später ein echter Titel nachgeladen wird -> ersetzen
+  useEffect(() => {
+    if (
+      projectPrefillDone &&
+      projectTitleLoaded &&
+      linkedProjectTitle &&
+      text.includes('Projekt"') && // generischer Platzhalter noch drin
+      text.includes('interessiere mich für Ihr Projekt')
+    ) {
+      setText(prev =>
+        prev.replace(/Projekt"\. Können/, `${linkedProjectTitle}". Können`)
+      );
+    }
+  }, [linkedProjectTitle, projectTitleLoaded, projectPrefillDone, text]);
 
   // History + SSE (unverändert zur neuen peerUserId-Logik)
   useEffect(() => {
@@ -136,10 +220,7 @@ export default function ChatPage() {
             if (data.type === "message") {
               const msg = data.message;
               setMessages(prev => {
-                // Schon vorhanden? -> nichts tun
                 if (prev.some(p => p.id === msg.id)) return prev;
-
-                // Falls von mir: ersetze erste passende optimistische (gleicher Inhalt) statt doppelt
                 if (msg.senderUserId === myUserId) {
                   const idx = prev.findIndex(p => p.optimistic && p.content === msg.content);
                   if (idx !== -1) {
@@ -160,7 +241,6 @@ export default function ChatPage() {
 
   // NEU: Warten bis alle kritischen Ladevorgänge abgeschlossen sind
   useEffect(() => {
-    // Seite möglichst schnell freigeben – nicht blockieren bis Messages da sind
     if (session?.user && peerUserId) {
       setInitialLoadComplete(true);
     }
@@ -176,9 +256,17 @@ export default function ChatPage() {
     fetch(`/api/chat/user-summary?userId=${peerUserId}`)
       .then(r => (r.ok ? r.json() : null))
       .then(d => {
-        if (!ignore && d?.displayName) setPeerName(d.displayName);
+        if (ignore || !d) return;
+        const preferred =
+          d.companyName?.trim() ||
+          d.displayName?.trim() ||
+          d.id ||
+          "";
+        setPeerName(preferred);
       })
-      .catch(() => {});
+      .catch(() => {
+        if (!ignore) setPeerName("");
+      });
     return () => { ignore = true; };
   }, [peerUserId, myUserId]);
 
@@ -215,7 +303,6 @@ export default function ChatPage() {
     setText("");
     const wasEmptyBefore = messages.length === 0;
 
-    // Optimistische Nachricht
     const optimisticId = "tmp-" + Date.now();
     setMessages(prev => [
       ...prev,
@@ -235,19 +322,15 @@ export default function ChatPage() {
         body: JSON.stringify({ peerUserId, content: value })
       });
       if (!res.ok) {
-        // Optimistische entfernen (Fehler)
         setMessages(prev => prev.filter(m => m.id !== optimisticId));
       } else {
         if (wasEmptyBefore) {
-          // Neue Unterhaltung -> Sidebar aktualisieren
           window.dispatchEvent(new Event("chat-conversations-changed"));
         }
       }
-      // Erfolgsfall: echte Nachricht ersetzt über SSE (Logik oben)
     });
   }
 
-  // Session/Auth-Checks
   if (!session?.user) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
@@ -280,19 +363,16 @@ export default function ChatPage() {
     );
   }
 
-  // Erst hier wird die eigentliche Chat-Seite gerendert
   return (
     <main className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pt-25 pb-4">
       <div className="max-w-5xl mx-auto h[calc(100vh-6rem)] md:h-[calc(100vh-6rem)] flex gap-4 px-4">
-        {/* Sidebar links (behält Layout; aktive ID hier peerUserId) */}
         <div className="hidden md:block w-72 shrink-0">
           <ChatSidebar companyId={companyId} activePeerUserId={peerUserId}  />
         </div>
 
-        {/* Chatbereich */}
         <div className="flex-1 flex flex-col">
-          {/* Header */}
-            <div className="bg-white rounded-t-2xl shadow-sm border border-gray-200 px-6 py-4">
+          <div className="bg-white rounded-t-2xl shadow-sm border border-gray-200 px-6 py-4">
+            <div className="flex flex-col w-full gap-3">
               <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-gray-800">
                   Chat{peerName ? ` – ${peerName}` : ""}
@@ -308,8 +388,8 @@ export default function ChatPage() {
                 )}
               </div>
             </div>
+          </div>
 
-          {/* Chat Container */}
           <div className="flex-1 bg-white border-x border-gray-200 flex flex-col overflow-hidden">
             {messagesLoading && messages.length === 0 && (
               <div className="p-6 space-y-3">
@@ -347,7 +427,6 @@ export default function ChatPage() {
             )}
           </div>
 
-          {/* Input */}
           <div className="bg-white rounded-b-2xl border border-gray-200 px-4 py-4 shadow-lg">
             <div className="flex gap-3 items-end">
               <div className="flex-1 relative">

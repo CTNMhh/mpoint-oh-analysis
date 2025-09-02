@@ -98,6 +98,11 @@ model User {
   notifications  Notification[]
   sentMessages   Message[] @relation("MessageSenderUser")
   receivedMessages Message[] @relation("MessageReceiverUser")
+
+  // Relation zu GroupMember
+  groupMemberships GroupMember[] @relation("GroupMemberUser")
+  groupInvitations GroupMember[] @relation("GroupMemberInvitedBy")
+  adminGroups Group[] @relation("GroupAdmin")
 }
 
 enum UserRole {
@@ -712,6 +717,7 @@ enum NotificationType {
   EVENT_CREATED
   EVENT_UPDATED
   EVENT_Booking_Confirmed
+  GROUP_INVITE
 }
 
 model Notification {
@@ -904,4 +910,73 @@ enum BookingStatus {
   PENDING
   COMPLETED
   CANCELLED
+}
+
+model Group {
+  id            String    @id @default(uuid())
+  name          String
+  description   String?
+  avatarUrl     String?   // <--- Avatar/Bild-URL
+  createdAt     DateTime  @default(now())
+  adminId       String
+  admin         User      @relation("GroupAdmin", fields: [adminId], references: [id])
+  members       GroupMember[]
+  feedPosts     GroupFeedPost[]
+}
+
+model GroupMember {
+  id            String    @id @default(uuid())
+  groupId       String
+  userId        String
+  user          User      @relation("GroupMemberUser", fields: [userId], references: [id])
+  group         Group     @relation(fields: [groupId], references: [id])
+  status        GroupMemberStatus
+  invitedById   String?
+  invitedBy     User?     @relation("GroupMemberInvitedBy", fields: [invitedById], references: [id])
+  joinedAt      DateTime?
+  blockedAt     DateTime?
+  deletedAt     DateTime?
+
+  feedReactions GroupFeedReaction[] @relation("GroupFeedReactionMember")
+  groupFeedPosts GroupFeedPost[] @relation("GroupFeedPostAuthor")
+}
+
+enum GroupMemberStatus {
+  INVITED
+  ACTIVE
+  BLOCKED
+  DELETED
+}
+
+model GroupFeedPost {
+  id            String    @id @default(uuid())
+  groupId       String
+  authorId      String
+  author        GroupMember @relation("GroupFeedPostAuthor", fields: [authorId], references: [id])
+  group         Group     @relation(fields: [groupId], references: [id])
+  content       String
+  imageUrl      String?
+  imageSize     Int?
+  createdAt     DateTime  @default(now())
+  editedAt      DateTime?
+  reactions     GroupFeedReaction[]
+}
+
+model GroupFeedReaction {
+  id            String    @id @default(uuid())
+  postId        String
+  memberId      String
+  post          GroupFeedPost @relation(fields: [postId], references: [id])
+  member        GroupMember   @relation("GroupFeedReactionMember", fields: [memberId], references: [id])
+  type          ReactionType
+  createdAt     DateTime  @default(now())
+
+  @@unique([postId, memberId])
+}
+
+enum ReactionType {
+  LIKE
+  LOL
+  SAD
+  ANGRY
 }

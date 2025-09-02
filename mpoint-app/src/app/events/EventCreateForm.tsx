@@ -3,7 +3,11 @@
 // Für M-POINT 3.0 mit Hamburg-spezifischen Event-Typen
 
 import React, { useState, useEffect } from "react";
-import { generateGoogleCalendarLink, generateICSLink } from "@/utils/calendarLinks";
+import { Calendar } from "lucide-react";
+import {
+  generateGoogleCalendarLink,
+  generateICSLink,
+} from "@/utils/calendarLinks";
 
 type EventCreateFormProps = {
   onCreated: (event: any) => void;
@@ -17,7 +21,10 @@ function toLocalDateTimeInputValue(dateStr?: string) {
   return date.toISOString().slice(0, 16);
 }
 
-export default function EventCreateForm({ onCreated, onCancel }: EventCreateFormProps) {
+export default function EventCreateForm({
+  onCreated,
+  onCancel,
+}: EventCreateFormProps) {
   const [form, setForm] = useState({
     title: "",
     imageUrl: "",
@@ -73,7 +80,13 @@ export default function EventCreateForm({ onCreated, onCancel }: EventCreateForm
     setError("");
 
     // Validierung der Pflichtfelder
-    if (!form.title || !form.startDate || !form.location || !form.ventType || !form.description) {
+    if (
+      !form.title ||
+      !form.startDate ||
+      !form.location ||
+      !form.ventType ||
+      !form.description
+    ) {
       setError("Bitte füllen Sie alle Pflichtfelder aus.");
       setCreating(false);
       return;
@@ -81,8 +94,14 @@ export default function EventCreateForm({ onCreated, onCancel }: EventCreateForm
 
     // NEU: Validierung der maximalen Teilnehmerzahl (PFLICHTFELD!)
     const maxParticipants = parseInt(form.maxParticipants);
-    if (!form.maxParticipants || isNaN(maxParticipants) || maxParticipants < 1) {
-      setError("⚠️ Die maximale Teilnehmerzahl ist ein Pflichtfeld! Bitte geben Sie mindestens 1 Person an.");
+    if (
+      !form.maxParticipants ||
+      isNaN(maxParticipants) ||
+      maxParticipants < 1
+    ) {
+      setError(
+        "⚠️ Die maximale Teilnehmerzahl ist ein Pflichtfeld! Bitte geben Sie mindestens 1 Person an."
+      );
       setCreating(false);
       return;
     }
@@ -104,7 +123,10 @@ export default function EventCreateForm({ onCreated, onCancel }: EventCreateForm
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
-          categories: form.categories.split(",").map((c) => c.trim()).filter(c => c),
+          categories: form.categories
+            .split(",")
+            .map((c) => c.trim())
+            .filter((c) => c),
           price: form.chargeFree ? 0 : form.price,
           maxParticipants: maxParticipants, // NEU: Als Zahl senden
         }),
@@ -142,11 +164,19 @@ export default function EventCreateForm({ onCreated, onCancel }: EventCreateForm
   }
 
   return (
-    <form onSubmit={handleCreate} className="space-y-6 bg-white rounded-xl shadow p-6 mb-8">
-      <h2 className="text-xl font-bold mb-4 text-gray-900">Neues Event erstellen</h2>
+    <form
+      onSubmit={handleCreate}
+      className="space-y-6 bg-white rounded-xl shadow p-6 mb-8"
+    >
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-bold text-gray-900">
+          Neues Event erstellen
+        </h2>
+        <Calendar className="w-6 h-6 text-[#e60000]" />
+      </div>
 
       {error && (
-        <div className="text-red-600 mb-2 rounded-xl bg-red-50 px-4 py-2 border border-red-200">
+        <div className="text-[#e60000] mb-2 rounded-xl bg-red-50 px-4 py-2 border border-red-200">
           {error}
         </div>
       )}
@@ -154,45 +184,50 @@ export default function EventCreateForm({ onCreated, onCancel }: EventCreateForm
       {/* Warnung wenn veröffentlicht aber nicht aktiv */}
       {form.status === "PUBLISHED" && !form.isActive && (
         <div className="text-amber-600 mb-4 rounded-xl bg-amber-50 px-4 py-2 border border-amber-200">
-          ⚠️ Hinweis: Das Event wird veröffentlicht aber ist nicht aktiv. Es wird sichtbar sein, aber keine Buchungen sind möglich.
+          ⚠️ Hinweis: Das Event wird veröffentlicht aber ist nicht aktiv. Es
+          wird sichtbar sein, aber keine Buchungen sind möglich.
         </div>
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Titel */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-600 mb-1">
             Titel <span className="text-red-500">*</span>
           </label>
           <input
             required
             value={form.title}
             onChange={(e) => setForm({ ...form, title: e.target.value })}
-            className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
+            className="w-full bg-white rounded-lg shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
             placeholder="z.B. Business Networking Hamburg"
           />
         </div>
 
         {/* Bild-Upload */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Bild-Upload</label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={async (e) => {
-              const file = e.target.files?.[0];
-              if (!file) return;
-              const formData = new FormData();
-              formData.append("file", file);
-              const res = await fetch("/api/upload", {
-                method: "POST",
-                body: formData,
-              });
-              const data = await res.json();
-              setForm({ ...form, imageUrl: data.url });
-            }}
-            className="w-full border border-gray-300 rounded px-3 py-2 mb-2"
-          />
+          <label className="block text-sm font-medium text-gray-600 mb-1">
+            Bild-Upload
+          </label>
+          <div className="w-full bg-white rounded-lg shadow-sm mb-2 focus-within:outline-none focus-within:ring-2 focus-within:ring-red-300">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                const formData = new FormData();
+                formData.append("file", file);
+                const res = await fetch("/api/upload", {
+                  method: "POST",
+                  body: formData,
+                });
+                const data = await res.json();
+                setForm({ ...form, imageUrl: data.url });
+              }}
+              className="w-full px-3 py-2 focus:outline-none"
+            />
+          </div>
           {form.imageUrl && (
             <img
               src={form.imageUrl}
@@ -204,78 +239,86 @@ export default function EventCreateForm({ onCreated, onCancel }: EventCreateForm
 
         {/* Startdatum */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-600 mb-1">
             Startdatum <span className="text-red-500">*</span>
           </label>
           <input
             required
             value={toLocalDateTimeInputValue(form.startDate)}
             onChange={(e) => setForm({ ...form, startDate: e.target.value })}
-            className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
+            className="w-full bg-white rounded-lg shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
             type="datetime-local"
           />
         </div>
 
         {/* Enddatum */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Enddatum</label>
+          <label className="block text-sm font-medium text-gray-600 mb-1">
+            Enddatum
+          </label>
           <input
             value={toLocalDateTimeInputValue(form.endDate)}
             onChange={(e) => setForm({ ...form, endDate: e.target.value })}
-            className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
+            className="w-full bg-white rounded-lg shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
             type="datetime-local"
           />
         </div>
 
         {/* Ort */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-600 mb-1">
             Ort <span className="text-red-500">*</span>
           </label>
           <input
             required
             value={form.location}
             onChange={(e) => setForm({ ...form, location: e.target.value })}
-            className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
+            className="w-full bg-white rounded-lg shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
             placeholder="z.B. Hamburg Speicherstadt, Elbphilharmonie"
           />
         </div>
 
         {/* Veranstaltungstyp - Hamburg-spezifisch */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-600 mb-1">
             Veranstaltungstyp <span className="text-red-500">*</span>
           </label>
-          <select
-            required
-            value={form.ventType}
-            onChange={(e) => setForm({ ...form, ventType: e.target.value })}
-            className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
-          >
-            <option value="">Bitte wählen...</option>
-            <optgroup label="M-POINT Hamburg Events">
-              <option value="Main-Event">🎯 Main-Event (Großveranstaltung)</option>
-              <option value="Gruppen-Treffen">👥 Gruppen-Treffen</option>
-              <option value="Themen-Treffen">💡 Themen-Treffen</option>
-              <option value="Business-Matching">🤝 Business-Matching</option>
-            </optgroup>
-            <optgroup label="Weitere Event-Typen">
-              <option value="Networking">🔗 Networking</option>
-              <option value="Workshop">🛠️ Workshop</option>
-              <option value="Seminar">📚 Seminar</option>
-              <option value="Konferenz">🎤 Konferenz</option>
-              <option value="Mentoring">🧑‍🏫 Mentoring</option>
-              <option value="Online">💻 Online-Event</option>
-              <option value="Hybrid">🔄 Hybrid-Event</option>
-            </optgroup>
-          </select>
+          <div className="flex items-center gap-2 bg-white rounded-lg shadow-sm px-3 focus-within:outline-none focus-within:ring-2 focus-within:ring-red-300">
+            <select
+              required
+              value={form.ventType}
+              onChange={(e) => setForm({ ...form, ventType: e.target.value })}
+              className="w-full pe-3 py-2 text-gray-900 focus:outline-none"
+            >
+              <option value="">Bitte wählen...</option>
+              <optgroup label="M-POINT Hamburg Events">
+                <option value="Main-Event">
+                  🎯 Main-Event (Großveranstaltung)
+                </option>
+                <option value="Gruppen-Treffen">👥 Gruppen-Treffen</option>
+                <option value="Themen-Treffen">💡 Themen-Treffen</option>
+                <option value="Business-Matching">🤝 Business-Matching</option>
+              </optgroup>
+              <optgroup label="Weitere Event-Typen">
+                <option value="Networking">🔗 Networking</option>
+                <option value="Workshop">🛠️ Workshop</option>
+                <option value="Seminar">📚 Seminar</option>
+                <option value="Konferenz">🎤 Konferenz</option>
+                <option value="Mentoring">🧑‍🏫 Mentoring</option>
+                <option value="Online">💻 Online-Event</option>
+                <option value="Hybrid">🔄 Hybrid-Event</option>
+              </optgroup>
+            </select>
+          </div>
         </div>
 
         {/* 🆕 MAXIMALE TEILNEHMERZAHL - PFLICHTFELD */}
         <div className="md:col-span-2 bg-yellow-50 p-4 rounded-lg border-2 border-yellow-300">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Maximale Teilnehmerzahl <span className="text-red-500">*</span>
-            <span className="text-xs text-gray-600 ml-2">(Pflichtangabe für alle Events)</span>
+          <label className="block text-sm font-medium text-gray-600 mb-1">
+            Maximale Teilnehmerzahl <span className="text-[#e60000]">*</span>
+            <span className="text-xs text-gray-600 ml-2">
+              (Pflichtangabe für alle Events)
+            </span>
           </label>
           <div className="relative">
             <input
@@ -284,11 +327,11 @@ export default function EventCreateForm({ onCreated, onCancel }: EventCreateForm
               onChange={(e) => {
                 const value = e.target.value;
                 // Nur Zahlen erlauben
-                if (value === '' || /^\d+$/.test(value)) {
+                if (value === "" || /^\d+$/.test(value)) {
                   setForm({ ...form, maxParticipants: value });
                 }
               }}
-              className="w-full border-2 border-yellow-400 rounded px-3 py-2 pr-20 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-lg font-bold"
+              className="w-full bg-white rounded-lg shadow-sm outline-yellow-400 px-3 py-2 pr-20 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-lg font-bold"
               type="text"
               inputMode="numeric"
               pattern="[0-9]*"
@@ -302,24 +345,44 @@ export default function EventCreateForm({ onCreated, onCancel }: EventCreateForm
           </div>
           <div className="mt-2 text-sm">
             {!form.maxParticipants && (
-              <p className="text-red-600 font-semibold">⚠️ Pflichtfeld - Bitte angeben!</p>
+              <p className="text-red-600 font-semibold">
+                ⚠️ Pflichtfeld - Bitte angeben!
+              </p>
             )}
             {form.maxParticipants && parseInt(form.maxParticipants) > 0 && (
-              <div className="text-gray-700">
+              <div className="text-gray-600">
                 {parseInt(form.maxParticipants) <= 10 && (
-                  <div>🏠 <strong>Kleines Event</strong> - Ideal für intensive Workshops und persönlichen Austausch</div>
+                  <div>
+                    🏠 <strong>Kleines Event</strong> - Ideal für intensive
+                    Workshops und persönlichen Austausch
+                  </div>
                 )}
-                {parseInt(form.maxParticipants) > 10 && parseInt(form.maxParticipants) <= 30 && (
-                  <div>🏢 <strong>Mittleres Event</strong> - Perfekt für Gruppen-Treffen und Themen-Workshops</div>
-                )}
-                {parseInt(form.maxParticipants) > 30 && parseInt(form.maxParticipants) <= 100 && (
-                  <div>🏛️ <strong>Großes Event</strong> - Gut für Networking-Events und Konferenzen</div>
-                )}
-                {parseInt(form.maxParticipants) > 100 && parseInt(form.maxParticipants) <= 200 && (
-                  <div>🏟️ <strong>Main-Event</strong> - Großveranstaltung in Hamburg</div>
-                )}
+                {parseInt(form.maxParticipants) > 10 &&
+                  parseInt(form.maxParticipants) <= 30 && (
+                    <div>
+                      🏢 <strong>Mittleres Event</strong> - Perfekt für
+                      Gruppen-Treffen und Themen-Workshops
+                    </div>
+                  )}
+                {parseInt(form.maxParticipants) > 30 &&
+                  parseInt(form.maxParticipants) <= 100 && (
+                    <div>
+                      🏛️ <strong>Großes Event</strong> - Gut für
+                      Networking-Events und Konferenzen
+                    </div>
+                  )}
+                {parseInt(form.maxParticipants) > 100 &&
+                  parseInt(form.maxParticipants) <= 200 && (
+                    <div>
+                      🏟️ <strong>Main-Event</strong> - Großveranstaltung in
+                      Hamburg
+                    </div>
+                  )}
                 {parseInt(form.maxParticipants) > 200 && (
-                  <div>🌟 <strong>Mega-Event</strong> - Großveranstaltung für {form.maxParticipants} Personen</div>
+                  <div>
+                    🌟 <strong>Mega-Event</strong> - Großveranstaltung für{" "}
+                    {form.maxParticipants} Personen
+                  </div>
                 )}
               </div>
             )}
@@ -328,7 +391,7 @@ export default function EventCreateForm({ onCreated, onCancel }: EventCreateForm
 
         {/* Preis-Sektion */}
         <div>
-          <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
+          <label className="flex items-center text-sm font-medium text-gray-600 mb-2">
             <input
               type="checkbox"
               checked={form.chargeFree}
@@ -337,7 +400,7 @@ export default function EventCreateForm({ onCreated, onCancel }: EventCreateForm
                 setForm({
                   ...form,
                   chargeFree: isChargeFree,
-                  price: isChargeFree ? 0 : form.price
+                  price: isChargeFree ? 0 : form.price,
                 });
               }}
               className="mr-2"
@@ -346,49 +409,62 @@ export default function EventCreateForm({ onCreated, onCancel }: EventCreateForm
           </label>
           {!form.chargeFree && (
             <>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Preis pro Person (€)</label>
+              <label className="block text-sm font-medium text-gray-600 mb-1">
+                Preis pro Person (€)
+              </label>
               <input
                 value={form.price}
-                onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
-                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
+                onChange={(e) =>
+                  setForm({ ...form, price: Number(e.target.value) })
+                }
+                className="w-full bg-white rounded-lg shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
                 type="number"
                 min={0}
                 step="0.01"
                 placeholder="0.00"
               />
-              {form.price > 0 && form.maxParticipants && parseInt(form.maxParticipants) > 0 && (
-                <p className="text-xs text-green-600 mt-1 font-semibold">
-                  💰 Maximaler Umsatz: €{(form.price * parseInt(form.maxParticipants)).toFixed(2)}
-                </p>
-              )}
+              {form.price > 0 &&
+                form.maxParticipants &&
+                parseInt(form.maxParticipants) > 0 && (
+                  <p className="text-xs text-green-600 mt-1 font-semibold">
+                    💰 Maximaler Umsatz: €
+                    {(form.price * parseInt(form.maxParticipants)).toFixed(2)}
+                  </p>
+                )}
             </>
           )}
         </div>
 
         {/* Kategorien */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Kategorien</label>
+          <label className="block text-sm font-medium text-gray-600 mb-1">
+            Kategorien
+          </label>
           <input
             value={form.categories}
             onChange={(e) => setForm({ ...form, categories: e.target.value })}
-            className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
+            className="w-full bg-white rounded-lg shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
             placeholder="Business, Networking, Hamburg, M-POINT"
           />
-          <p className="text-xs text-gray-500 mt-1">Komma-getrennt eingeben</p>
+          <p className="text-xs text-gray-600 mt-1">Komma-getrennt eingeben</p>
         </div>
 
         {/* Status-Auswahl */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Veröffentlichungsstatus</label>
-          <select
-            value={form.status}
-            onChange={(e) => setForm({ ...form, status: e.target.value })}
-            className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
-          >
-            <option value="DRAFT">Als Entwurf speichern</option>
-            <option value="PUBLISHED">Sofort veröffentlichen</option>
-          </select>
-          <p className="text-xs text-gray-500 mt-1">
+          <label className="block text-sm font-medium text-gray-600 mb-1">
+            Veröffentlichungsstatus
+          </label>
+          <div className="flex items-center gap-2 bg-white rounded-lg shadow-sm px-3 focus-within:outline-none focus-within:ring-2 focus-within:ring-red-300">
+            <select
+              value={form.status}
+              onChange={(e) => setForm({ ...form, status: e.target.value })}
+              className="w-full pe-3 py-2 text-gray-900 focus-within:outline-none"
+            >
+              <option value="DRAFT">Als Entwurf speichern</option>
+              <option value="PUBLISHED">Sofort veröffentlichen</option>
+            </select>
+          </div>
+          <p className="text-xs text-gray-600 mt-1">
             {form.status === "DRAFT"
               ? "Event wird gespeichert aber noch nicht öffentlich angezeigt"
               : "Event wird nach dem Speichern sofort sichtbar"}
@@ -397,7 +473,7 @@ export default function EventCreateForm({ onCreated, onCancel }: EventCreateForm
 
         {/* Aktiv-Checkbox */}
         <div className="flex items-center">
-          <label className="flex items-center text-sm font-medium text-gray-700">
+          <label className="flex items-center text-sm font-medium text-gray-600">
             <input
               type="checkbox"
               checked={form.isActive}
@@ -410,21 +486,25 @@ export default function EventCreateForm({ onCreated, onCancel }: EventCreateForm
 
         {/* Kalender-Links (automatisch generiert) */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Google Kalender Link</label>
+          <label className="block text-sm font-medium text-gray-600 mb-1">
+            Google Kalender Link
+          </label>
           <input
             value={form.calendarGoogle}
             disabled={true}
-            className="w-full border border-gray-300 rounded px-3 py-2 bg-gray-50 text-xs"
+            className="w-full bg-white rounded-lg shadow-sm px-3 py-2 disabled:border-gray-200 disabled:text-gray-400"
             placeholder="Wird automatisch generiert..."
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">ICS Link</label>
+          <label className="block text-sm font-medium text-gray-600 mb-1">
+            ICS Link
+          </label>
           <input
             value={form.calendarIcs}
             disabled={true}
-            className="w-full border border-gray-300 rounded px-3 py-2 bg-gray-50 text-xs"
+            className="w-full bg-white rounded-lg shadow-sm px-3 py-2 disabled:border-gray-200 disabled:text-gray-400"
             placeholder="Wird automatisch generiert..."
           />
         </div>
@@ -432,60 +512,96 @@ export default function EventCreateForm({ onCreated, onCancel }: EventCreateForm
 
       {/* Beschreibung */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-gray-600 mb-1">
           Beschreibung <span className="text-red-500">*</span>
         </label>
         <textarea
           required
           value={form.description}
           onChange={(e) => setForm({ ...form, description: e.target.value })}
-          className="w-full border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+          className="w-full bg-white rounded-lg shadow-sm px-3 py-2 focus-within:outline-none focus-within:ring-2 focus-within:ring-red-300"
           placeholder="Beschreiben Sie das Event detailliert..."
           rows={4}
         />
       </div>
 
       {/* 🆕 Event-Zusammenfassung mit Teilnehmer-Info */}
-      {form.title && form.maxParticipants && parseInt(form.maxParticipants) > 0 && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h3 className="font-semibold text-blue-900 mb-2">📋 Event-Übersicht:</h3>
-          <div className="grid grid-cols-2 gap-4 text-sm text-blue-700">
-            <div>
-              <div className="mb-1">📍 <strong>Titel:</strong> {form.title}</div>
-              <div className="mb-1">👥 <strong>Max. Teilnehmer:</strong> {form.maxParticipants} Personen</div>
-              {form.location && <div className="mb-1">📌 <strong>Ort:</strong> {form.location}</div>}
-              {form.ventType && <div className="mb-1">🎯 <strong>Typ:</strong> {form.ventType}</div>}
+      {form.title &&
+        form.maxParticipants &&
+        parseInt(form.maxParticipants) > 0 && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h3 className="font-semibold text-blue-900 mb-2">
+              📋 Event-Übersicht:
+            </h3>
+            <div className="grid grid-cols-2 gap-4 text-sm text-blue-700">
+              <div>
+                <div className="mb-1">
+                  📍 <strong>Titel:</strong> {form.title}
+                </div>
+                <div className="mb-1">
+                  👥 <strong>Max. Teilnehmer:</strong> {form.maxParticipants}{" "}
+                  Personen
+                </div>
+                {form.location && (
+                  <div className="mb-1">
+                    📌 <strong>Ort:</strong> {form.location}
+                  </div>
+                )}
+                {form.ventType && (
+                  <div className="mb-1">
+                    🎯 <strong>Typ:</strong> {form.ventType}
+                  </div>
+                )}
+              </div>
+              <div>
+                {form.chargeFree ? (
+                  <div className="mb-1">
+                    💰 <strong>Kostenfreies Event</strong>
+                  </div>
+                ) : (
+                  form.price > 0 && (
+                    <>
+                      <div className="mb-1">
+                        💰 <strong>Preis:</strong> €{form.price.toFixed(2)} pro
+                        Person
+                      </div>
+                      <div className="mb-1">
+                        💵 <strong>Max. Umsatz:</strong> €
+                        {(form.price * parseInt(form.maxParticipants)).toFixed(
+                          2
+                        )}
+                      </div>
+                    </>
+                  )
+                )}
+                <div className="mb-1">
+                  📅 <strong>Status:</strong>{" "}
+                  {form.status === "DRAFT" ? "Entwurf" : "Wird veröffentlicht"}
+                </div>
+                <div>
+                  ✅ <strong>Buchungen:</strong>{" "}
+                  {form.isActive ? "Aktiviert" : "Deaktiviert"}
+                </div>
+              </div>
             </div>
-            <div>
-              {form.chargeFree ? (
-                <div className="mb-1">💰 <strong>Kostenfreies Event</strong></div>
-              ) : form.price > 0 && (
-                <>
-                  <div className="mb-1">💰 <strong>Preis:</strong> €{form.price.toFixed(2)} pro Person</div>
-                  <div className="mb-1">💵 <strong>Max. Umsatz:</strong> €{(form.price * parseInt(form.maxParticipants)).toFixed(2)}</div>
-                </>
-              )}
-              <div className="mb-1">📅 <strong>Status:</strong> {form.status === "DRAFT" ? "Entwurf" : "Wird veröffentlicht"}</div>
-              <div>✅ <strong>Buchungen:</strong> {form.isActive ? "Aktiviert" : "Deaktiviert"}</div>
-            </div>
-          </div>
 
-          {/* Spezieller Hinweis für Main-Events */}
-          {form.ventType === "Main-Event" && (
-            <div className="mt-3 pt-3 border-t border-blue-200">
-              <p className="text-xs text-blue-800">
-                🎯 <strong>Main-Event:</strong> Eines der 4 jährlichen Hauptevents in der Metropolregion Hamburg
-              </p>
-            </div>
-          )}
-        </div>
-      )}
+            {/* Spezieller Hinweis für Main-Events */}
+            {form.ventType === "Main-Event" && (
+              <div className="mt-3 pt-3 border-t border-blue-200">
+                <p className="text-xs text-blue-800">
+                  🎯 <strong>Main-Event:</strong> Eines der 4 jährlichen
+                  Hauptevents in der Metropolregion Hamburg
+                </p>
+              </div>
+            )}
+          </div>
+        )}
 
       {/* Aktions-Buttons */}
       <div className="flex justify-end gap-2 pt-4 border-t">
         <button
           type="button"
-          className="bg-gray-200 text-gray-700 px-6 py-2 rounded hover:bg-gray-300 transition-colors font-semibold"
+          className="bg-gray-200 text-gray-600 px-6 py-2 rounded-xl hover:bg-gray-300 transition-all font-semibold"
           onClick={onCancel}
           disabled={creating}
         >
@@ -493,13 +609,18 @@ export default function EventCreateForm({ onCreated, onCancel }: EventCreateForm
         </button>
         <button
           type="submit"
-          className="bg-[rgb(228,25,31)] text-white px-6 py-2 rounded hover:bg-red-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-[#e60000] text-white px-6 py-2 rounded-xl hover:bg-red-700 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={creating || !form.maxParticipants}
         >
-          {creating ? "Wird erstellt..." :
-           !form.maxParticipants ? "⚠️ Bitte Teilnehmerzahl angeben" :
-           form.status === "DRAFT" ? "Als Entwurf speichern" :
-           form.isActive ? "Event veröffentlichen & aktivieren" : "Event veröffentlichen (inaktiv)"}
+          {creating
+            ? "Wird erstellt..."
+            : !form.maxParticipants
+            ? "⚠️ Bitte Teilnehmerzahl angeben"
+            : form.status === "DRAFT"
+            ? "Als Entwurf speichern"
+            : form.isActive
+            ? "Event veröffentlichen & aktivieren"
+            : "Event veröffentlichen (inaktiv)"}
         </button>
       </div>
     </form>

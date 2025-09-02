@@ -224,38 +224,40 @@ export default function EditEventPage({
           <form onSubmit={handleEdit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-600 mb-1">
                   Titel*
                 </label>
                 <input
                   required
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
+                  className="w-full bg-white rounded-lg shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
                   placeholder="Titel des Events"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-600 mb-1">
                   Bild-Upload
                 </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
-                    const formData = new FormData();
-                    formData.append("file", file);
-                    const res = await fetch("/api/upload", {
-                      method: "POST",
-                      body: formData,
-                    });
-                    const data = await res.json();
-                    setForm({ ...form, imageUrl: data.url });
-                  }}
-                  className="w-full border border-gray-300 rounded px-3 py-2 mb-2"
-                />
+                <div className="w-full bg-white rounded-lg shadow-sm mb-2 focus-within:outline-none focus-within:ring-2 focus-within:ring-red-300">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const formData = new FormData();
+                      formData.append("file", file);
+                      const res = await fetch("/api/upload", {
+                        method: "POST",
+                        body: formData,
+                      });
+                      const data = await res.json();
+                      setForm({ ...form, imageUrl: data.url });
+                    }}
+                    className="w-full px-3 py-2 focus:outline-none"
+                  />
+                </div>
                 {form.imageUrl && (
                   <img
                     src={form.imageUrl}
@@ -265,7 +267,7 @@ export default function EditEventPage({
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-600 mb-1">
                   Startdatum*
                 </label>
                 <input
@@ -274,12 +276,12 @@ export default function EditEventPage({
                   onChange={(e) =>
                     setForm({ ...form, startDate: e.target.value })
                   }
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
+                  className="w-full bg-white rounded-lg shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
                   type="datetime-local"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-600 mb-1">
                   Enddatum
                 </label>
                 <input
@@ -287,12 +289,12 @@ export default function EditEventPage({
                   onChange={(e) =>
                     setForm({ ...form, endDate: e.target.value })
                   }
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
+                  className="w-full bg-white rounded-lg shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
                   type="datetime-local"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-600 mb-1">
                   Ort*
                 </label>
                 <input
@@ -301,12 +303,12 @@ export default function EditEventPage({
                   onChange={(e) =>
                     setForm({ ...form, location: e.target.value })
                   }
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
+                  className="w-full bg-white rounded-lg shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
                   placeholder="Ort oder Online-Link"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-600 mb-1">
                   Veranstaltungstyp*
                 </label>
                 <input
@@ -315,12 +317,12 @@ export default function EditEventPage({
                   onChange={(e) =>
                     setForm({ ...form, ventType: e.target.value })
                   }
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
+                  className="w-full bg-white rounded-lg shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
                   placeholder="z.B. Mentoring, Netzwerk"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-600 mb-1">
                   Maximale Teilnehmerzahl
                 </label>
                 <input
@@ -336,14 +338,14 @@ export default function EditEventPage({
                         : null,
                     })
                   }
-                  className="w-full border border-gray-300 rounded px-3 py-2"
+                  className="w-full bg-white rounded-lg shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
                 />
                 <p className="text-xs text-gray-600 mt-1">
                   Leer lassen oder 0 für unbegrenzt
                 </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-600 mb-1">
                   <input
                     type="checkbox"
                     checked={form.chargeFree}
@@ -361,7 +363,7 @@ export default function EditEventPage({
                 </label>
                 {!form.chargeFree && (
                   <>
-                    <label className="block text-sm font-medium text-gray-700 mb-1 mt-2">
+                    <label className="block text-sm font-medium text-gray-600 mb-1 mt-2">
                       Preis (€)
                     </label>
                     <input
@@ -369,7 +371,7 @@ export default function EditEventPage({
                       onChange={(e) =>
                         setForm({ ...form, price: e.target.value })
                       }
-                      className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
+                      className="w-full bg-white rounded-lg shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
                       type="number"
                       min={0}
                       placeholder="0"
@@ -378,7 +380,7 @@ export default function EditEventPage({
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-600 mb-1">
                   Kategorien
                 </label>
                 <input
@@ -386,12 +388,12 @@ export default function EditEventPage({
                   onChange={(e) =>
                     setForm({ ...form, categories: e.target.value })
                   }
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
+                  className="w-full bg-white rounded-lg shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
                   placeholder="Komma-getrennt, z.B. Business, Online"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-600 mb-1">
                   Google Kalender Link
                 </label>
                 <input
@@ -400,12 +402,12 @@ export default function EditEventPage({
                   onChange={(e) =>
                     setForm({ ...form, calendarGoogle: e.target.value })
                   }
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
+                  className="w-full bg-white rounded-lg shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300 disabled:border-gray-200 disabled:text-gray-400"
                   placeholder="https://calendar.google.com/..."
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-600 mb-1">
                   ICS Link
                 </label>
                 <input
@@ -414,31 +416,33 @@ export default function EditEventPage({
                   onChange={(e) =>
                     setForm({ ...form, calendarIcs: e.target.value })
                   }
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
+                  className="w-full bg-white rounded-lg shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300 disabled:border-gray-200  disabled:text-gray-400"
                   placeholder="https://deinserver.de/event.ics"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-600 mb-1">
                   Status
                 </label>
-                <select
-                  value={form.status}
-                  onChange={(e) =>
-                    setForm({ ...form, status: e.target.value as EventStatus })
-                  }
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
-                  required
-                >
-                  {Object.entries(statusLabels).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
+                <div className="flex items-center gap-2 bg-white rounded-lg shadow-sm px-3 focus-within:outline-none focus-within:ring-2 focus-within:ring-red-300">
+                  <select
+                    value={form.status}
+                    onChange={(e) =>
+                      setForm({ ...form, status: e.target.value as EventStatus })
+                    }
+                    className="w-full pe-3 py-2 text-gray-900 focus:outline-none"
+                    required
+                  >
+                    {Object.entries(statusLabels).map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-600 mb-1">
                   Aktiv
                 </label>
                 <input
@@ -452,7 +456,7 @@ export default function EditEventPage({
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-600 mb-1">
                 Beschreibung*
               </label>
               <textarea
@@ -461,7 +465,7 @@ export default function EditEventPage({
                 onChange={(e) =>
                   setForm({ ...form, description: e.target.value })
                 }
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                className="w-full bg-white rounded-lg shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
                 placeholder="Beschreibe das Event..."
                 rows={4}
               />

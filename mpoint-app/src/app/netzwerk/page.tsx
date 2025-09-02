@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Bell,
   Search,
@@ -23,8 +23,9 @@ import {
   Activity
 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import NetworkSidebar from "../components/network/NetworkSidebar";
- import MatchingList from "../dashboard/MatchingList"
+import { GroupProvider, useGroups, GroupList, GroupContent } from "@/context/GroupContext";
+import { InvitationProvider, useInvitations } from "@/context/InvitationContext";
+import Link from "next/link";
 
 export default function NetzwerkPage() {
  
@@ -32,6 +33,10 @@ export default function NetzwerkPage() {
     "invitations" | "messages" | "connections" | "groups"
   >("invitations");
   const { data: session, status } = useSession();
+
+  // Optional: availableGroups und ownGroups ebenfalls filtern
+  // ...
+
   if (status === "unauthenticated") {
     return (
       <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-white">
@@ -54,195 +59,269 @@ export default function NetzwerkPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 pt-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-6 space-y-6">
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3 mb-4">
-            <Network className="w-8 h-8 text-[#e60000]" />
-            Netzwerk
-          </h1>
-          <p className="text-gray-600">
-            Hier finden Sie alle Informationen zu Ihren Kontakten, Gruppen und
-            Aktivitäten.
-          </p>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 gap-6 pb-8 flex flex-col lg:flex-row">
-        {/* Left Sidebar */}
-        <aside className="w-full lg:w-72 flex-shrink-0 space-y-6">
-              <NetworkSidebar />
-
-          <div className="bg-white/80 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-6 border border-white/50">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-gray-900">
-                Smart Filter
-              </h2>
-              <Funnel className="w-6 h-6 text-[#e60000]" />
-            </div>
-            <div className="space-y-4">
-              <label className="flex items-center gap-3 cursor-pointer group">
-                <input
-                  type="checkbox"
-                  checked
-                  readOnly
-                  className="w-5 h-5 text-[#e60000] rounded-md focus:ring-[#e60000] cursor-pointer"
-                />
-                <span className="text-gray-700 group-hover:text-gray-900 transition-colors">
-                  Branche: IT & Tech
-                </span>
-              </label>
-              <label className="flex items-center gap-3 cursor-pointer group">
-                <input
-                  type="checkbox"
-                  checked
-                  readOnly
-                  className="w-5 h-5 text-[#e60000] rounded-md focus:ring-[#e60000] cursor-pointer"
-                />
-                <span className="text-gray-700 group-hover:text-gray-900 transition-colors">
-                  Region: NRW
-                </span>
-              </label>
-              <label className="flex items-center gap-3 cursor-pointer group">
-                <input
-                  type="checkbox"
-                  className="w-5 h-5 text-[#e60000] rounded-md focus:ring-[#e60000] cursor-pointer"
-                />
-                <span className="text-gray-700 group-hover:text-gray-900 transition-colors">
-                  Premium-Mitglieder
-                </span>
-              </label>
-            </div>
-          </div>
-        </aside>
-
-        {/* Center Content */}
-        <div className="flex-1 min-w-0">
-          {/* Modern Search Bar */}
-          <div className="flex flex-col md:flex-row mb-6">
-            <div className="flex-1 flex items-center bg-white rounded-lg shadow-sm px-4 py-2">
-              <Search className="w-5 h-5 text-gray-400 mr-2" />
-              <input
-                type="text"
-                className="flex-1 outline-none bg-transparent text-gray-900"
-                placeholder="Nach Kontakten, Unternehmen oder Themen suchen..."
-              />
-            </div>
-          </div>
-
-          {/* Modern Tab Navigation */}
-          <nav className="flex gap-2 mb-6 overflow-x-auto pb-2">
-            <TabButton
-              active={activeTab === "invitations"}
-              onClick={() => setActiveTab("invitations")}
-            >
-              <UserPlus className="w-4 h-4" />
-              Einladungen
-              <span className="ml-2 bg-[#e60000] text-white text-xs rounded-full px-2 py-0.5 font-bold">
-                15
-              </span>
-            </TabButton>
-            <TabButton
-              active={activeTab === "messages"}
-              onClick={() => setActiveTab("messages")}
-            >
-              <MessageSquare className="w-4 h-4" />
-              Nachrichten
-              <span className="ml-2 bg-[#e60000] text-white text-xs rounded-full px-2 py-0.5 font-bold">
-                3
-              </span>
-            </TabButton>
-            <TabButton
-              active={activeTab === "connections"}
-              onClick={() => setActiveTab("connections")}
-            >
-              <Link2 className="w-4 h-4" />
-              Verbindungen
-            </TabButton>
-            <TabButton
-              active={activeTab === "groups"}
-              onClick={() => setActiveTab("groups")}
-            >
-              <Hash className="w-4 h-4" />
-              Gruppen
-            </TabButton>
-          </nav>
-
-          {/* Tab Content */}
-          {activeTab === "invitations" && <InvitationsSection />}
-          {activeTab === "messages" && <MessagesSection />}
-          {activeTab === "connections" && (
-            <div className="bg-white/80 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-8 text-center border border-white/50">
-              <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500">
-                Verbindungen-Ansicht: Zeigt alle Ihre M-POINT Kontakte.
+    <InvitationProvider>
+      <GroupProvider>
+        <main className="min-h-screen bg-gray-50 pt-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-6 space-y-6">
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3 mb-4">
+                <Network className="w-8 h-8 text-[#e60000]" />
+                Netzwerk
+              </h1>
+              <p className="text-gray-600">
+                Hier finden Sie alle Informationen zu Ihren Kontakten, Gruppen und
+                Aktivitäten.
               </p>
             </div>
-          )}
-          {activeTab === "groups" && (
-            <div className="bg-white/80 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-8 text-center border border-white/50">
-              <Hash className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500">
-                Gruppen-Ansicht: Zeigt Ihre Branchengruppen und
-                Interessensgemeinschaften.
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Right Sidebar */}
-        <aside className="w-full lg:w-80 flex-shrink-0 space-y-6">
-          <div className="bg-white/90 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="font-bold text-lg text-gray-900">AI-Matches</h2>
-              <Sparkles className="w-6 h-6 text-[#e60000]" />
-            </div>
-            <div className="space-y-4">
-            <MatchingList layout="netzwerk" limit={3} />
-
-            </div>
-            <div className="text-center mt-6">
-              <a
-                href="#"
-                className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all"
-              >
-                Alle Matches <ArrowRight className="w-4 h-4" />
-              </a>
-            </div>
           </div>
 
-          <div className="bg-white/90 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-gray-900">
-                Ihre Performance
-              </h2>
-              <Activity className="w-6 h-6 text-[#e60000]" />
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 gap-6 pb-8 flex flex-col lg:flex-row">
+            {/* Left Sidebar */}
+            <aside className="w-full lg:w-72 flex-shrink-0 space-y-6">
+              <div className="bg-white/80 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-6 border border-white/50">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Ihr Netzwerk
+                  </h2>
+                  <Network className="w-6 h-6 text-[#e60000]" />
+                </div>
+
+                <div className="space-y-3">
+                  <SidebarStat
+                    label="M-POINT Kontakte"
+                    icon={<Users className="w-5 h-5 text-[#e60000]" />}
+                    count={256}
+                  />
+                  <SidebarStat
+                    label="Folgen & Follower"
+                    icon={<UserPlus className="w-5 h-5 text-purple-500" />}
+                    count={142}
+                  />
+                  <SidebarStat
+                    label="Gruppen"
+                    icon={<Hash className="w-5 h-5 text-blue-500" />}
+                    count={12}
+                  />
+                  <SidebarStat
+                    label="Events"
+                    icon={<Calendar className="w-5 h-5 text-green-500" />}
+                    count={8}
+                  />
+                  <SidebarStat
+                    label="Unternehmen"
+                    icon={<Building2 className="w-5 h-5 text-orange-500" />}
+                    count={15}
+                  />
+                </div>
+              </div>
+
+              <div className="bg-white/80 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-6 border border-white/50">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Smart Filter
+                  </h2>
+                  <Funnel className="w-6 h-6 text-[#e60000]" />
+                </div>
+                <div className="space-y-4">
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked
+                      readOnly
+                      className="w-5 h-5 text-[#e60000] rounded-md focus:ring-[#e60000] cursor-pointer"
+                    />
+                    <span className="text-gray-700 group-hover:text-gray-900 transition-colors">
+                      Branche: IT & Tech
+                    </span>
+                  </label>
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked
+                      readOnly
+                      className="w-5 h-5 text-[#e60000] rounded-md focus:ring-[#e60000] cursor-pointer"
+                    />
+                    <span className="text-gray-700 group-hover:text-gray-900 transition-colors">
+                      Region: NRW
+                    </span>
+                  </label>
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      className="w-5 h-5 text-[#e60000] rounded-md focus:ring-[#e60000] cursor-pointer"
+                    />
+                    <span className="text-gray-700 group-hover:text-gray-900 transition-colors">
+                      Premium-Mitglieder
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </aside>
+
+            {/* Center Content */}
+            <div className="flex-1 min-w-0">
+              {/* Modern Search Bar */}
+              <div className="flex flex-col md:flex-row mb-6">
+                <div className="flex-1 flex items-center bg-white rounded-lg shadow-sm px-4 py-2">
+                  <Search className="w-5 h-5 text-gray-400 mr-2" />
+                  <input
+                    type="text"
+                    className="flex-1 outline-none bg-transparent text-gray-900"
+                    placeholder="Nach Kontakten, Unternehmen oder Themen suchen..."
+                  />
+                </div>
+              </div>
+
+              {/* Modern Tab Navigation */}
+              <nav className="flex gap-2 mb-6 overflow-x-auto pb-2">
+                <InvitationsTabButton
+                  active={activeTab === "invitations"}
+                  onClick={() => setActiveTab("invitations")}
+                />
+                <TabButton
+                  active={activeTab === "messages"}
+                  onClick={() => setActiveTab("messages")}
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  Nachrichten
+                  <span className="ml-2 bg-[#e60000] text-white text-xs rounded-full px-2 py-0.5 font-bold">
+                    3
+                  </span>
+                </TabButton>
+                <TabButton
+                  active={activeTab === "connections"}
+                  onClick={() => setActiveTab("connections")}
+                >
+                  <Link2 className="w-4 h-4" />
+                  Verbindungen
+                </TabButton>
+                <TabButton
+                  active={activeTab === "groups"}
+                  onClick={() => setActiveTab("groups")}
+                >
+                  <Hash className="w-4 h-4" />
+                  Gruppen
+                </TabButton>
+              </nav>
+
+              {/* Tab Content */}
+              {activeTab === "invitations" && <InvitationsSection />}
+              {activeTab === "messages" && <MessagesSection />}
+              {activeTab === "connections" && (
+                <div className="bg-white/80 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-8 text-center border border-white/50">
+                  <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500">
+                    Verbindungen-Ansicht: Zeigt alle Ihre M-POINT Kontakte.
+                  </p>
+                </div>
+              )}
+              {activeTab === "groups" && (
+                <GroupsTabContent session={session} />
+              )}
             </div>
-            <div className="space-y-4">
-              <QuickStat
-                icon={<Eye className="w-5 h-5" />}
-                label="Profilaufrufe"
-                value={47}
-                trend="+12%"
-              />
-              <QuickStat
-                icon={<Star className="w-5 h-5" />}
-                label="Neue Matches"
-                value={12}
-                trend="+5%"
-                highlight
-              />
-              <QuickStat
-                icon={<TrendingUp className="w-5 h-5" />}
-                label="Engagement Rate"
-                value="89%"
-                trend="+3%"
-              />
-            </div>
+
+            {/* Right Sidebar */}
+            <aside className="w-full lg:w-80 flex-shrink-0 space-y-6">
+              <div className="bg-white/90 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="font-bold text-lg text-gray-900">AI-Matches</h2>
+                  <Sparkles className="w-6 h-6 text-[#e60000]" />
+                </div>
+                <div className="space-y-4">
+                  <SuggestionItem
+                    name="Dr. Lisa Chen"
+                    title="CEO • AI Solutions GmbH"
+                    match={95}
+                  />
+                  <SuggestionItem
+                    name="Thomas Berg"
+                    title="CTO • TechStart Berlin"
+                    match={88}
+                  />
+                  <SuggestionItem
+                    name="Julia Hoffmann"
+                    title="Investor • NRW Ventures"
+                    match={82}
+                  />
+                </div>
+                <div className="text-center mt-6">
+                  <a
+                    href="#"
+                    className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all"
+                  >
+                    Alle Matches <ArrowRight className="w-4 h-4" />
+                  </a>
+                </div>
+              </div>
+
+              <div className="bg-white/90 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Ihre Performance
+                  </h2>
+                  <Activity className="w-6 h-6 text-[#e60000]" />
+                </div>
+                <div className="space-y-4">
+                  <QuickStat
+                    icon={<Eye className="w-5 h-5" />}
+                    label="Profilaufrufe"
+                    value={47}
+                    trend="+12%"
+                  />
+                  <QuickStat
+                    icon={<Star className="w-5 h-5" />}
+                    label="Neue Matches"
+                    value={12}
+                    trend="+5%"
+                    highlight
+                  />
+                  <QuickStat
+                    icon={<TrendingUp className="w-5 h-5" />}
+                    label="Engagement Rate"
+                    value="89%"
+                    trend="+3%"
+                  />
+                </div>
+              </div>
+            </aside>
           </div>
-        </aside>
-      </div>
-    </main>
+        </main>
+      </GroupProvider>
+    </InvitationProvider>
+  );
+}
+
+// Innerhalb des Providers:
+function GroupsTabContent({ session }: { session: any }) {
+  const { groups } = useGroups();
+  const [activeGroup, setActiveGroup] = useState<any | null>(null);
+
+  const memberGroups = groups.filter(group =>
+    group.members.some(
+      member => member.userId === session?.user?.id && member.status === "ACTIVE"
+    )
+  );
+
+  return (
+    <div
+      id="groups-content"
+      className="bg-white/80 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-8 border border-white/50"
+    >
+      <Hash className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+      {!activeGroup ? (
+        <GroupList
+          session={session}
+          memberGroups={memberGroups}
+          showOwnGroups={true}
+          showMemberGroups={true}
+          showAvailableGroups={true} // <--- wichtig!
+          showManageButton={true}
+          setActiveGroup={setActiveGroup}
+        />
+      ) : (
+        <GroupContent group={activeGroup} onBack={() => setActiveGroup(null)} />
+      )}
+    </div>
   );
 }
 
@@ -289,6 +368,34 @@ function TabButton({
       onClick={onClick}
     >
       {children}
+    </button>
+  );
+}
+
+// Modern Invitations Tab Button Component
+function InvitationsTabButton({
+  active,
+  onClick,
+}: {
+  active: boolean;
+  onClick: () => void;
+}) {
+  const { invitations } = useInvitations();
+
+  return (
+    <button
+      className={`flex items-center gap-2 px-5 py-3 rounded-xl font-medium transition-all whitespace-nowrap cursor-pointer ${
+        active
+          ? "bg-[#e60000] text-white shadow-lg"
+          : "bg-white/80 text-gray-700 hover:bg-gray-100 border border-gray-200"
+      }`}
+      onClick={onClick}
+    >
+      <UserPlus className="w-4 h-4" />
+      Einladungen
+      <span className="ml-2 bg-[#e60000] text-white text-xs rounded-full px-2 py-0.5 font-bold">
+        {invitations.length}
+      </span>
     </button>
   );
 }
@@ -384,156 +491,108 @@ function QuickStat({
 
 // Modern Invitations Section
 function InvitationsSection() {
+  const { invitations, loading, acceptInvitation, declineInvitation } = useInvitations();
+
+  if (loading) {
+    return <div className="p-8 text-center text-gray-500">Lade Einladungen...</div>;
+  }
+
+  if (invitations.length === 0) {
+    return (
+      <section className="bg-white/80 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-6 border border-white/50 text-center">
+        <UserPlus className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+        <div className="text-gray-500">Keine Einladungen vorhanden.</div>
+      </section>
+    );
+  }
+
   return (
     <section className="bg-white/80 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-6 border border-white/50">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold text-gray-900">Netzwerk erweitern</h2>
-        <Network className="w-6 h-6 text-[#e60000]" />
-      </div>
-      <div className="space-y-4">
-        <InvitationItem
-          name="Thomas Thelen"
-          title="Die Zukunft der Arbeit neu denken | Intelligente Automatisierung"
-          mutual="Jan Schellenberger und 3 weitere gemeinsame Kontakte"
-          type="connection"
-        />
-        <InvitationItem
-          name="Fabian Leweke"
-          title="hat Sie eingeladen, JOBS.PSA.PAGE zu folgen"
-          mutual="Unternehmensseite • IT-Services"
-          type="page"
-        />
-        <InvitationItem
-          name="Thomas Hruska"
-          title="hat Sie zur Teilnahme an KMU KI Forum eingeladen"
-          mutual="Event • Fr. 25. Juli, 09:00"
-          type="event"
-        />
-      </div>
-      <div className="text-center my-6">
-        <a
-          href="#"
-          className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all"
-        >
-          Alle Matches <ArrowRight className="w-4 h-4" />
-        </a>
-      </div>
-
+      <h2 className="text-xl font-bold text-gray-900 mb-6">Einladungen</h2>
+      <ul className="space-y-4">
+        {invitations.map(inv => (
+          <InvitationItem
+            key={inv.id}
+            type={inv.group ? "group" : inv.event ? "event" : inv.contact ? "contact" : "group"} // <--- Typ setzen!
+            title={inv.group?.name || inv.event?.name || inv.contact?.name || "Einladung"}
+            description={inv.group?.description || inv.description}
+            inviter={inv.invitedBy}
+            group={inv.group}
+            onAccept={() => acceptInvitation(inv)} // POST /api/groups/invitations/[id]/accept
+            onDecline={() => declineInvitation(inv)} // POST /api/groups/invitations/[id]/decline
+          />
+        ))}
+      </ul>
     </section>
   );
 }
 
 // Modern Invitation Item Component
 function InvitationItem({
-  name,
-  title,
-  mutual,
   type,
+  title,
+  description,
+  inviter,
+  onAccept,
+  onDecline,
+  group, // <-- optional: falls du das ganze group-Objekt übergibst
 }: {
-  name: string;
+  type: "group" | "event" | "contact";
   title: string;
-  mutual: string;
-  type: "connection" | "page" | "event";
+  description?: string;
+  inviter?: { firstName?: string; lastName?: string };
+  onAccept: () => void;
+  onDecline: () => void;
+  group?: { avatarUrl?: string }; // <-- optional
 }) {
-  const getIcon = () => {
-    switch (type) {
-      case "connection":
-        return <UserPlus className="w-5 h-5" />;
-      case "page":
-        return <Building2 className="w-5 h-5" />;
-      case "event":
-        return <Calendar className="w-5 h-5" />;
-    }
-  };
-
-  const getActions = () => {
-    switch (type) {
-      case "connection":
-        return ["Ignorieren", "Annehmen"];
-      case "page":
-        return ["Ignorieren", "Folgen"];
-      case "event":
-        return ["Ignorieren", "Details"];
-    }
-  };
 
   return (
-    <div className="group p-4 rounded-lg border border-gray-200 hover:bg-gray-50 hover:shadow-md transition-all">
-      <div className="flex items-start gap-4">
-        <div className="relative flex-shrink-0">
-          <div className="relative bg-gray-400 text-white rounded-full w-12 h-12 flex items-center justify-center font-bold text-lg">
-            {name.split(" ")[0]?.[0] || "?"}
+    <li className="flex items-center justify-between bg-gray-50 rounded-lg p-4 border">
+      <div className="flex items-center gap-4">
+        {/* Avatar oder Users-Icon */}
+        {type === "group" && group?.avatarUrl ? (
+          <img
+            src={group.avatarUrl}
+            alt="Gruppen-Avatar"
+            className="w-12 h-12 rounded-full object-cover border-2 border-[#e60000] bg-white"
+          />
+        ) : (
+          <Users className="w-12 h-12 text-gray-300 bg-gray-100 rounded-full p-2" />
+        )}
+        <div>
+          <div className="font-bold text-gray-900">{title}</div>
+          {description && <div className="text-gray-600 text-sm">{description}</div>}
+          {inviter && (
+            <div className="text-gray-600 text-sm">
+              Eingeladen von: {inviter.firstName} {inviter.lastName}
+            </div>
+          )}
+          <div className="mt-2">
+            <span className="inline-block px-2 py-1 rounded bg-gray-200 text-xs font-semibold text-gray-700">
+              {type === "group" && "Gruppe"}
+              {type === "event" && "Event"}
+              {type === "contact" && "Kontakt"}
+            </span>
           </div>
-          <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-1 shadow-md">
-            <div className="text-gray-600">{getIcon()}</div>
-          </div>
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="font-bold text-gray-900">{name}</div>
-          <div className="text-gray-600 text-sm mt-1">{title}</div>
-          <div className="mt-2 text-xs text-gray-500 flex items-center gap-1">
-            <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-            {mutual}
-          </div>
-        </div>
-        <div className="flex gap-2 flex-shrink-0">
-          {getActions().map((action, idx) => (
-            <button
-              key={action}
-              className={`px-4 py-2 rounded-lg font-medium transition-all cursor-pointer  ${
-                idx === 0
-                  ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  : "bg-[#e60000] hover:bg-red-700 text-white"
-              }`}
-              onClick={() => alert(`Aktion: ${action}`)}
-            >
-              {action}
-            </button>
-          ))}
         </div>
       </div>
-    </div>
-  );
-}
-
-// Modern Messages Section
-function MessagesSection() {
-  return (
-    <section className="bg-white/80 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-6 border border-white/50">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold text-gray-900">Nachrichten</h2>
-        <a
-          href="#"
-          className="inline-flex items-center gap-2 text-[#e60000] text-sm font-medium hover:gap-3 transition-all"
+      <div className="flex gap-2">
+        <button
+          type="button"
+          className="px-4 py-2 bg-[#e60000] text-white rounded-lg font-semibold hover:bg-red-700 transition-colors"
+          onClick={onAccept}
         >
-          Alle anzeigen <ArrowRight className="w-4 h-4" />
-        </a>
+          Annehmen
+        </button>
+        <button
+          type="button"
+          className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
+          onClick={onDecline}
+        >
+          Ablehnen
+        </button>
       </div>
-      <div className="space-y-4">
-        <MessageItem
-          name="Sarah Weber"
-          preview="Hallo Herr Alraai, vielen Dank für Ihre Kontaktanfrage. Ich würde gerne..."
-          time="vor 2 Std."
-          unread
-        />
-        <MessageItem
-          name="Michael Schmidt"
-          preview="Bezüglich unseres Gesprächs beim letzten Event: Hier sind die Unterlagen..."
-          time="vor 5 Std."
-          unread
-        />
-        <MessageItem
-          name="Anna Meyer"
-          preview="Perfekt, dann sehen wir uns nächste Woche beim Innovation Summit!"
-          time="gestern"
-        />
-        <MessageItem
-          name="Klaus Müller"
-          preview="Danke für die Präsentation. Sehr interessante Ansätze!"
-          time="vor 2 Tagen"
-        />
-      </div>
-    </section>
+    </li>
   );
 }
 
