@@ -176,7 +176,7 @@ export default function ChatPage() {
     if (projectPrefillDone) return;
     if (text.trim().length === 0 && messages.length === 0) {
       const finalTitle = linkedProjectTitle || "Projekt";
-      const tpl = `Hallo, ich interessiere mich für Ihr Projekt "${finalTitle}". Können wir uns hierzu austauschen?`;
+      const tpl = `Danke für Ihre Anfrage zu "${finalTitle}". Können wir uns hierzu austauschen?`;
       setText(tpl);
       setProjectPrefillDone(true);
     }
