@@ -25,6 +25,8 @@ import {
 import { useSession } from "next-auth/react";
 import { GroupProvider, useGroups, GroupList, GroupContent } from "@/context/GroupContext";
 import { InvitationProvider, useInvitations } from "@/context/InvitationContext";
+import NetworkSidebar from "../components/network/NetworkSidebar";
+ import MatchingList from "../dashboard/MatchingList"
 import Link from "next/link";
 
 export default function NetzwerkPage() {
@@ -77,86 +79,7 @@ export default function NetzwerkPage() {
 
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 gap-6 pb-8 flex flex-col lg:flex-row">
             {/* Left Sidebar */}
-            <aside className="w-full lg:w-72 flex-shrink-0 space-y-6">
-              <div className="bg-white/80 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-6 border border-white/50">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-lg font-semibold text-gray-900">
-                    Ihr Netzwerk
-                  </h2>
-                  <Network className="w-6 h-6 text-[#e60000]" />
-                </div>
-
-                <div className="space-y-3">
-                  <SidebarStat
-                    label="M-POINT Kontakte"
-                    icon={<Users className="w-5 h-5 text-[#e60000]" />}
-                    count={256}
-                  />
-                  <SidebarStat
-                    label="Folgen & Follower"
-                    icon={<UserPlus className="w-5 h-5 text-purple-500" />}
-                    count={142}
-                  />
-                  <SidebarStat
-                    label="Gruppen"
-                    icon={<Hash className="w-5 h-5 text-blue-500" />}
-                    count={12}
-                  />
-                  <SidebarStat
-                    label="Events"
-                    icon={<Calendar className="w-5 h-5 text-green-500" />}
-                    count={8}
-                  />
-                  <SidebarStat
-                    label="Unternehmen"
-                    icon={<Building2 className="w-5 h-5 text-orange-500" />}
-                    count={15}
-                  />
-                </div>
-              </div>
-
-              <div className="bg-white/80 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-6 border border-white/50">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-lg font-semibold text-gray-900">
-                    Smart Filter
-                  </h2>
-                  <Funnel className="w-6 h-6 text-[#e60000]" />
-                </div>
-                <div className="space-y-4">
-                  <label className="flex items-center gap-3 cursor-pointer group">
-                    <input
-                      type="checkbox"
-                      checked
-                      readOnly
-                      className="w-5 h-5 text-[#e60000] rounded-md focus:ring-[#e60000] cursor-pointer"
-                    />
-                    <span className="text-gray-700 group-hover:text-gray-900 transition-colors">
-                      Branche: IT & Tech
-                    </span>
-                  </label>
-                  <label className="flex items-center gap-3 cursor-pointer group">
-                    <input
-                      type="checkbox"
-                      checked
-                      readOnly
-                      className="w-5 h-5 text-[#e60000] rounded-md focus:ring-[#e60000] cursor-pointer"
-                    />
-                    <span className="text-gray-700 group-hover:text-gray-900 transition-colors">
-                      Region: NRW
-                    </span>
-                  </label>
-                  <label className="flex items-center gap-3 cursor-pointer group">
-                    <input
-                      type="checkbox"
-                      className="w-5 h-5 text-[#e60000] rounded-md focus:ring-[#e60000] cursor-pointer"
-                    />
-                    <span className="text-gray-700 group-hover:text-gray-900 transition-colors">
-                      Premium-Mitglieder
-                    </span>
-                  </label>
-                </div>
-              </div>
-            </aside>
+        <NetworkSidebar />
 
             {/* Center Content */}
             <div className="flex-1 min-w-0">
@@ -178,16 +101,6 @@ export default function NetzwerkPage() {
                   active={activeTab === "invitations"}
                   onClick={() => setActiveTab("invitations")}
                 />
-                <TabButton
-                  active={activeTab === "messages"}
-                  onClick={() => setActiveTab("messages")}
-                >
-                  <MessageSquare className="w-4 h-4" />
-                  Nachrichten
-                  <span className="ml-2 bg-[#e60000] text-white text-xs rounded-full px-2 py-0.5 font-bold">
-                    3
-                  </span>
-                </TabButton>
                 <TabButton
                   active={activeTab === "connections"}
                   onClick={() => setActiveTab("connections")}
@@ -228,21 +141,8 @@ export default function NetzwerkPage() {
                   <Sparkles className="w-6 h-6 text-[#e60000]" />
                 </div>
                 <div className="space-y-4">
-                  <SuggestionItem
-                    name="Dr. Lisa Chen"
-                    title="CEO • AI Solutions GmbH"
-                    match={95}
-                  />
-                  <SuggestionItem
-                    name="Thomas Berg"
-                    title="CTO • TechStart Berlin"
-                    match={88}
-                  />
-                  <SuggestionItem
-                    name="Julia Hoffmann"
-                    title="Investor • NRW Ventures"
-                    match={82}
-                  />
+                      <MatchingList layout="netzwerk" limit={3} />
+
                 </div>
                 <div className="text-center mt-6">
                   <a
