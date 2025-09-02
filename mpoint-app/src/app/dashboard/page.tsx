@@ -158,12 +158,12 @@ export default function DashboardPage() {
   // Loading state
   if (status === "loading" || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <main className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[rgb(228,25,31)] mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#e60000] mx-auto mb-4"></div>
           <p className="text-gray-600">Lädt Dashboard...</p>
         </div>
-      </div>
+      </main>
     );
   }
 
@@ -193,8 +193,8 @@ export default function DashboardPage() {
           {/* Recent Activities */}
           <div className="lg:col-span-2 space-y-6 mb-0">
             <section className="bg-white rounded-xl p-6 shadow-sm">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-gray-900">
                   Aktuelle News
                 </h2>
                 <BookOpen className="w-6 h-6 text-[#e60000]" />
@@ -231,7 +231,7 @@ export default function DashboardPage() {
                           <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-[#e60000] transition-colors">
                             {allNews[0].title}
                           </h3>
-                          <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
+                          <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
                             <span>
                               {new Date(
                                 allNews[0].publishDate
@@ -282,13 +282,13 @@ export default function DashboardPage() {
                     </div>
                   </>
                 ) : (
-                  <div className="lg:col-span-3 text-center py-12 text-gray-500">
+                  <div className="lg:col-span-3 text-center py-12 text-gray-600">
                     Keine News verfügbar.
                   </div>
                 )}
               </div>
 
-              <div className="mt-6 text-center">
+              <div className="mt-4 text-center">
                 <Link
                   href="/news"
                   className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all"
@@ -301,7 +301,7 @@ export default function DashboardPage() {
             <div className="grid lg:grid-cols-2 gap-6 mb-6">
               {/* Events Card */}
               <div className="bg-white rounded-xl shadow-sm p-6">
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center justify-between mb-4">
                   <h3 className="text-xl font-bold text-gray-900">
                     Kommende Events
                   </h3>
@@ -313,7 +313,7 @@ export default function DashboardPage() {
                     <Link
                       key={event.id}
                       href={`/events/${event.id}`}
-                      className="block rounded-lg bg-white hover:bg-gray-50 border border-gray-200 p-3 hover:shadow-md"
+                      className="block rounded-lg bg-white hover:bg-gray-50 border border-gray-200 hover:shadow-md overflow-hidden"
                     >
                       <EventItem
                         day={new Date(event.startDate)
@@ -330,7 +330,7 @@ export default function DashboardPage() {
                   ))}
                 </div>
 
-                <div className="mt-6 text-center">
+                <div className="mt-4 text-center">
                   <a
                     href="#events"
                     className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all"
@@ -342,7 +342,7 @@ export default function DashboardPage() {
 
               {/* Articles Card */}
               <div className="bg-white rounded-xl shadow-sm p-6">
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center justify-between mb-4">
                   <h3 className="text-xl font-bold text-gray-900">
                     Neue Fachartikel
                   </h3>
@@ -373,7 +373,7 @@ export default function DashboardPage() {
                   />
                 </div>
 
-                <div className="mt-6 text-center">
+                <div className="mt-4 text-center">
                   <a
                     href="#articles"
                     className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all"
@@ -453,7 +453,7 @@ export default function DashboardPage() {
           <div className="space-y-6 mb-6">
             {/* Quick Actions Card */}
             <div className="bg-white rounded-xl shadow-sm p-6">
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-gray-900">
                   Schnellaktionen
                 </h2>
@@ -488,7 +488,7 @@ export default function DashboardPage() {
 
             {/* Profile Completion */}
             <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl shadow-sm p-6">
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-gray-900">Profil</h2>
                 <UserRoundCog className="w-6 h-6 text-[#e60000]" />
               </div>
@@ -498,7 +498,7 @@ export default function DashboardPage() {
                   showSuggestions={false}
                 />
               </Link>
-              <div className="mt-8 text-center">
+              <div className="mt-4 text-center">
                 <Link
                   href="/company"
                   className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all"
@@ -510,14 +510,14 @@ export default function DashboardPage() {
 
             {/* Meine gebuchten Events */}
             <div className="bg-white rounded-xl shadow-sm p-6">
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-gray-900">
                   Meine gebuchten Events
                 </h2>
                 <Calendar className="w-6 h-6 text-[#e60000]" />
               </div>
               {bookedEvents.length === 0 ? (
-                <p className="text-gray-500">Keine Buchungen gefunden.</p>
+                <p className="text-gray-600">Keine Buchungen gefunden.</p>
               ) : (
                 <ul className="space-y-2">
                   {bookedEvents.map((booking) => (
@@ -526,7 +526,7 @@ export default function DashboardPage() {
                       className="border-l-4 border-green-500 pl-3"
                     >
                       <span className="font-bold">{booking.event.title}</span>
-                      <span className="ml-2 text-gray-500">
+                      <span className="ml-2 text-gray-600">
                         {new Date(booking.event.startDate).toLocaleString()}
                       </span>
                     </li>
@@ -598,12 +598,12 @@ export default function DashboardPage() {
     location: string;
   }) {
     return (
-      <div className="flex gap-4 p-4 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer group">
-        <div className="bg-[#e60000] text-white rounded-lg p-3 text-center flex-shrink-0">
+      <div className="flex hover:bg-gray-50 transition-colors cursor-pointer group">
+        <div className="bg-[#e60000] text-white p-3 text-center flex-shrink-0">
           <div className="text-2xl font-bold">{day}</div>
           <div className="text-xs uppercase">{month}</div>
         </div>
-        <div className="flex-1">
+        <div className="flex-1 p-4">
           <h4 className="font-semibold text-gray-900 group-hover:text-[#e60000] transition-colors">
             {title}
           </h4>

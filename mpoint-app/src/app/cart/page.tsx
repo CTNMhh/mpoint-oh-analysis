@@ -276,9 +276,11 @@ export default function CartPage() {
         )}
 
         {step === 2 && (
-          <div className="max-w-lg mx-auto bg-white p-6 rounded-xl shadow">
+          <div
+            id="checkout-step2"
+            className="max-w-lg mx-auto bg-white p-6 rounded-xl shadow">
             <h2 className="text-xl font-bold mb-4">Buchungsübersicht</h2>
-            <table className="w-full text-xs mb-4">
+            <table className="w-full mb-4">
               <thead>
                 <tr>
                   <th>Event</th>
@@ -286,7 +288,7 @@ export default function CartPage() {
                   <th>Gesamt</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody id="checkout-step2-items">
                 {cart.items.map(item => (
                   <tr key={item.id}>
                     <td>{item.event?.title}</td>
@@ -340,11 +342,13 @@ export default function CartPage() {
         )}
 
         {step === 3 && (
-          <div className="max-w-lg mx-auto bg-white p-6 rounded-xl shadow text-center">
+          <div
+            id="checkout-step3"
+            className="max-w-lg mx-auto bg-white p-6 rounded-xl shadow text-center">
             <h2 className="text-2xl font-bold mb-4 text-green-700">Vielen Dank für Ihre Buchung!</h2>
             <div className="mb-4">Ihre Zahlung war erfolgreich.</div>
             <h3 className="font-bold mb-2">Buchungsübersicht</h3>
-            <table className="w-full text-xs mb-4">
+            <table className="w-full mb-4">
               <thead>
                 <tr>
                   <th>Event</th>
@@ -352,7 +356,7 @@ export default function CartPage() {
                   <th>Gesamt</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody id="checkout-step3-items">
                 {cart.items.map(item => (
                   <tr key={item.id}>
                     <td>{item.event?.title}</td>

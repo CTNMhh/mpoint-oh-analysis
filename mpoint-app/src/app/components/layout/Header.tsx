@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Menu, X, ChevronDown, Bell, User, Search, ShoppingCart } from "lucide-react";
+import { Menu, X, ChevronDown, Bell, User, Search } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 import NotificationsDropdown from "../notifications/NotificationsDropdown";
 import { useCart } from "@/context/CartContext";
@@ -195,15 +195,7 @@ const Header = () => {
                 </button>
                 {/* Notifications */}
                                 <NotificationsDropdown />
-                {/* Warenkorb-Icon */}
-                <Link href="/cart" className="relative group">
-                  <ShoppingCart className="w-6 h-6 text-gray-600" />
-                  {cartCount > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full px-2 py-0.5">
-                      {cartCount}
-                    </span>
-                  )}
-                </Link>
+
                 {/* Profile Dropdown */}
                 <div className="relative" ref={profileRef}>
                   <button

@@ -3,6 +3,9 @@ import { PrismaClient } from "@prisma/client";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]/route";
 import { createPayPalOrder } from "@/lib/paypalClient";
+import { createNotification } from "../../../lib/notifications";
+import { NotificationType } from "@prisma/client";
+
 const prisma = new PrismaClient({
   log: ["query", "info", "warn", "error"]
 });
@@ -43,6 +46,49 @@ export async function POST(request: NextRequest) {
       })
     ));
     console.log("Bookings:", bookings);
+
+    // Notifications für jede Buchung
+    try {
+      const bookingType =
+        (NotificationType as any).EVENT_BOOKING_CONFIRMED ??
+        (NotificationType as any).BOOKING_CONFIRMED ??
+        (NotificationType as any).SYSTEM ??
+        NotificationType.EVENT_CREATED;
+
+      await Promise.all(
+        bookings.flatMap(b => {
+          const cartItem = cart.items.find(ci => ci.eventId === b.eventId);
+          const eventOwnerId = cartItem?.event?.userId;
+          const eventTitle = cartItem?.event?.title || "Event";
+          const msgs = [];
+          // Owner informieren (falls vorhanden und nicht derselbe User)
+          if (eventOwnerId) {
+            msgs.push(
+              createNotification({
+                userId: eventOwnerId,
+                type: bookingType,
+                title: "Neue Buchung",
+                body: `${address.name} hat ${b.spaces} Platz${b.spaces > 1 ? "e" : ""} für „${eventTitle}“ gebucht.`,
+                url: `/events/${b.eventId}`
+              })
+            );
+          }
+          // Buchender User (Bestätigung)
+          msgs.push(
+            createNotification({
+              userId: session.user.id,
+              type: bookingType,
+              title: "Buchung erfasst",
+              body: `Deine Buchung für „${eventTitle}“ (${b.spaces} Platz${b.spaces > 1 ? "e" : ""}) ist eingegangen.`,
+              url: `/events/${b.eventId}`
+            })
+          );
+          return msgs;
+        })
+      );
+    } catch (e) {
+      console.error("Checkout Notifications fehlgeschlagen:", e);
+    }
 
     // Transaktion anlegen
     const totalAmount = cart.items.reduce((sum, item) => sum + (item.event.price * item.spaces), 0);

@@ -5,7 +5,11 @@ import { useEffect, useState, use } from "react"; // use war schon importiert
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { generateGoogleCalendarLink, generateICSLink } from "@/utils/calendarLinks";
+import { ArrowLeft, Calendar } from "lucide-react";
+import {
+  generateGoogleCalendarLink,
+  generateICSLink,
+} from "@/utils/calendarLinks";
 import { EventType, EventStatus } from "../../types";
 
 function toLocalDateTimeInputValue(dateStr?: string) {
@@ -33,7 +37,11 @@ const statusLabels: Record<EventStatus, string> = {
 };
 
 // GEÄNDERT: params ist jetzt ein Promise
-export default function EditEventPage({ params }: { params: Promise<{ id: string }> }) {
+export default function EditEventPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   // NEU: params unwrappen INNERHALB der Funktion
   const resolvedParams = use(params);
   const eventId = resolvedParams.id;
@@ -49,7 +57,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
   // Nicht eingeloggt: Hinweis & Login-Button
   if (status === "unauthenticated") {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-white">
+      <main className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-4 text-gray-900">
             Anmeldung erforderlich
@@ -59,7 +67,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
           </p>
           <a
             href="/login"
-            className="inline-block px-6 py-3 bg-[rgb(228,25,31)] text-white rounded-lg font-semibold hover:bg-red-700 transition-colors"
+            className="inline-block px-6 py-3 bg-[rgb(#e60000)] text-white rounded-lg font-semibold hover:bg-red-700 transition-colors"
           >
             Zum Login
           </a>
@@ -132,8 +140,11 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
 
   if (loading || !form) {
     return (
-      <main className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[rgb(228,25,31)]"></div>
+      <main className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#e60000] mx-auto mb-4"></div>
+          <p className="text-gray-600">Lädt Event...</p>
+        </div>
       </main>
     );
   }
@@ -141,7 +152,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
   // Nur Ersteller darf bearbeiten
   if (event.user.email !== session?.user?.email) {
     return (
-      <main className="min-h-screen flex items-center justify-center">
+      <main className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-4 text-gray-900">
             Keine Berechtigung
@@ -175,7 +186,8 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
       },
     };
     console.log("Sende an Backend:", body.status);
-    const res = await fetch(`/api/events/${eventId}`, { // eventId ist jetzt definiert
+    const res = await fetch(`/api/events/${eventId}`, {
+      // eventId ist jetzt definiert
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -190,216 +202,285 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br pt-40 from-gray-50 to-white py-12 px-4">
-      <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-2xl p-8">
+    <main className="min-h-screen bg-gray-50 pt-20">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        {/* Zurück zu Events */}
         <Link
-          href={`/events`}
-          className="inline-flex items-center gap-2 mb-8 px-4 py-2 rounded-full bg-gray-100 text-gray-700 hover:bg-yellow-500 hover:text-white transition-colors font-semibold shadow"
+          href="/events"
+          className="cursor-pointer gap-2 inline-flex items-center px-4 py-2 rounded-xl bg-[#e60000] text-white hover:bg-red-700 transition-all"
         >
-          <span className="text-xl">&larr;</span> Zurück zum Event
+          <ArrowLeft className="w-4 h-4" /> <span>Zurück zu Events</span>
         </Link>
-        <h1 className="text-2xl font-bold mb-6 text-gray-900">Event bearbeiten</h1>
-        {error && <div className="text-red-600 mb-2 rounded-xl bg-red-50 px-4 py-2">{error}</div>}
-        <form onSubmit={handleEdit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Titel*</label>
-              <input
-                required
-                value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
-                placeholder="Titel des Events"
-              />
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="flex items-start justify-between mb-4">
+            <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">Event bearbeiten</h1>
+            <Calendar className="w-6 h-6 text-[#e60000]" />
+          </div>
+          {error && (
+            <div className="text-red-600 mb-2 rounded-xl bg-red-50 px-4 py-2">
+              {error}
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Bild-Upload</label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={async (e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
-                  const formData = new FormData();
-                  formData.append("file", file);
-                  const res = await fetch("/api/upload", {
-                    method: "POST",
-                    body: formData,
-                  });
-                  const data = await res.json();
-                  setForm({ ...form, imageUrl: data.url });
-                }}
-                className="w-full border border-gray-300 rounded px-3 py-2 mb-2"
-              />
-              {form.imageUrl && (
-                <img
-                  src={form.imageUrl}
-                  alt="Event Bild"
-                  className="w-full h-40 object-cover rounded mb-2 border"
-                />
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Startdatum*</label>
-              <input
-                required
-                value={toLocalDateTimeInputValue(form.startDate)}
-                onChange={(e) => setForm({ ...form, startDate: e.target.value })}
-                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
-                type="datetime-local"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Enddatum</label>
-              <input
-                value={toLocalDateTimeInputValue(form.endDate)}
-                onChange={(e) => setForm({ ...form, endDate: e.target.value })}
-                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
-                type="datetime-local"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Ort*</label>
-              <input
-                required
-                value={form.location}
-                onChange={(e) => setForm({ ...form, location: e.target.value })}
-                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
-                placeholder="Ort oder Online-Link"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Veranstaltungstyp*</label>
-              <input
-                required
-                value={form.ventType}
-                onChange={(e) => setForm({ ...form, ventType: e.target.value })}
-                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
-                placeholder="z.B. Mentoring, Netzwerk"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Maximale Teilnehmerzahl
-              </label>
-              <input
-                type="number"
-                min={0}
-                name="maxParticipants"
-                value={form.maxParticipants ?? ""}
-                onChange={e => setForm({ ...form, maxParticipants: e.target.value ? Number(e.target.value) : null })}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Leer lassen oder 0 für unbegrenzt
-              </p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+          )}
+          <form onSubmit={handleEdit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  Titel*
+                </label>
                 <input
-                  type="checkbox"
-                  checked={form.chargeFree}
-                  onChange={(e) => {
-                    const isChargeFree = e.target.checked;
+                  required
+                  value={form.title}
+                  onChange={(e) => setForm({ ...form, title: e.target.value })}
+                  className="w-full bg-white rounded-lg shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
+                  placeholder="Titel des Events"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  Bild-Upload
+                </label>
+                <div className="w-full bg-white rounded-lg shadow-sm mb-2 focus-within:outline-none focus-within:ring-2 focus-within:ring-red-300">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const formData = new FormData();
+                      formData.append("file", file);
+                      const res = await fetch("/api/upload", {
+                        method: "POST",
+                        body: formData,
+                      });
+                      const data = await res.json();
+                      setForm({ ...form, imageUrl: data.url });
+                    }}
+                    className="w-full px-3 py-2 focus:outline-none"
+                  />
+                </div>
+                {form.imageUrl && (
+                  <img
+                    src={form.imageUrl}
+                    alt="Event Bild"
+                    className="w-full h-40 object-cover rounded mb-2 border"
+                  />
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  Startdatum*
+                </label>
+                <input
+                  required
+                  value={toLocalDateTimeInputValue(form.startDate)}
+                  onChange={(e) =>
+                    setForm({ ...form, startDate: e.target.value })
+                  }
+                  className="w-full bg-white rounded-lg shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
+                  type="datetime-local"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  Enddatum
+                </label>
+                <input
+                  value={toLocalDateTimeInputValue(form.endDate)}
+                  onChange={(e) =>
+                    setForm({ ...form, endDate: e.target.value })
+                  }
+                  className="w-full bg-white rounded-lg shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
+                  type="datetime-local"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  Ort*
+                </label>
+                <input
+                  required
+                  value={form.location}
+                  onChange={(e) =>
+                    setForm({ ...form, location: e.target.value })
+                  }
+                  className="w-full bg-white rounded-lg shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
+                  placeholder="Ort oder Online-Link"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  Veranstaltungstyp*
+                </label>
+                <input
+                  required
+                  value={form.ventType}
+                  onChange={(e) =>
+                    setForm({ ...form, ventType: e.target.value })
+                  }
+                  className="w-full bg-white rounded-lg shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
+                  placeholder="z.B. Mentoring, Netzwerk"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  Maximale Teilnehmerzahl
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  name="maxParticipants"
+                  value={form.maxParticipants ?? ""}
+                  onChange={(e) =>
                     setForm({
                       ...form,
-                      chargeFree: isChargeFree,
-                      price: isChargeFree ? 0 : form.price
-                    });
-                  }}
+                      maxParticipants: e.target.value
+                        ? Number(e.target.value)
+                        : null,
+                    })
+                  }
+                  className="w-full bg-white rounded-lg shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
+                />
+                <p className="text-xs text-gray-600 mt-1">
+                  Leer lassen oder 0 für unbegrenzt
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  <input
+                    type="checkbox"
+                    checked={form.chargeFree}
+                    onChange={(e) => {
+                      const isChargeFree = e.target.checked;
+                      setForm({
+                        ...form,
+                        chargeFree: isChargeFree,
+                        price: isChargeFree ? 0 : form.price,
+                      });
+                    }}
+                    className="mr-2"
+                  />
+                  Event ist kostenfrei
+                </label>
+                {!form.chargeFree && (
+                  <>
+                    <label className="block text-sm font-medium text-gray-600 mb-1 mt-2">
+                      Preis (€)
+                    </label>
+                    <input
+                      value={form.price}
+                      onChange={(e) =>
+                        setForm({ ...form, price: e.target.value })
+                      }
+                      className="w-full bg-white rounded-lg shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
+                      type="number"
+                      min={0}
+                      placeholder="0"
+                    />
+                  </>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  Kategorien
+                </label>
+                <input
+                  value={form.categories}
+                  onChange={(e) =>
+                    setForm({ ...form, categories: e.target.value })
+                  }
+                  className="w-full bg-white rounded-lg shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
+                  placeholder="Komma-getrennt, z.B. Business, Online"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  Google Kalender Link
+                </label>
+                <input
+                  value={form.calendarGoogle}
+                  disabled={true}
+                  onChange={(e) =>
+                    setForm({ ...form, calendarGoogle: e.target.value })
+                  }
+                  className="w-full bg-white rounded-lg shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300 disabled:border-gray-200 disabled:text-gray-400"
+                  placeholder="https://calendar.google.com/..."
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  ICS Link
+                </label>
+                <input
+                  value={form.calendarIcs}
+                  disabled={true}
+                  onChange={(e) =>
+                    setForm({ ...form, calendarIcs: e.target.value })
+                  }
+                  className="w-full bg-white rounded-lg shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300 disabled:border-gray-200  disabled:text-gray-400"
+                  placeholder="https://deinserver.de/event.ics"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  Status
+                </label>
+                <div className="flex items-center gap-2 bg-white rounded-lg shadow-sm px-3 focus-within:outline-none focus-within:ring-2 focus-within:ring-red-300">
+                  <select
+                    value={form.status}
+                    onChange={(e) =>
+                      setForm({ ...form, status: e.target.value as EventStatus })
+                    }
+                    className="w-full pe-3 py-2 text-gray-900 focus:outline-none"
+                    required
+                  >
+                    {Object.entries(statusLabels).map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  Aktiv
+                </label>
+                <input
+                  type="checkbox"
+                  checked={form.isActive ?? false}
+                  onChange={(e) =>
+                    setForm({ ...form, isActive: e.target.checked })
+                  }
                   className="mr-2"
                 />
-                Event ist kostenfrei
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">
+                Beschreibung*
               </label>
-              {!form.chargeFree && (
-                <>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 mt-2">Preis (€)</label>
-                  <input
-                    value={form.price}
-                    onChange={(e) => setForm({ ...form, price: e.target.value })}
-                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
-                    type="number"
-                    min={0}
-                    placeholder="0"
-                  />
-                </>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Kategorien</label>
-              <input
-                value={form.categories}
-                onChange={(e) => setForm({ ...form, categories: e.target.value })}
-                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
-                placeholder="Komma-getrennt, z.B. Business, Online"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Google Kalender Link</label>
-              <input
-                value={form.calendarGoogle}
-                disabled={true}
-                onChange={(e) => setForm({ ...form, calendarGoogle: e.target.value })}
-                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
-                placeholder="https://calendar.google.com/..."
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">ICS Link</label>
-              <input
-                value={form.calendarIcs}
-                disabled={true}
-                onChange={(e) => setForm({ ...form, calendarIcs: e.target.value })}
-                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
-                placeholder="https://deinserver.de/event.ics"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-              <select
-                value={form.status}
-                onChange={e => setForm({ ...form, status: e.target.value as EventStatus })}
-                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
+              <textarea
                 required
-              >
-                {Object.entries(statusLabels).map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Aktiv</label>
-              <input
-                type="checkbox"
-                checked={form.isActive ?? false}
-                onChange={e => setForm({ ...form, isActive: e.target.checked })}
-                className="mr-2"
+                value={form.description}
+                onChange={(e) =>
+                  setForm({ ...form, description: e.target.value })
+                }
+                className="w-full bg-white rounded-lg shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-300"
+                placeholder="Beschreibe das Event..."
+                rows={4}
               />
             </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Beschreibung*</label>
-            <textarea
-              required
-              value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
-              className="w-full border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500"
-              placeholder="Beschreibe das Event..."
-              rows={4}
-            />
-          </div>
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              className="bg-yellow-500 text-white px-6 py-2 rounded-full hover:bg-yellow-600 transition-colors font-semibold shadow"
-              disabled={saving}
-            >
-              {saving ? "Wird gespeichert..." : "Speichern"}
-            </button>
-          </div>
-        </form>
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                className="bg-[#e60000] hover:bg-red-700 text-white px-4 py-2 rounded-xl transition-all font-semibold"
+                disabled={saving}
+              >
+                {saving ? "Wird gespeichert..." : "Speichern"}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </main>
   );

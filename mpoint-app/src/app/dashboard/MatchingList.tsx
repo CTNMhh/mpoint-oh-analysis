@@ -190,9 +190,9 @@ console.log("Matches:", matches);
   if (!matches.length) {
     return (
       <div className="text-center py-12">
-        <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-        <p className="text-gray-500">Keine passenden Unternehmen gefunden.</p>
-        <p className="text-sm text-gray-400 mt-2">Vervollständigen Sie Ihr Profil für bessere Matches!</p>
+        <Users className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+        <p className="text-gray-600">Keine passenden Unternehmen gefunden.</p>
+        <p className="text-sm text-gray-600 mt-2">Vervollständigen Sie Ihr Profil für bessere Matches!</p>
       </div>
     );
   }

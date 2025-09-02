@@ -58,18 +58,18 @@ export default function MatchingMarketplacePage() {
           <div className="lg:col-span-2 space-y-6">
             {/* Top Matches */}
             <section className="bg-white rounded-xl shadow-sm p-6">
-              <div className="flex items-center justify-between mb-6 relative">
+              <div className="flex items-center justify-between mb-4 relative">
                 <h2 className="text-xl font-semibold text-gray-900">
                   Matches
                 </h2>
-                <span className="text-sm text-gray-500 block absolute right-8">
+                <span className="text-sm text-gray-600 block absolute right-8">
                   KI-basierte Empfehlungen
                 </span>
-                <Sparkles className="w-5 h-5 text-[#e60000]" />
+                <Sparkles className="w-6 h-6 text-[#e60000]" />
               </div>
 
               <MatchingList limit={3} />
-              <div className="mt-6 text-center">
+              <div className="mt-4 text-center">
                 <Link
                   href="/Matches"
                   className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all"
@@ -95,7 +95,7 @@ export default function MatchingMarketplacePage() {
 
             {/* Stats Widget */}
             <section className="bg-white rounded-xl shadow-sm p-6">
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-gray-900">
                   Ihre Aktivität
                 </h2>

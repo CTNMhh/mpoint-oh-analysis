@@ -29,27 +29,30 @@ export default function NewsDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#e60000]"></div>
-      </div>
+      <main className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#e60000] mx-auto mb-4"></div>
+          <p className="text-gray-600">Lädt News...</p>
+        </div>
+      </main>
     );
   }
   if (!news) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <main className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-gray-500">News nicht gefunden.</div>
-      </div>
+      </main>
     );
   }
 
   return (
     <main className="min-h-screen bg-gray-50 pt-20">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         <button
-          className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 text-gray-700 hover:bg-[rgb(228,25,31)] hover:text-white transition-all font-semibold text-sm"
+          className="cursor-pointer gap-2 inline-flex items-center px-4 py-2 rounded-xl bg-[#e60000] text-white hover:bg-red-700 transition-all cursor-pointer"
           onClick={() => router.back()}
         >
-          <ArrowLeft className="w-4 h-4" /> Zurück
+          <ArrowLeft className="w-4 h-4" /> Zurück zu News
         </button>
         <article className="bg-white rounded-xl shadow-sm">
           {news.imageUrl && (
@@ -59,7 +62,7 @@ export default function NewsDetailPage() {
               className="w-full h-64 object-cover rounded-t-xl"
             />
           )}
-          <div className="p-8 pt-6">
+          <div className="p-6">
             <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-2 leading-tight">
               {news.title}
             </h1>
