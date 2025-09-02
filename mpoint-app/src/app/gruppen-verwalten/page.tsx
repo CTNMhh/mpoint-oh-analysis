@@ -1,10 +1,20 @@
 "use client";
+import { useEffect, useState } from "react";
 import { GroupProvider, GroupList } from "@/context/GroupContext";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 
 export default function GruppenVerwaltenPage() {
   const { data: session, status } = useSession();
+  const [ownGroups, setOwnGroups] = useState([]);
+
+  useEffect(() => {
+    if (session?.user?.id) {
+      fetch(`/api/groups?adminId=${session.user.id}`)
+        .then((res) => res.json())
+        .then((data) => setOwnGroups(data));
+    }
+  }, [session?.user?.id]);
 
   if (status === "unauthenticated" || session?.user?.role !== "ENTERPRISE") {
     return (
@@ -38,9 +48,17 @@ export default function GruppenVerwaltenPage() {
               Gruppe anlegen
             </Link>
           </div>
-          <GroupList session={session} />
-          {/* Detailansicht: /gruppen-verwalten/[id] */}
-          {/* Editieren: /gruppen-verwalten/[id]/edit */}
+          {/* Eigene Gruppen anzeigen */}
+          <GroupList
+            session={session}
+            ownGroups={ownGroups}
+            showOwnGroups={true}
+            showMemberGroups={false}
+            showAvailableGroups={false}
+            memberGroups={[]}
+            availableGroups={[]}
+            showManageButton={false} // Button NICHT anzeigen
+          />
         </div>
       </main>
     </GroupProvider>

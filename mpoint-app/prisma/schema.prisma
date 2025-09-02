@@ -103,7 +103,6 @@ model User {
   groupMemberships GroupMember[] @relation("GroupMemberUser")
   groupInvitations GroupMember[] @relation("GroupMemberInvitedBy")
   adminGroups Group[] @relation("GroupAdmin")
-  groupFeedPosts GroupFeedPost[] @relation("GroupFeedPostAuthor")
 }
 
 enum UserRole {
@@ -939,6 +938,7 @@ model GroupMember {
   deletedAt     DateTime?
 
   feedReactions GroupFeedReaction[] @relation("GroupFeedReactionMember")
+  groupFeedPosts GroupFeedPost[] @relation("GroupFeedPostAuthor")
 }
 
 enum GroupMemberStatus {
@@ -952,7 +952,7 @@ model GroupFeedPost {
   id            String    @id @default(uuid())
   groupId       String
   authorId      String
-  author        User      @relation("GroupFeedPostAuthor", fields: [authorId], references: [id])
+  author        GroupMember @relation("GroupFeedPostAuthor", fields: [authorId], references: [id])
   group         Group     @relation(fields: [groupId], references: [id])
   content       String
   imageUrl      String?
@@ -970,6 +970,8 @@ model GroupFeedReaction {
   member        GroupMember   @relation("GroupFeedReactionMember", fields: [memberId], references: [id])
   type          ReactionType
   createdAt     DateTime  @default(now())
+
+  @@unique([postId, memberId])
 }
 
 enum ReactionType {

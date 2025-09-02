@@ -55,3 +55,37 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     return NextResponse.json({ error: "Fehler beim Bearbeiten der Gruppe", details: String(err) }, { status: 500 });
   }
 }
+
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const group = await prisma.group.findUnique({
+      where: { id: params.id },
+      include: {
+        feedPosts: {
+          orderBy: { createdAt: "desc" },
+          include: {
+            author: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+              },
+            },
+            reactions: true,
+          },
+        },
+        members: true,
+        // weitere Relationen nach Bedarf
+      },
+    });
+
+    if (!group) {
+      return NextResponse.json({ error: "Gruppe nicht gefunden" }, { status: 404 });
+    }
+
+    return NextResponse.json(group, { status: 200 });
+  } catch (err) {
+    console.error("Fehler beim Laden der Gruppe:", err);
+    return NextResponse.json({ error: "Fehler beim Laden der Gruppe", details: String(err) }, { status: 500 });
+  }
+}
