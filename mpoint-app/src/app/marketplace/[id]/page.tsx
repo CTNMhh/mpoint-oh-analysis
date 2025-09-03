@@ -36,8 +36,8 @@ export default function MarketplaceDetailPage() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
-  // Anfrage-Modal State
-  const [showRequestModal, setShowRequestModal] = useState(false);
+  // Anfrage-Panel (statt Modal) State
+  const [showRequestPanel, setShowRequestPanel] = useState(false);
   const [requestMessage, setRequestMessage] = useState("");
   const [requestLoading, setRequestLoading] = useState(false);
   const [requestSuccess, setRequestSuccess] = useState<string | null>(null);
@@ -95,8 +95,8 @@ export default function MarketplaceDetailPage() {
         body: JSON.stringify({ projectId: entry.id, message: requestMessage }),
       });
       if (res.ok) {
-        setRequestSuccess(userRequest ? "Anfrage erfolgreich bearbeitet!" : "Anfrage erfolgreich gesendet!");
-        setShowRequestModal(false);
+  setRequestSuccess(userRequest ? "Anfrage erfolgreich bearbeitet!" : "Anfrage erfolgreich gesendet!");
+  setShowRequestPanel(false);
         setRequestMessage("");
         // Reload userRequest
         const reqRes = await fetch(`/api/marketplace/request?projectId=${id}`);
@@ -123,7 +123,7 @@ export default function MarketplaceDetailPage() {
         body: JSON.stringify({ projectId: entry.id }),
       });
       if (res.ok) {
-        setShowRequestModal(false);
+  setShowRequestPanel(false);
         setRequestMessage("");
         setUserRequest(null);
       } else {
@@ -138,10 +138,18 @@ export default function MarketplaceDetailPage() {
   }
 
   if (loading) {
-    return <div className="max-w-3xl mx-auto py-12 px-4 text-center text-gray-500">Lädt...</div>;
+    return (
+      <div className="bg-gray-50 min-h-screen">
+        <main className="max-w-3xl mx-auto pt-20 pb-10 px-4 text-center text-gray-500">Lädt...</main>
+      </div>
+    );
   }
   if (notFound || !entry) {
-    return <div className="max-w-3xl mx-auto py-12 px-4 text-center text-red-500">Projekt nicht gefunden.</div>;
+    return (
+      <div className="bg-gray-50 min-h-screen">
+        <main className="max-w-3xl mx-auto pt-20 pb-10 px-4 text-center text-red-500">Projekt nicht gefunden.</main>
+      </div>
+    );
   }
 
   // Button: Bearbeiten oder Anfragen
@@ -157,18 +165,28 @@ export default function MarketplaceDetailPage() {
     </span>
   ) : null;
   const requestButton = userRequest ? (
-    <button className="px-5 py-2 bg-red-600 text-white rounded text-sm font-medium hover:bg-red-700 hover:shadow transition-colors" onClick={() => { setShowRequestModal(true); setRequestMessage(userRequest.message || ""); }}>
-      Bearbeiten
+    <button
+      className="px-5 py-2 bg-red-600 text-white rounded text-sm font-medium hover:bg-red-700 hover:shadow transition-colors"
+      onClick={() => {
+        setShowRequestPanel((open) => !open);
+        setRequestMessage(userRequest.message || "");
+      }}
+    >
+      {showRequestPanel ? "Schließen" : "Bearbeiten"}
     </button>
   ) : (
-    <button className="px-5 py-2 bg-[#e31e24] text-white rounded text-sm font-medium hover:bg-[#c01a1f] hover:shadow transition-colors" onClick={() => setShowRequestModal(true)}>
-      Anfragen
+    <button
+      className="px-5 py-2 bg-[#e31e24] text-white rounded text-sm font-medium hover:bg-[#c01a1f] hover:shadow transition-colors"
+      onClick={() => setShowRequestPanel((open) => !open)}
+    >
+      {showRequestPanel ? "Schließen" : "Anfragen"}
     </button>
   );
 
   return (
-    <main className="max-w-3xl mx-auto py-12 px-4">
-      <div className="bg-white rounded-xl shadow p-8">
+    <div className="bg-gray-50 min-h-screen">
+      <main className="max-w-3xl mx-auto pt-20 pb-10 px-4 mb-6 mt-6">
+        <div className="bg-white rounded-xl shadow p-8">
         <h1 className="text-primary text-2xl font-bold mb-4">Börse</h1>
         <h2 className="text-3xl font-bold text-primary mb-2">{entry.title}</h2>
         <div className="mb-4 text-sm text-gray-500">
@@ -203,34 +221,49 @@ export default function MarketplaceDetailPage() {
             {requestButton}
           </div>
         </div>
-      </div>
-      {/* Anfrage Modal */}
-      {showRequestModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-xl p-8 max-w-lg w-full">
+        {/* Inline Anfrage Panel */}
+        {showRequestPanel && (
+          <div className="mt-6 pt-6">
             <h2 className="text-lg font-bold mb-4">{userRequest ? "Anfrage bearbeiten" : "Projekt anfragen"}</h2>
             <textarea
               className="w-full border rounded p-2 mb-4"
               rows={4}
               placeholder="Ihre Nachricht an den Anbieter..."
               value={requestMessage}
-              onChange={e => setRequestMessage(e.target.value)}
+              onChange={(e) => setRequestMessage(e.target.value)}
               disabled={requestLoading || deleteLoading}
             />
             {requestError && <div className="text-red-600 text-sm mb-2">{requestError}</div>}
             {requestSuccess && <div className="text-green-600 text-sm mb-2">{requestSuccess}</div>}
             <div className="flex gap-3 justify-end">
               {userRequest && (
-                <button className="px-5 py-2 rounded bg-gray-100 text-gray-700 hover:bg-gray-200" onClick={handleDeleteRequest} disabled={deleteLoading || requestLoading}>Löschen</button>
+                <button
+                  className="px-5 py-2 rounded bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  onClick={handleDeleteRequest}
+                  disabled={deleteLoading || requestLoading}
+                >
+                  Löschen
+                </button>
               )}
-              <button className="px-5 py-2 rounded bg-gray-100 text-gray-700 hover:bg-gray-200" onClick={() => setShowRequestModal(false)} disabled={requestLoading || deleteLoading}>Abbrechen</button>
-              <button className={`px-5 py-2 rounded ${userRequest ? "bg-red-600 hover:bg-red-700" : "bg-[#e31e24] hover:bg-[#c01a1f]"} text-white font-medium hover:shadow transition-colors`} onClick={handleRequestSubmit} disabled={requestLoading || deleteLoading || !requestMessage.trim()}>
+              <button
+                className="px-5 py-2 rounded bg-gray-100 text-gray-700 hover:bg-gray-200"
+                onClick={() => setShowRequestPanel(false)}
+                disabled={requestLoading || deleteLoading}
+              >
+                Abbrechen
+              </button>
+              <button
+                className={`px-5 py-2 rounded ${userRequest ? "bg-red-600 hover:bg-red-700" : "bg-[#e31e24] hover:bg-[#c01a1f]"} text-white font-medium hover:shadow transition-colors`}
+                onClick={handleRequestSubmit}
+                disabled={requestLoading || deleteLoading || !requestMessage.trim()}
+              >
                 {userRequest ? "Speichern" : "Anfrage senden"}
               </button>
             </div>
           </div>
+        )}
         </div>
-      )}
-    </main>
+      </main>
+    </div>
   );
 }
