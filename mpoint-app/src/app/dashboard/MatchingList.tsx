@@ -82,7 +82,7 @@ const growthPhaseLabels = {
   TRANSFORMATION: "Transformation",
 };
 
-export default function MatchingList({ companyId: propCompanyId, limit = 15 }: { companyId?: string; limit?: number }) {
+export default function MatchingList({ companyId: propCompanyId, limit = 15, layout = "default" }: { companyId?: string; limit?: number; layout?: "default" | "netzwerk"; }) {
   const { data: session } = useSession();
   const currentUserId = session?.user?.id || "";
 
@@ -125,21 +125,50 @@ export default function MatchingList({ companyId: propCompanyId, limit = 15 }: {
       if (!companyId) return;
       setLoading(true);
       try {
-        const res = await fetch(`/api/matching?companyId=${companyId}&limit=${limit}&excludeExisting=true`);
+        const res = await fetch(
+          `/api/matching?companyId=${companyId}&limit=${limit}&excludeExisting=true${
+            layout === "netzwerk" ? "&layout=netzwerk" : ""
+          }`
+        );
         const data = await res.json();
-
         if (data.success) {
-          setMatches(data.matches || []);
-          setMeta(data.meta || null);
-        }
+          // Bei Netzwerk-Layout kommt schon reduzierte Struktur -> normalisieren
+          if (layout === "netzwerk" && Array.isArray(data.matches)) {
+            setMatches(
+              data.matches.map((m: any) => ({
+                company: {
+                  id: m.companyId,
+                  name: m.companyName,
+                  legalForm: m.legalForm,
+                  district: m.district,
+                  user: { id: m.userId, firstName: m.firstName || "", lastName: m.lastName || "" },
+                },
+                matching: {
+                  score: m.score,
+                  percentage: m.percentage,
+                  type: m.type,
+                  reasons: m.reasons || [],
+                  commonInterests: m.commonInterests || [],
+                  potentialSynergies: m.potentialSynergies || [],
+                  lastActivedays: m.lastActivedays ?? 0,
+                  isRecentlyActive: m.isRecentlyActive ?? false,
+                },
+                matchStatus: m.status,
+              }))
+            );
+            setMeta(data.meta || null);
+          } else {
+            setMatches(data.matches || []);
+            setMeta(data.meta || null);
+          }
+        } 
       } catch (error) {
         console.error("Error fetching matches:", error);
       }
       setLoading(false);
     }
-
     if (companyId) fetchMatches();
-  }, [companyId, limit]);
+  }, [companyId, limit, layout]);
 
   // Nachricht anzeigen, wenn kein Unternehmen vorhanden ist
   if (hasCompany === false) {
@@ -175,7 +204,137 @@ export default function MatchingList({ companyId: propCompanyId, limit = 15 }: {
     if (score >= 40) return "✨";
     return "👍";
   };
-console.log("Matches:", matches);
+
+  if (layout === "netzwerk") {
+    // Loading Skeleton
+    if (loading) {
+      return (
+        <div className="space-y-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div
+              key={i}
+              className="border border-gray-200 bg-white rounded-xl p-4 animate-pulse"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-gray-200" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-3 w-24 bg-gray-200 rounded" />
+                  <div className="h-4 w-40 bg-gray-200 rounded" />
+                  <div className="h-3 w-28 bg-gray-200 rounded" />
+                </div>
+              </div>
+              <div className="mt-4 h-9 bg-gray-200 rounded" />
+            </div>
+          ))}
+        </div>
+      );
+    }
+    if (!matches.length) {
+      return (
+        <div className="text-center py-10 border border-dashed border-gray-300 rounded-xl bg-white">
+          <p className="text-gray-600 text-sm">Keine Matches gefunden.</p>
+        </div>
+      );
+    }
+    return (
+      <div className="space-y-4">
+        {matches.map((m) => {
+          const pct = m.matching.percentage;
+          const starCount = Math.max(1, Math.min(5, Math.round(pct / 20)));
+          const reasons = (m.matching.reasons || []).slice(0, 6);
+          const isExpanded = expandedMatch === m.company.id;
+          const initials = (m.company.name || "?")
+            .trim()
+            .split(/\s+/)
+            .slice(0, 2)
+            .map((p) => p[0]?.toUpperCase())
+            .join("");
+          return (
+            <div
+              key={m.company.id}
+              className="border border-gray-200 bg-white rounded-xl p-4 hover:shadow-md transition group"
+            >
+              {/* Kopfzeile */}
+              <div
+                className="flex items-start gap-4 cursor-pointer"
+                onClick={() =>
+                  setExpandedMatch(isExpanded ? null : m.company.id)
+                }
+              >
+                <div className="relative">
+                  <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-sm font-semibold text-gray-700 border border-gray-200">
+                    {initials}
+                  </div>
+                  {m.matching.isRecentlyActive && (
+                    <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-green-500 ring-2 ring-white" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-[13px] font-semibold text-[rgb(228,25,31)]">
+                      {pct}% Match
+                    </span>
+              
+                  </div>
+                  <div className="font-bold text-gray-900 truncate">
+                    {m.company.name}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {m.company.legalForm ||
+                      m.company.district ||
+                      "—"}
+                  </div>
+                </div>
+              </div>
+
+              {/* Aktionen */}
+              <div className="mt-4 flex flex-col gap-2">
+                {m.matchStatus === "CONNECTED" ? (
+                  <button
+                    disabled
+                    className="w-full bg-green-100 text-green-700 font-medium rounded-lg py-2.5"
+                  >
+                    Verbunden
+                  </button>
+                ) : m.matchStatus === "ACCEPTED_BY_SENDER" ? (
+                  <button
+                    disabled
+                    className="w-full bg-gray-200 text-gray-500 font-medium rounded-lg py-2.5"
+                  >
+                    Anfrage gesendet
+                  </button>
+                ) : (
+                  <ConnectButton
+                    userId={currentUserId}
+                    companyId={companyId || ""}
+                    partnerCompanyId={m.company.id}
+                    receiverUserId={m.company.user?.id}
+                  />
+                )}
+              </div>
+
+              {/* Erweiterte Gründe */}
+              {isExpanded && reasons.length > 0 && (
+                <div className="mt-3 border-t pt-3 space-y-2">
+                  {reasons.map((r, idx) => (
+                    <div
+                      key={idx}
+                      className="text-xs text-gray-600 flex gap-1"
+                    >
+                      <span className="text-green-500">✓</span>
+                      <span>{r}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+       
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
