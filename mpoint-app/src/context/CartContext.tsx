@@ -137,7 +137,7 @@ export function MiniCart({ message }: { message?: string }) {
         </>
       )}
       <button
-        className="bg-[#e60000] text-xl text-white px-4 py-2 rounded-xl font-medium hover:bg-red-700 transition-all self-end cursor-pointer"
+        className="bg-[#e60000] text-white px-4 py-2 rounded-xl font-medium hover:bg-red-700 transition-all self-end cursor-pointer"
         onClick={() => router.push("/checkout")}
       >
         Zur Kasse
