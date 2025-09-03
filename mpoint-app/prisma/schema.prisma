@@ -718,6 +718,8 @@ enum NotificationType {
   EVENT_UPDATED
   EVENT_Booking_Confirmed
   GROUP_INVITE
+  GROUP_REQUEST
+  GROUP_APPROVED
 }
 
 model Notification {
@@ -946,6 +948,7 @@ enum GroupMemberStatus {
   ACTIVE
   BLOCKED
   DELETED
+  REQUEST
 }
 
 model GroupFeedPost {

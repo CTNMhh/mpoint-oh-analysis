@@ -3,7 +3,7 @@ import { Pencil, Users } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 
-export type GroupMemberStatus = "INVITED" | "ACTIVE" | "BLOCKED" | "DELETED";
+export type GroupMemberStatus = "REQUEST" | "INVITED" | "ACTIVE" | "BLOCKED" | "DELETED";
 export type ReactionType = "LIKE" | "LOL" | "SAD" | "ANGRY";
 
 export type Group = {
@@ -481,11 +481,34 @@ function PostBlock({ post }: { post: any }) {
   );
 }
 
+import { useGroups } from "./GroupContext";
+
 function GroupListItem({ group, setActiveGroup }: { group: any, setActiveGroup?: (group: any) => void }) {
   const DESCRIPTION_MAX_LENGTH = 120;
   const [open, setOpen] = useState(false);
+  const [requestSent, setRequestSent] = useState(false);
+  const { data: session } = useSession();
+  const { refreshGroups } = useGroups();
 
   const shortText = group.description?.slice(0, DESCRIPTION_MAX_LENGTH);
+
+  // Prüfen, ob User bereits Mitglied oder Anfrage gestellt hat
+  const isMemberOrRequested = group.members.some(
+    m =>
+      m.userId === session?.user?.id &&
+      (m.status === "ACTIVE" || m.status === "REQUEST")
+  );
+
+  // Anfrage senden
+  const handleRequest = async () => {
+    await fetch(`/api/groups/${group.id}/request`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: session?.user?.id }),
+    });
+    setRequestSent(true);
+    refreshGroups();
+  };
 
   return (
     <li className="flex gap-4 bg-white rounded-xl shadow p-4 border items-start">
@@ -537,6 +560,18 @@ function GroupListItem({ group, setActiveGroup }: { group: any, setActiveGroup?:
             ) : (
               group.description
             )}
+          </div>
+        )}
+        {/* Beitritts-Button */}
+        {!isMemberOrRequested && (
+          <div className="mt-2">
+            <button
+              className="px-3 py-1 bg-[#e60000] text-white rounded text-xs font-semibold hover:bg-red-700"
+              onClick={handleRequest}
+              disabled={requestSent}
+            >
+              {requestSent ? "Anfrage gesendet" : "Beitreten"}
+            </button>
           </div>
         )}
       </div>
