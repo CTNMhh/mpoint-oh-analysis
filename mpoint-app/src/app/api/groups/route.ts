@@ -46,18 +46,7 @@ export async function POST(req: Request) {
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json([], { status: 200 });
-    }
-
     const groups = await prisma.group.findMany({
-      where: {
-        OR: [
-          { adminId: session.user.id },
-          { members: { some: { userId: session.user.id, status: "ACTIVE" } } },
-        ],
-      },
       include: {
         members: {
           include: {

@@ -184,7 +184,7 @@ export function GroupList({
   showMemberGroups = true,
   showAvailableGroups = true,
   showManageButton = true,
-  setActiveGroup, // <--- neu
+  setActiveGroup,
 }: {
   session: any;
   memberGroups?: any[];
@@ -194,8 +194,16 @@ export function GroupList({
   showMemberGroups?: boolean;
   showAvailableGroups?: boolean;
   showManageButton?: boolean;
-  setActiveGroup?: (group: any) => void; // <--- neu
+  setActiveGroup?: (group: any) => void;
 }) {
+  // Zentrale Definition der max. Länge
+  const DESCRIPTION_MAX_LENGTH = 120;
+
+  // Hilfsfunktion für die Kürzung
+  const getShortDescription = (desc?: string) =>
+    desc && desc.length > DESCRIPTION_MAX_LENGTH
+      ? desc.slice(0, DESCRIPTION_MAX_LENGTH) + "..."
+      : desc;
 
   return (
     <div>
@@ -214,7 +222,9 @@ export function GroupList({
                 <div className="flex-1">
                   <span className="text-blue-600 font-semibold text-lg">{group.name}</span>
                   {group.description && (
-                    <div className="text-gray-600 text-sm mt-1">{group.description}</div>
+                    <div className="text-gray-600 text-sm mt-1">
+                      {getShortDescription(group.description)}
+                    </div>
                   )}
                 </div>
                 {/* Edit-Button */}
@@ -240,24 +250,11 @@ export function GroupList({
           ) : (
             <ul className="space-y-4 mb-8">
               {memberGroups.map(group => (
-                <li key={group.id} className="flex items-center gap-4 bg-white rounded-xl shadow p-4 border">
-                  {group.avatarUrl ? (
-                    <img src={group.avatarUrl} alt="Gruppen-Avatar" className="w-12 h-12 rounded-full object-cover border-2 border-[#e60000] bg-white" />
-                  ) : (
-                    <Users className="w-12 h-12 text-gray-300 bg-gray-100 rounded-full p-2" />
-                  )}
-                  <div>
-                    <button
-                      className="text-blue-600 hover:underline font-semibold text-lg"
-                      onClick={() => setActiveGroup && setActiveGroup(group)} // <--- Klick setzt aktive Gruppe
-                    >
-                      {group.name}
-                    </button>
-                    {group.description && (
-                      <div className="text-gray-600 text-sm mt-1">{group.description}</div>
-                    )}
-                  </div>
-                </li>
+                <GroupListItem
+                  key={group.id}
+                  group={group}
+                  setActiveGroup={setActiveGroup}
+                />
               ))}
             </ul>
           )}
@@ -273,21 +270,7 @@ export function GroupList({
           ) : (
             <ul className="space-y-4 mb-8">
               {availableGroups.map(group => (
-                <li key={group.id} className="flex items-center gap-4 bg-white rounded-xl shadow p-4 border">
-                  {group.avatarUrl ? (
-                    <img src={group.avatarUrl} alt="Gruppen-Avatar" className="w-12 h-12 rounded-full object-cover border-2 border-[#e60000] bg-white" />
-                  ) : (
-                    <Users className="w-12 h-12 text-gray-300 bg-gray-100 rounded-full p-2" />
-                  )}
-                  <div>
-                    <button className="text-blue-600 hover:underline font-semibold text-lg">
-                      {group.name}
-                    </button>
-                    {group.description && (
-                      <div className="text-gray-600 text-sm mt-1">{group.description}</div>
-                    )}
-                  </div>
-                </li>
+                <GroupListItem key={group.id} group={group} />
               ))}
             </ul>
           )}
@@ -486,6 +469,69 @@ function PostBlock({ post }: { post: any }) {
         {!memberId && (
           <div className="text-red-500 text-xs mt-2">
             Du bist kein aktives Gruppenmitglied und kannst nicht reagieren.
+          </div>
+        )}
+      </div>
+    </li>
+  );
+}
+
+function GroupListItem({ group, setActiveGroup }: { group: any, setActiveGroup?: (group: any) => void }) {
+  const DESCRIPTION_MAX_LENGTH = 120;
+  const [open, setOpen] = useState(false);
+
+  const shortText = group.description?.slice(0, DESCRIPTION_MAX_LENGTH);
+
+  return (
+    <li className="flex gap-4 bg-white rounded-xl shadow p-4 border items-start">
+      {/* Icon und Name nebeneinander */}
+      <div className="flex items-center gap-2">
+        {group.avatarUrl ? (
+          <img src={group.avatarUrl} alt="Gruppen-Avatar" className="w-12 h-12 rounded-full object-cover border-2 border-[#e60000] bg-white" />
+        ) : (
+          <Users className="w-12 h-12 text-gray-300 bg-gray-100 rounded-full p-2" />
+        )}
+        <button
+          className="text-blue-600 hover:underline font-semibold text-lg text-left"
+          onClick={() => setActiveGroup && setActiveGroup(group)}
+        >
+          {group.name}
+        </button>
+      </div>
+      {/* Beschreibung unterhalb von Name+Icon */}
+      <div className="flex-1">
+        {group.description && (
+          <div className="text-gray-600 text-sm mt-1">
+            {group.description.length > DESCRIPTION_MAX_LENGTH ? (
+              <>
+                {shortText}
+                {!open && (
+                  <>
+                    ...{" "}
+                    <button
+                      className="text-xs text-[#e60000] underline"
+                      onClick={() => setOpen(true)}
+                    >
+                      Mehr anzeigen
+                    </button>
+                  </>
+                )}
+                {open && (
+                  <span>
+                    {group.description.slice(DESCRIPTION_MAX_LENGTH)}
+                    {" "}
+                    <button
+                      className="text-xs text-[#e60000] underline"
+                      onClick={() => setOpen(false)}
+                    >
+                      Weniger anzeigen
+                    </button>
+                  </span>
+                )}
+              </>
+            ) : (
+              group.description
+            )}
           </div>
         )}
       </div>
