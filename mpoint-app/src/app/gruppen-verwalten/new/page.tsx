@@ -13,7 +13,7 @@ export default function GruppeAnlegenPage() {
 
 function GruppeAnlegenForm() {
   const router = useRouter();
-  const { createGroup } = useGroups();
+  const { createGroup, refreshGroups } = useGroups();
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -44,6 +44,7 @@ function GruppeAnlegenForm() {
       }
       // avatarUrl bleibt leer, wenn kein Bild gewählt wurde
       const group = await createGroup({ name, description, avatarUrl });
+      await refreshGroups();
       router.push("/gruppen-verwalten");
 
       // Angenommen, du bekommst ein Array invitedUserIds

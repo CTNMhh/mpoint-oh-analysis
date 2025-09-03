@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { useEffect, useState, createContext, useContext } from "react";
 import { Pencil, Users } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -63,7 +63,7 @@ type GroupContextType = {
 const GroupContext = createContext<GroupContextType | undefined>(undefined);
 
 export function GroupProvider({ children }: { children: React.ReactNode }) {
-  const [groups, setGroups] = useState<Group[]>([]);
+  const [groups, setGroups] = useState<any[]>([]);
   const [activeGroup, setActiveGroup] = useState<Group | undefined>(undefined);
 
   // Beispiel: Gruppen laden
@@ -144,8 +144,13 @@ export function GroupProvider({ children }: { children: React.ReactNode }) {
     await refreshGroups();
   };
 
+  // Automatisches Polling alle 10 Sekunden
   useEffect(() => {
-    refreshGroups();
+    refreshGroups(); // Initiales Laden
+    const interval = setInterval(() => {
+      refreshGroups();
+    }, 10000); // alle 10 Sekunden
+    return () => clearInterval(interval);
   }, []);
 
   return (
