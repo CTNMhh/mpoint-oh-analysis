@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { Building2, Clock } from "lucide-react";
+import Link from "next/link";
 
 export default function OutgoingRequests() {
   const { data: session } = useSession();
@@ -45,8 +46,23 @@ export default function OutgoingRequests() {
                 key={req.id}
                 className="flex items-center gap-3 p-4 rounded-lg bg-white border border-gray-200 hover:bg-gray-50 hover:shadow-md transition-all"
               >
-                <Building2 className="w-6 h-6 text-gray-400" />
-                <span className="font-medium">{req.receiverCompany?.name || "Unbekanntes Unternehmen"}</span>
+                {req.receiverCompany?.id ? (
+                  <Link
+                    href={`/company/${req.receiverCompany.id}`}
+                    className="flex items-center gap-2 group"
+                    title="Unternehmensprofil öffnen"
+                  >
+                    <Building2 className="w-6 h-6 text-gray-400 group-hover:text-[#e60000] transition-colors" />
+                    <span className="font-medium text-gray-900 group-hover:text-[#e60000] underline-offset-2 group-hover:underline">
+                      {req.receiverCompany.name}
+                    </span>
+                  </Link>
+                ) : (
+                  <>
+                    <Building2 className="w-6 h-6 text-gray-300" />
+                    <span className="font-medium text-gray-500">Unbekanntes Unternehmen</span>
+                  </>
+                )}
                 <span className="text-xs text-gray-500 ml-auto">
                   {req.status === "PENDING" && "Wartet auf Bestätigung"}
                   {req.status === "ACCEPTED_BY_SENDER" && "Wartet auf Partner"}

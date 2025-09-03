@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { Building2, MessageSquare } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function ConnectedCompanies() {
   const { data: session } = useSession();
@@ -79,10 +80,23 @@ export default function ConnectedCompanies() {
                   key={match.id}
                   className="flex items-center gap-3 p-4 rounded-lg bg-white border border-gray-200 hover:bg-gray-50 hover:shadow-md transition-all"
                 >
-                  <Building2 className="w-6 h-6 text-gray-400" />
-                  <span className="font-medium">
-                    {partnerCompany?.name || "Unbekanntes Unternehmen"}
-                  </span>
+                  {partnerCompany?.id ? (
+                    <Link
+                      href={`/company/${partnerCompany.id}`}
+                      className="flex items-center gap-2 group"
+                      title="Unternehmensprofil öffnen"
+                    >
+                      <Building2 className="w-6 h-6 text-gray-400 group-hover:text-[#e60000] transition-colors" />
+                      <span className="font-medium text-gray-900 group-hover:text-[#e60000] underline-offset-2 group-hover:underline">
+                        {partnerCompany.name}
+                      </span>
+                    </Link>
+                  ) : (
+                    <>
+                      <Building2 className="w-6 h-6 text-gray-300" />
+                      <span className="font-medium text-gray-500">Unbekanntes Unternehmen</span>
+                    </>
+                  )}
                   <button
                     className="ml-auto flex items-center gap-1 text-[#e60000] hover:underline text-xs disabled:opacity-40"
                     onClick={() => partnerUserId && router.push(`/chat/${partnerUserId}`)}
