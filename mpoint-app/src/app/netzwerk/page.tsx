@@ -202,6 +202,16 @@ function GroupsTabContent({ session }: { session: any }) {
     )
   );
 
+  // Nur Gruppen, in denen der User KEIN Mitglied ist
+  const availableGroups = groups.filter(group =>
+    !group.members.some(
+      member => member.userId === session?.user?.id && member.status === "ACTIVE"
+    )
+  );
+
+  console.log("groups:", groups);
+  console.log("availableGroups:", availableGroups);
+
   return (
     <div
       id="groups-content"
@@ -212,9 +222,10 @@ function GroupsTabContent({ session }: { session: any }) {
         <GroupList
           session={session}
           memberGroups={memberGroups}
+          availableGroups={availableGroups}   // <--- jetzt korrekt!
           showOwnGroups={true}
           showMemberGroups={true}
-          showAvailableGroups={true} // <--- wichtig!
+          showAvailableGroups={true}
           showManageButton={true}
           setActiveGroup={setActiveGroup}
         />

@@ -537,10 +537,19 @@ export default function EventsPage() {
                     return (
                       <div
                         key={event.id}
-                        className="flex flex-col rounded-lg bg-white border border-gray-200 hover:bg-gray-50 hover:shadow-md transition-all p-4"
+                        className="flex flex-col rounded-lg bg-white border border-gray-200 hover:bg-gray-50 hover:shadow-md transition-all gap-6"
                       >
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="self-stretch">
+                            {event.imageUrl && (
+                              <img
+                                src={event.imageUrl}
+                                alt={event.title}
+                                className="h-full object-cover w-40 rounded-l-lg bg-linear-to-r from-gray-200 to-gray-300"
+                              />
+                            )}
+                          </div>
+                          <div className="flex-1 py-4">
                             <h3 className="text-lg font-bold mb-2">
                               {event.title}
                               {event.user.email === session?.user?.email ? (
@@ -598,7 +607,7 @@ export default function EventsPage() {
                           </div>
                           <Link
                             href={`/events/${event.id}`}
-                            className="ml-4 bg-[rgb(228,25,31)] text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm font-semibold"
+                            className="bg-[#e60000] text-white px-4 py-2 rounded-xl hover:bg-red-700 transition-colors font-medium my-4 me-4"
                           >
                             Details
                           </Link>
@@ -629,10 +638,19 @@ export default function EventsPage() {
                     return (
                       <div
                         key={event.id}
-                        className="flex flex-col rounded-lg bg-white border border-gray-200 hover:bg-gray-50 hover:shadow-md transition-all p-4"
+                        className="flex flex-col rounded-lg bg-white border border-gray-200 hover:bg-gray-50 hover:shadow-md transition-all gap-6"
                       >
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="self-stretch">
+                            {event.imageUrl && (
+                              <img
+                                src={event.imageUrl}
+                                alt={event.title}
+                                className="h-full object-cover w-40 rounded-l-lg bg-linear-to-r from-gray-200 to-gray-300"
+                              />
+                            )}
+                          </div>
+                          <div className="flex-1 py-4">
                             <h3 className="text-lg font-bold mb-2">
                               {event.title}
                               {event.user.email === session?.user?.email ? (
@@ -690,7 +708,7 @@ export default function EventsPage() {
                           </div>
                           <Link
                             href={`/events/${event.id}`}
-                            className="ml-4 bg-[rgb(228,25,31)] text-white px-4 py-2 rounded hover:bg-red-700 transition-colors text-sm font-semibold"
+                            className="bg-[#e60000] text-white px-4 py-2 rounded-xl hover:bg-red-700 transition-colors font-medium my-4 me-4"
                           >
                             Details
                           </Link>
