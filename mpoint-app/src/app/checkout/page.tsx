@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
-import { Trash2 } from "lucide-react";
+import { Trash2, ShoppingCart } from "lucide-react";
 
 export default function CheckoutPage() {
   const [cart, setCart] = useState<{ id: string, items: any[] } | null>(null);
@@ -158,27 +158,32 @@ export default function CheckoutPage() {
   const mwst = total * 0.19;
 
   return (
-    <main className="min-h-screen bg-gray-50 pt-24 pb-12">
+    <main className="min-h-screen bg-gray-50 pt-20">
       {messageBlock}
-      <div className="max-w-3xl mx-auto py-8">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3 mb-4">
+            <ShoppingCart className="w-8 h-8 text-[#e60000]" />
+            Kasse
+          </h1>
+        </div>
         <div id="cart-box">
-          <h1 className="text-2xl font-bold mb-6">Kasse</h1>
           <table id="cart-items" className="w-full border rounded-xl overflow-hidden shadow bg-white">
             <thead>
-              <tr className="bg-gray-100 text-gray-700 uppercase leading-tight">
-                <th className="py-2 px-2 text-left">Event</th>
-                <th className="py-2 px-2 text-center">Plätze</th>
-                <th className="py-2 px-2 text-right">Gesamt</th>
-                <th className="py-2 px-2 text-center"></th>
+              <tr className="bg-gray-100 text-gray-700 leading-tight">
+                <th className="py-3 px-6 text-left">Event</th>
+                <th className="py-3 px-6 text-center">Plätze</th>
+                <th className="py-3 px-6 text-right">Gesamt</th>
+                <th className="py-3 px-6 text-center"></th>
               </tr>
             </thead>
             <tbody>
               {cart.items.map((item) => (
                 <tr key={item.id}>
-                  <td id="cart-item-title" className="py-2 px-2 border-b max-w-[120px]">{item.event?.title}</td>
-                  <td id="cart-item-spaces" className="py-2 px-2 border-b text-center">{item.spaces}</td>
-                  <td id="cart-item-total" className="py-2 px-2 border-b text-right">{item.event?.price ? (item.event.price * item.spaces).toFixed(2) + " €" : "Kostenfrei"}</td>
-                  <td id="cart-item-actions" className="py-2 px-2 border-b text-center align-middle">
+                  <td id="cart-item-title"   className="py-3 px-6 border-b max-w-[120px]">{item.event?.title}</td>
+                  <td id="cart-item-spaces"  className="py-3 px-6 border-b text-center">{item.spaces}</td>
+                  <td id="cart-item-total"   className="py-3 px-6 border-b text-right">{item.event?.price ? (item.event.price * item.spaces).toFixed(2) + " €" : "Kostenfrei"}</td>
+                  <td id="cart-item-actions" className="py-3 px-6 border-b text-right align-middle">
                     <button
                       id="cart-item-remove-button"
                       onClick={() => handleRemoveCartItem(item.id)}
