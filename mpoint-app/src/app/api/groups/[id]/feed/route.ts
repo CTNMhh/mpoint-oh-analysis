@@ -68,24 +68,30 @@ export async function POST(req: NextRequest, context: { params: { id: string } }
 }
 
 export async function GET(req: NextRequest, context: { params: Promise<{ id: string }> }) {
-  const { id } = await context.params;
-  const posts = await prisma.groupFeedPost.findMany({
-    where: { groupId: id },
-    orderBy: { createdAt: "desc" },
-    include: {
-      author: {
-        include: {
-          user: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
+  try {
+    const { id } = await context.params;
+    const posts = await prisma.groupFeedPost.findMany({
+      where: { groupId: id },
+      orderBy: { createdAt: "desc" },
+      include: {
+        author: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                //avatarUrl: true, // <--- Avatar mitladen! Für später
+              },
             },
           },
         },
+        reactions: true,
       },
-      reactions: true,
-    },
-  });
-  return NextResponse.json(posts, { status: 200 });
+    });
+    return NextResponse.json(posts, { status: 200 });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: "Interner Serverfehler", details: String(error) }, { status: 500 });
+  }
 }

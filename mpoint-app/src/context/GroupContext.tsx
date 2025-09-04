@@ -1,5 +1,5 @@
 import React, { useEffect, useState, createContext, useContext } from "react";
-import { Pencil, Users } from "lucide-react";
+import { Pencil, Users, ThumbsUp, Laugh, Frown, Angry } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 
@@ -342,15 +342,22 @@ export function GroupContent({ group }: { group: any }) {
     setLoading(false);
   };
 
+  // Feed regelmäßig neu laden (Polling)
   useEffect(() => {
+    let active = true;
     const fetchFeed = async () => {
       const res = await fetch(`/api/groups/${group.id}/feed`);
       if (res.ok) {
         const posts = await res.json();
-        setFeed(posts);
+        if (active) setFeed(posts);
       }
     };
     fetchFeed();
+    const interval = setInterval(fetchFeed, 10000); // alle 10 Sekunden
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
   }, [group.id]);
 
   return (
@@ -396,7 +403,7 @@ export function GroupContent({ group }: { group: any }) {
         ) : (
           <ul className="space-y-6">
             {feed.map(post => (
-              <PostBlock key={post.id} post={post} />
+              <PostBlock key={post.id} post={post} group={group} />
             ))}
           </ul>
         )}
@@ -405,31 +412,37 @@ export function GroupContent({ group }: { group: any }) {
   );
 }
 
-function PostBlock({ post }: { post: any }) {
-  const { reactToPost, activeGroup } = useGroups();
+function PostBlock({ post, group }: { post: any, group: any }) {
+  const { reactToPost } = useGroups();
   const { data: session } = useSession();
-  const reactionTypes = ["LIKE", "LOL", "SAD", "ANGRY"];
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Eigene GroupMember-ID finden mit Fehlerbehandlung
-  let memberId: string | undefined;
-  if (activeGroup && session?.user?.id) {
-    console.log("Session User ID:", session.user.id);
-    console.log("ActiveGroup Members:", activeGroup.members);
-    const member = activeGroup.members.find(
-      m => String(m.userId) === String(session.user.id) && m.status === "ACTIVE"
-    );
-    if (member) {
-      memberId = member.id;
-    } else {
-      console.warn("Kein aktives Gruppenmitglied für diesen User gefunden.");
-    }
-  } else {
-    console.warn("activeGroup oder session.user.id nicht definiert.");
-  }
+  // Mapping ReactionType zu Icon und Label
+  const reactionIcons: Record<string, JSX.Element> = {
+    LIKE: <ThumbsUp className="w-4 h-4 inline" />,
+    LOL: <Laugh className="w-4 h-4 inline" />,
+    SAD: <Frown className="w-4 h-4 inline" />,
+    ANGRY: <Angry className="w-4 h-4 inline" />,
+  };
 
-  const handleReaction = async (type: string) => {
+  const reactionTypes: ReactionType[] = ["LIKE", "LOL", "SAD", "ANGRY"];
+
+  // Eigene GroupMember-ID finden (nicht der Autor!)
+  const memberId = group?.members.find(
+    m => String(m.userId) === String(session?.user?.id) && m.status === "ACTIVE"
+  )?.id;
+
+  // Prüfen, ob User der Post-Verfasser ist
+  const isAuthor = memberId === post.authorId;
+
+  const handleReaction = async (type: ReactionType) => {
+    setErrorMsg(null);
     if (!memberId) {
-      alert("Du bist kein aktives Gruppenmitglied und kannst nicht reagieren.");
+      setErrorMsg("Du bist kein aktives Gruppenmitglied und kannst nicht reagieren.");
+      return;
+    }
+    if (isAuthor) {
+      setErrorMsg("Du kannst nicht auf deinen eigenen Beitrag reagieren.");
       return;
     }
     await reactToPost(post.groupId, post.id, memberId, type);
@@ -437,44 +450,51 @@ function PostBlock({ post }: { post: any }) {
 
   return (
     <li className="bg-white rounded-xl shadow p-4 border flex gap-4">
-      {/* Avatar des Autors */}
-      {post.author?.avatarUrl ? (
-        <img src={post.author.avatarUrl} alt="Avatar" className="w-10 h-10 rounded-full object-cover border" />
-      ) : (
-        <Users className="w-10 h-10 text-gray-300 bg-gray-100 rounded-full p-2" />
-      )}
+      {/* Avatar des Autors (für später) */}
+      {/* ... */}
       <div className="flex-1">
-        <div className="font-semibold text-gray-900">{post.author?.firstName} {post.author?.lastName}</div>
+        <div className="font-semibold text-gray-900">
+          {post.author?.user?.firstName} {post.author?.user?.lastName}
+        </div>
         <div className="text-gray-700 mt-1">{post.content}</div>
-        {/* Reaktionen */}
+        {/* Reaktionen als Icons mit Zähler */}
         <div className="flex gap-2 mt-2">
-          {post.reactions?.map((reaction: any) => (
-            <span key={reaction.id} className="px-2 py-1 rounded bg-gray-100 text-xs font-semibold">
-              {reaction.type}
-            </span>
-          ))}
+          {reactionTypes.map(type => {
+            const count = post.reactions?.filter((r: any) => r.type === type).length || 0;
+            return count > 0 ? (
+              <span key={type} className="flex items-center gap-1 px-2 py-1 rounded bg-gray-100 text-xs font-semibold">
+                {reactionIcons[type]} {count}
+              </span>
+            ) : null;
+          })}
         </div>
         {/* Aktionen */}
         <div className="flex gap-4 mt-2">
           <button className="text-blue-600 hover:underline text-xs">Antworten</button>
-          <button className="text-gray-600 hover:underline text-xs">Weiterleiten</button>
-          {/* Reaktions-Buttons */}
-          {reactionTypes.map(type => (
-            <button
-              key={type}
-              className="text-xs px-2 py-1 rounded bg-gray-100 hover:bg-[#e60000] hover:text-white font-semibold"
-              onClick={() => handleReaction(type)}
-              title={`Mit ${type} reagieren`}
-              disabled={!memberId}
-            >
-              {type}
-            </button>
-          ))}
+          {/* Reaktions-Buttons: für alle Mitglieder außer Autor */}
+          {memberId && !isAuthor && (
+            <>
+              {reactionTypes.map(type => (
+                <button
+                  key={type}
+                  className="text-xs px-2 py-1 rounded bg-gray-100 hover:bg-[#e60000] hover:text-white font-semibold flex items-center gap-1"
+                  onClick={() => handleReaction(type)}
+                  title={`Mit ${type} reagieren`}
+                >
+                  {reactionIcons[type]}
+                </button>
+              ))}
+            </>
+          )}
         </div>
+        {/* Fehlermeldung als Text */}
         {!memberId && (
           <div className="text-red-500 text-xs mt-2">
             Du bist kein aktives Gruppenmitglied und kannst nicht reagieren.
           </div>
+        )}
+        {errorMsg && (
+          <div className="text-red-500 text-xs mt-2">{errorMsg}</div>
         )}
       </div>
     </li>
