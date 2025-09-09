@@ -31,6 +31,7 @@ export type GroupFeedPost = {
   groupId: string;
   authorId: string;
   content: string;
+  parentId?: string; // <--- für Antworten!
   imageUrl?: string;
   imageSize?: number;
   createdAt: string;
@@ -402,9 +403,11 @@ export function GroupContent({ group }: { group: any }) {
           <div className="text-gray-500">Noch keine Beiträge in dieser Gruppe.</div>
         ) : (
           <ul className="space-y-6">
-            {feed.map(post => (
-              <PostBlock key={post.id} post={post} group={group} />
-            ))}
+            {feed
+              .filter(post => !post.parentId) // Nur Haupt-Posts!
+              .map(post => (
+                <PostBlock key={post.id} post={post} group={group} feed={feed} />
+              ))}
           </ul>
         )}
       </div>
@@ -412,31 +415,34 @@ export function GroupContent({ group }: { group: any }) {
   );
 }
 
-function PostBlock({ post, group }: { post: any, group: any }) {
+function PostBlock({ post, group, feed }: { post: any, group: any, feed: any[] }) {
   const { reactToPost } = useGroups();
   const { data: session } = useSession();
+  const [showReplies, setShowReplies] = useState(false);
+  const [showAllReplies, setShowAllReplies] = useState(false);
+  const [showReplyForm, setShowReplyForm] = useState(false);
+  const [replyContent, setReplyContent] = useState("");
+  const [replyLoading, setReplyLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [showReactionLayer, setShowReactionLayer] = useState(false);
 
-  // Mapping ReactionType zu Icon und Label
   const reactionIcons: Record<string, JSX.Element> = {
     LIKE: <ThumbsUp className="w-4 h-4 inline" />,
     LOL: <Laugh className="w-4 h-4 inline" />,
     SAD: <Frown className="w-4 h-4 inline" />,
     ANGRY: <Angry className="w-4 h-4 inline" />,
   };
-
   const reactionTypes: ReactionType[] = ["LIKE", "LOL", "SAD", "ANGRY"];
 
-  // Eigene GroupMember-ID finden (nicht der Autor!)
   const memberId = group?.members.find(
     m => String(m.userId) === String(session?.user?.id) && m.status === "ACTIVE"
   )?.id;
 
-  // Prüfen, ob User der Post-Verfasser ist
   const isAuthor = memberId === post.authorId;
 
   const handleReaction = async (type: ReactionType) => {
     setErrorMsg(null);
+    setShowReactionLayer(false);
     if (!memberId) {
       setErrorMsg("Du bist kein aktives Gruppenmitglied und kannst nicht reagieren.");
       return;
@@ -448,43 +454,111 @@ function PostBlock({ post, group }: { post: any, group: any }) {
     await reactToPost(post.groupId, post.id, memberId, type);
   };
 
+  const replies = feed.filter(p => p.parentId === post.id);
+  const latestReply = replies.length > 0 ? replies[replies.length - 1] : null;
+
+  const handleReply = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!replyContent.trim()) return;
+    setReplyLoading(true);
+    await fetch(`/api/groups/${group.id}/feed`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        content: replyContent,
+        authorId: memberId,
+        parentId: post.id,
+      }),
+    });
+    setReplyContent("");
+    setReplyLoading(false);
+    setShowReplyForm(false);
+  };
+
+  // Ist das eine Antwort?
+  const isReply = !!post.parentId;
+
   return (
-    <li className="bg-white rounded-xl shadow p-4 border flex gap-4">
-      {/* Avatar des Autors (für später) */}
-      {/* ... */}
+    <li
+      className={`rounded-xl shadow p-4 flex gap-4 ${
+        isReply ? "bg-gray-100" : "bg-white"
+      }`}
+    >
       <div className="flex-1">
         <div className="font-semibold text-gray-900">
           {post.author?.user?.firstName} {post.author?.user?.lastName}
         </div>
         <div className="text-gray-700 mt-1">{post.content}</div>
-        {/* Reaktionen als Icons mit Zähler */}
+        {/* Vergebene Reaktionen als Icons mit Zähler */}
         <div className="flex gap-2 mt-2">
           {reactionTypes.map(type => {
             const count = post.reactions?.filter((r: any) => r.type === type).length || 0;
             return count > 0 ? (
               <span key={type} className="flex items-center gap-1 px-2 py-1 rounded bg-gray-100 text-xs font-semibold">
-                {reactionIcons[type]} {count}
+                {React.cloneElement(reactionIcons[type], { className: "w-4 h-4 inline text-[#e60000]" })}
+                {count}
               </span>
             ) : null;
           })}
         </div>
-        {/* Aktionen */}
-        <div className="flex gap-4 mt-2">
-          <button className="text-blue-600 hover:underline text-xs">Antworten</button>
-          {/* Reaktions-Buttons: für alle Mitglieder außer Autor */}
+        <hr className="my-2 border-gray-200" />
+        {/* Aktionen: Reaktions-Button (LIKE) + Antwort schreiben + Antworten-Link rechts */}
+        <div className="flex items-center gap-2 mt-2">
+          {/* Nur für Mitglieder außer Autor */}
           {memberId && !isAuthor && (
-            <>
-              {reactionTypes.map(type => (
-                <button
-                  key={type}
-                  className="text-xs px-2 py-1 rounded bg-gray-100 hover:bg-[#e60000] hover:text-white font-semibold flex items-center gap-1"
-                  onClick={() => handleReaction(type)}
-                  title={`Mit ${type} reagieren`}
-                >
-                  {reactionIcons[type]}
-                </button>
-              ))}
-            </>
+            <div className="relative">
+              {/* Nur LIKE-Icon sichtbar */}
+              <button
+                className="text-xs px-2 py-1 rounded bg-gray-100 hover:bg-[#e60000] hover:text-white font-semibold flex items-center gap-1"
+                onClick={() => setShowReactionLayer((prev) => !prev)}
+                title="Reagieren"
+              >
+                {reactionIcons.LIKE}
+              </button>
+              {/* Layer mit allen Reaktions-Icons */}
+              {showReactionLayer && (
+                <div className="absolute z-10 left-0 mt-2 bg-white border rounded shadow flex gap-2 p-2">
+                  {reactionTypes.map(type => (
+                    <button
+                      key={type}
+                      className="text-xs px-2 py-1 rounded bg-gray-100 hover:bg-[#e60000] hover:text-white font-semibold flex items-center gap-1"
+                      onClick={() => handleReaction(type)}
+                      title={`Mit ${type} reagieren`}
+                    >
+                      {reactionIcons[type]}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+          {/* Icon für "Antwort schreiben" */}
+          {memberId && (
+            <button
+              className="text-gray-600 hover:text-[#e60000] p-1 rounded"
+              title="Antwort schreiben"
+              onClick={() => setShowReplyForm((prev) => !prev)}
+            >
+              <Pencil className="w-5 h-5" />
+            </button>
+          )}
+          {/* Antworten-Link nur wenn Antworten existieren, rechts */}
+          {replies.length > 0 && (
+            <button
+              className="text-blue-600 hover:underline text-xs ml-auto flex items-center gap-1"
+              onClick={() => {
+                setShowReplies(prev => {
+                  if (prev) setShowAllReplies(false);
+                  return !prev;
+                });
+              }}
+              style={{ minWidth: "80px" }}
+            >
+              Antworten
+              <span className="ml-1 px-2 py-0.5 rounded bg-gray-200 text-[#e60000] font-bold text-xs">
+                {replies.length}
+              </span>
+            </button>
           )}
         </div>
         {/* Fehlermeldung als Text */}
@@ -495,6 +569,52 @@ function PostBlock({ post, group }: { post: any, group: any }) {
         )}
         {errorMsg && (
           <div className="text-red-500 text-xs mt-2">{errorMsg}</div>
+        )}
+        {/* Antwort-Formular */}
+        {showReplyForm && memberId && (
+          <form onSubmit={handleReply} className="mt-2 flex gap-2">
+            <input
+              type="text"
+              className="border rounded p-2 flex-1 text-xs"
+              placeholder="Antwort verfassen..."
+              value={replyContent}
+              onChange={e => setReplyContent(e.target.value)}
+              disabled={replyLoading}
+            />
+            <button
+              type="submit"
+              className="px-3 py-1 bg-[#e60000] text-white rounded text-xs font-semibold hover:bg-red-700"
+              disabled={replyLoading || !replyContent.trim()}
+            >
+              Senden
+            </button>
+          </form>
+        )}
+        {/* Antworten-Block */}
+        {showReplies && (
+          <div className="mt-4 p-4 bg-gray-50 rounded shadow">
+            {/* Neueste Antwort */}
+            {latestReply && !showAllReplies && (
+              <PostBlock post={latestReply} group={group} feed={feed} />
+            )}
+            {/* Link "Alle Antworten" falls mehrere vorhanden */}
+            {replies.length > 1 && !showAllReplies && (
+              <button
+                className="text-blue-600 hover:underline text-xs mt-2"
+                onClick={() => setShowAllReplies(true)}
+              >
+                Alle Antworten anzeigen
+              </button>
+            )}
+            {/* Alle Antworten */}
+            {showAllReplies && (
+              <div className="space-y-4">
+                {replies.map(reply => (
+                  <PostBlock key={reply.id} post={reply} group={group} feed={feed} />
+                ))}
+              </div>
+            )}
+          </div>
         )}
       </div>
     </li>

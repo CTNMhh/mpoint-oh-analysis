@@ -918,12 +918,20 @@ model Group {
   id            String    @id @default(uuid())
   name          String
   description   String?
-  avatarUrl     String?   // <--- Avatar/Bild-URL
+  avatarUrl     String?
   createdAt     DateTime  @default(now())
   adminId       String
   admin         User      @relation("GroupAdmin", fields: [adminId], references: [id])
   members       GroupMember[]
-  feedPosts     GroupFeedPost[]
+  feedPosts     GroupFeedPost[] @relation("GroupFeedPostGroup") // <--- Relation-Name ergänzt
+}
+
+enum GroupMemberStatus {
+  INVITED
+  ACTIVE
+  BLOCKED
+  DELETED
+  REQUEST
 }
 
 model GroupMember {
@@ -940,29 +948,26 @@ model GroupMember {
   deletedAt     DateTime?
 
   feedReactions GroupFeedReaction[] @relation("GroupFeedReactionMember")
-  groupFeedPosts GroupFeedPost[] @relation("GroupFeedPostAuthor")
-}
-
-enum GroupMemberStatus {
-  INVITED
-  ACTIVE
-  BLOCKED
-  DELETED
-  REQUEST
+  groupFeedPosts GroupFeedPost[] @relation("GroupFeedPostAuthor") // <--- Relation-Name ergänzt
 }
 
 model GroupFeedPost {
-  id            String    @id @default(uuid())
-  groupId       String
-  authorId      String
-  author        GroupMember @relation("GroupFeedPostAuthor", fields: [authorId], references: [id])
-  group         Group     @relation(fields: [groupId], references: [id])
-  content       String
-  imageUrl      String?
-  imageSize     Int?
-  createdAt     DateTime  @default(now())
-  editedAt      DateTime?
-  reactions     GroupFeedReaction[]
+  id          String           @id @default(uuid())
+  groupId     String
+  authorId    String
+  content     String
+  imageUrl    String?
+  imageSize   Int?
+  createdAt   DateTime         @default(now())
+  editedAt    DateTime?
+  reactions   GroupFeedReaction[]
+  parentId    String?
+  parent      GroupFeedPost?   @relation("ReplyParent", fields: [parentId], references: [id])
+  replies     GroupFeedPost[]  @relation("ReplyParent")
+
+  // Gegenrelationen:
+  group       Group           @relation("GroupFeedPostGroup", fields: [groupId], references: [id])
+  author      GroupMember     @relation("GroupFeedPostAuthor", fields: [authorId], references: [id])
 }
 
 model GroupFeedReaction {
@@ -983,3 +988,4 @@ enum ReactionType {
   SAD
   ANGRY
 }
+
