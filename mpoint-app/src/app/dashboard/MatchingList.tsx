@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Users, MapPin, TrendingUp, Briefcase, Target, Handshake, Award, Calendar, ChevronRight, Star, Building2, Globe } from "lucide-react";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 
 type MatchingData = {
   company: {
@@ -420,7 +421,13 @@ export default function MatchingList({ companyId: propCompanyId, limit = 15, lay
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <h3 className="text-lg font-bold text-gray-900">
-                          {match.company.name}
+                          <Link
+                            href={`/company/${match.company.id}`}
+                            className="hover:text-[rgb(228,25,31)] transition-colors"
+                            title="Unternehmensprofil öffnen"
+                          >
+                            {match.company.name}
+                          </Link>
                         </h3>
                         {match.company.legalForm && (
                           <span className="text-sm text-gray-500">{match.company.legalForm}</span>
