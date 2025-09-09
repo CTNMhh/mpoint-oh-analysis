@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import {
   Bell,
   Clock,
@@ -32,7 +32,8 @@ import MatchingList from "../dashboard/MatchingList"
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
-export default function NetzwerkPage() {
+// Alte export default Funktion in NetzwerkContent umbenennen:
+function NetzwerkContent() {
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<
     "invitations" | "messages" | "connections" | "groups"
@@ -216,6 +217,21 @@ export default function NetzwerkPage() {
         </main>
       </GroupProvider>
     </InvitationProvider>
+  );
+}
+
+// Neue Default-Export-Komponente mit Suspense
+export default function NetzwerkPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen pt-20 flex items-center justify-center bg-gray-50">
+          <div className="text-gray-500">Lade Netzwerk...</div>
+        </main>
+      }
+    >
+      <NetzwerkContent />
+    </Suspense>
   );
 }
 
