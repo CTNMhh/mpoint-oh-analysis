@@ -1,4 +1,4 @@
-import React, { useEffect, useState, createContext, useContext } from "react";
+import React, { useEffect, useRef, useState, createContext, useContext } from "react";
 import { Pencil, Users, ThumbsUp, Laugh, Frown, Angry } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -415,7 +415,7 @@ export function GroupContent({ group }: { group: any }) {
   );
 }
 
-function PostBlock({ post, group, feed }: { post: any, group: any, feed: any[] }) {
+function PostBlock({ post, group, feed, depth = 1 }: { post: any, group: any, feed: any[], depth?: number }) {
   const { reactToPost } = useGroups();
   const { data: session } = useSession();
   const [showReplies, setShowReplies] = useState(false);
@@ -425,6 +425,7 @@ function PostBlock({ post, group, feed }: { post: any, group: any, feed: any[] }
   const [replyLoading, setReplyLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [showReactionLayer, setShowReactionLayer] = useState(false);
+  const reactionLayerRef = useRef<HTMLDivElement>(null);
 
   const reactionIcons: Record<string, JSX.Element> = {
     LIKE: <ThumbsUp className="w-4 h-4 inline" />,
@@ -478,18 +479,33 @@ function PostBlock({ post, group, feed }: { post: any, group: any, feed: any[] }
   // Ist das eine Antwort?
   const isReply = !!post.parentId;
 
+  // Maximale Antwort-Ebenen
+  const MAX_REPLY_DEPTH = 4;
+  const canReply = memberId && depth < MAX_REPLY_DEPTH;
+
+  // Layer bei Klick außerhalb schließen
+  useEffect(() => {
+    if (!showReactionLayer) return;
+    const handleClick = (e: MouseEvent) => {
+      if (
+        reactionLayerRef.current &&
+        !reactionLayerRef.current.contains(e.target as Node)
+      ) {
+        setShowReactionLayer(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [showReactionLayer]);
+
   return (
-    <li
-      className={`rounded-xl shadow p-4 flex gap-4 ${
-        isReply ? "bg-gray-100" : "bg-white"
-      }`}
-    >
+    <li className={`rounded-xl shadow p-4 flex gap-4 ${isReply ? "bg-gray-100" : "bg-white"}`}>
       <div className="flex-1">
         <div className="font-semibold text-gray-900">
           {post.author?.user?.firstName} {post.author?.user?.lastName}
         </div>
         <div className="text-gray-700 mt-1">{post.content}</div>
-        {/* Vergebene Reaktionen als Icons mit Zähler */}
+        {/* Vergebene Reaktionen als Icons with Zähler */}
         <div className="flex gap-2 mt-2">
           {reactionTypes.map(type => {
             const count = post.reactions?.filter((r: any) => r.type === type).length || 0;
@@ -504,10 +520,9 @@ function PostBlock({ post, group, feed }: { post: any, group: any, feed: any[] }
         <hr className="my-2 border-gray-200" />
         {/* Aktionen: Reaktions-Button (LIKE) + Antwort schreiben + Antworten-Link rechts */}
         <div className="flex items-center gap-2 mt-2">
-          {/* Nur für Mitglieder außer Autor */}
+          {/* Reaktions-Button (LIKE) */}
           {memberId && !isAuthor && (
             <div className="relative">
-              {/* Nur LIKE-Icon sichtbar */}
               <button
                 className="text-xs px-2 py-1 rounded bg-gray-100 hover:bg-[#e60000] hover:text-white font-semibold flex items-center gap-1"
                 onClick={() => setShowReactionLayer((prev) => !prev)}
@@ -515,9 +530,11 @@ function PostBlock({ post, group, feed }: { post: any, group: any, feed: any[] }
               >
                 {reactionIcons.LIKE}
               </button>
-              {/* Layer mit allen Reaktions-Icons */}
               {showReactionLayer && (
-                <div className="absolute z-10 left-0 mt-2 bg-white border rounded shadow flex gap-2 p-2">
+                <div
+                  ref={reactionLayerRef}
+                  className="absolute z-10 left-0 mt-2 bg-white border rounded shadow flex gap-2 p-2"
+                >
                   {reactionTypes.map(type => (
                     <button
                       key={type}
@@ -532,8 +549,8 @@ function PostBlock({ post, group, feed }: { post: any, group: any, feed: any[] }
               )}
             </div>
           )}
-          {/* Icon für "Antwort schreiben" */}
-          {memberId && (
+          {/* Icon für "Antwort schreiben" - nur anzeigen, wenn canReply */}
+          {canReply && (
             <button
               className="text-gray-600 hover:text-[#e60000] p-1 rounded"
               title="Antwort schreiben"
@@ -571,7 +588,7 @@ function PostBlock({ post, group, feed }: { post: any, group: any, feed: any[] }
           <div className="text-red-500 text-xs mt-2">{errorMsg}</div>
         )}
         {/* Antwort-Formular */}
-        {showReplyForm && memberId && (
+        {showReplyForm && canReply && (
           <form onSubmit={handleReply} className="mt-2 flex gap-2">
             <input
               type="text"
@@ -595,7 +612,7 @@ function PostBlock({ post, group, feed }: { post: any, group: any, feed: any[] }
           <div className="mt-4 p-4 bg-gray-50 rounded shadow">
             {/* Neueste Antwort */}
             {latestReply && !showAllReplies && (
-              <PostBlock post={latestReply} group={group} feed={feed} />
+              <PostBlock post={latestReply} group={group} feed={feed} depth={depth + 1} />
             )}
             {/* Link "Alle Antworten" falls mehrere vorhanden */}
             {replies.length > 1 && !showAllReplies && (
@@ -610,7 +627,7 @@ function PostBlock({ post, group, feed }: { post: any, group: any, feed: any[] }
             {showAllReplies && (
               <div className="space-y-4">
                 {replies.map(reply => (
-                  <PostBlock key={reply.id} post={reply} group={group} feed={feed} />
+                  <PostBlock key={reply.id} post={reply} group={group} feed={feed} depth={depth + 1} />
                 ))}
               </div>
             )}
