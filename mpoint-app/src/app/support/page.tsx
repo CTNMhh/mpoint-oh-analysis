@@ -60,41 +60,39 @@ export default function SupporterPage() {
   return (
     <div className="min-h-screen pt-20 bg-gradient-to-b from-white to-gray-50">
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
+      <section className="relative overflow-hidden min-h-[33vh] flex">
         <div className="absolute inset-0 bg-gradient-to-br from-[#e60000] via-[#cc0000] to-[#990000]"></div>
         
-        <div className="relative max-w-7xl mx-auto px-4 py-24 lg:py-32">
+        <div className="relative max-w-7xl mx-auto px-4 flex flex-col justify-center min-h-[33vh] py-12 lg:py-16">
           <div className="text-center text-white">
             <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur rounded-2xl mb-6">
               <span className="text-4xl font-bold">M</span>
             </div>
-            <div className="inline-block px-4 py-2 bg-white/10 backdrop-blur rounded-full text-sm font-medium mb-6">
+            <div className="inline-block px-4 py-2 bg-white/10 backdrop-blur rounded-full text-sm font-medium mb-4">
               M-POINT SUPPORTER
             </div>
-            <h1 className="text-4xl lg:text-6xl font-bold mb-6 animate-fade-in">
+            <h1 className="text-3xl lg:text-5xl font-bold mb-4 animate-fade-in">
               Werde Teil unserer<br />Erfolgsgeschichte
             </h1>
-            <p className="text-xl lg:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed mb-8">
+            <p className="text-lg lg:text-xl text-white/90 max-w-3xl mx-auto leading-relaxed mb-6">
               "Werde M-POINT SUPPORTER und gestalte die Zukunft der 
               unternehmerischen Vernetzung aktiv mit!"
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button 
                 onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
-                className="inline-flex items-center gap-2 px-8 py-4 bg-white text-[#e60000] rounded-xl font-bold hover:scale-105 transition-transform shadow-xl"
+                className="inline-flex items-center gap-2 px-7 py-3 bg-white text-[#e60000] rounded-xl font-bold hover:scale-105 transition-transform shadow-lg"
               >
                 Jetzt Supporter werden
                 <Rocket className="w-5 h-5" />
               </button>
-              <button className="inline-flex items-center gap-2 px-8 py-4 bg-white/10 backdrop-blur text-white rounded-xl font-bold hover:bg-white/20 transition-colors">
+              <button className="inline-flex items-center gap-2 px-7 py-3 bg-white/10 backdrop-blur text-white rounded-xl font-bold hover:bg-white/20 transition-colors">
                 Mehr erfahren
                 <ChevronRight className="w-5 h-5" />
               </button>
             </div>
           </div>
         </div>
-
- 
       </section>
 
       {/* Was ist ein Supporter Section */}

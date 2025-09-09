@@ -58,24 +58,24 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b mt-20 from-white to-gray-50">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#e60000] via-[#cc0000] to-[#990000] text-white">
-        
-        <div className="relative max-w-7xl mx-auto px-4 py-24 lg:py-32">
+      <section className="relative overflow-hidden min-h-[33vh] flex items-center bg-gradient-to-br from-[#e60000] via-[#cc0000] to-[#990000] text-white">
+        <div className={heroPattern}></div>
+        <div className="relative max-w-7xl mx-auto px-4 w-full py-12 lg:py-16">
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur rounded-2xl mb-6">
               <span className="text-4xl font-bold">M</span>
             </div>
-            <h1 className="text-5xl lg:text-7xl font-bold mb-6 animate-fade-in">
+            <h1 className="text-4xl lg:text-6xl font-bold mb-4 animate-fade-in">
               M-POINT
             </h1>
-            <p className="text-2xl lg:text-3xl mb-4 text-white/90">
+            <p className="text-xl lg:text-2xl mb-3 text-white/90">
               Network for Actives
             </p>
-            <p className="text-xl text-white/80 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-lg lg:text-xl text-white/80 max-w-3xl mx-auto leading-relaxed">
               Die revolutionäre Business-Matching-Plattform für die Metropolregion Hamburg. 
               Wir verbinden Unternehmen mit KI-gestützter Präzision für nachhaltigen Geschäftserfolg.
             </p>
-            <div className="mt-8 inline-flex items-center gap-2 px-6 py-3 bg-white/10 backdrop-blur rounded-full">
+            <div className="mt-6 inline-flex items-center gap-2 px-6 py-3 bg-white/10 backdrop-blur rounded-full">
               <Sparkles className="w-5 h-5" />
               <span className="font-semibold">GEMEINSAM GEHT'S BESSER!</span>
             </div>
