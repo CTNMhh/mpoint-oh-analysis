@@ -468,7 +468,7 @@ export default function ChatSidebar({
             label="Gruppen"
             icon={<Hash className="w-5 h-5 text-blue-500" />}
             count={networkStats.gruppen || 0}
-            href="/groups"
+            href="/netzwerk?tab=groups"
           />
           <NetworkStat
             label="Events"

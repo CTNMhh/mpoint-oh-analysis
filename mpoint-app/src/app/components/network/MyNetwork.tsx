@@ -54,6 +54,6 @@ export default function NetworkSidebar({
 
 const defaultStats: NetworkStat[] = [
   { label: "M-POINT Kontakte", count: 256, icon: <Users className="w-5 h-5 text-[#e60000]" />, href: "/network/contacts" },
-  { label: "Gruppen", count: 12, icon: <Hash className="w-5 h-5 text-blue-500" />, href: "/netzwerk" },
+  { label: "Gruppen", count: 12, icon: <Hash className="w-5 h-5 text-blue-500" />, href: "/netzwerk?tab=groups" },
   { label: "Events", count: 8, icon: <Calendar className="w-5 h-5 text-green-500" />, href: "/events" },
 ];

@@ -26,18 +26,44 @@ import { useSession } from "next-auth/react";
 import { GroupProvider, useGroups, GroupList, GroupContent } from "@/context/GroupContext";
 import { InvitationProvider, useInvitations } from "@/context/InvitationContext";
 import NetworkSidebar from "../components/network/NetworkSidebar";
- import MatchingList from "../dashboard/MatchingList"
+import MatchingList from "../dashboard/MatchingList"
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 export default function NetzwerkPage() {
- 
+  const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<
     "invitations" | "messages" | "connections" | "groups"
   >("invitations");
   const { data: session, status } = useSession();
 
-  // Optional: availableGroups und ownGroups ebenfalls filtern
-  // ...
+  // URL / Hash auswerten (z.B. /netzwerk?tab=groups oder /netzwerk#groups)
+  useEffect(() => {
+    const q = searchParams.get("tab");
+    const hash = typeof window !== "undefined" ? window.location.hash.replace("#", "") : "";
+    const candidate = (q || hash) as typeof activeTab;
+    if (["invitations","messages","connections","groups"].includes(candidate)) {
+      setActiveTab(candidate);
+    }
+  }, [searchParams]);
+
+  // Optional: Hash-Fallback falls weiter #groups genutzt wird
+  useEffect(() => {
+    const onHash = () => {
+      const h = window.location.hash.replace("#", "");
+      if (h === "groups") setActiveTab("groups");
+    };
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
+
+  function openGroupsTab() {
+    setActiveTab("groups");
+    // URL aktualisieren (optional)
+    const url = new URL(window.location.href);
+    url.searchParams.set("tab", "groups");
+    window.history.replaceState(null, "", url.toString());
+  }
 
   if (status === "unauthenticated") {
     return (
@@ -146,7 +172,7 @@ export default function NetzwerkPage() {
                 </div>
                 <div className="text-center mt-6">
                   <a
-                    href="#"
+                    href="/Matches/search"
                     className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all"
                   >
                     Alle Matches <ArrowRight className="w-4 h-4" />
