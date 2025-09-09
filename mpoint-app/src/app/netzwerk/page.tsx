@@ -2,6 +2,8 @@
 import React, { useEffect, useState } from "react";
 import {
   Bell,
+  Clock,
+  MapPin,
   Search,
   Users,
   Calendar,
@@ -472,7 +474,7 @@ function InvitationItem({
   inviter,
   onAccept,
   onDecline,
-  group, // <-- optional: falls du das ganze group-Objekt übergibst
+  group,
 }: {
   type: "group" | "event" | "contact";
   title: string;
@@ -480,59 +482,142 @@ function InvitationItem({
   inviter?: { firstName?: string; lastName?: string };
   onAccept: () => void;
   onDecline: () => void;
-  group?: { avatarUrl?: string }; // <-- optional
+  group?: { avatarUrl?: string };
 }) {
+  
+  const getTypeConfig = () => {
+    switch (type) {
+      case "group":
+        return {
+          icon: Users,
+          label: "Gruppen-Einladung",
+          color: "from-blue-500 to-blue-600",
+          bgColor: "bg-blue-50",
+          textColor: "text-blue-700"
+        };
+      case "event":
+        return {
+          icon: Calendar,
+          label: "Event-Einladung",
+          color: "from-green-500 to-green-600",
+          bgColor: "bg-green-50",
+          textColor: "text-green-700"
+        };
+      case "contact":
+        return {
+          icon: UserPlus,
+          label: "Kontakt-Einladung",
+          color: "from-purple-500 to-purple-600",
+          bgColor: "bg-purple-50",
+          textColor: "text-purple-700"
+        };
+      default:
+        return {
+          icon: Users,
+          label: "Einladung",
+          color: "from-gray-500 to-gray-600",
+          bgColor: "bg-gray-50",
+          textColor: "text-gray-700"
+        };
+    }
+  };
+
+  const config = getTypeConfig();
+  const Icon = config.icon;
 
   return (
-    <li className="flex items-center justify-between bg-gray-50 rounded-lg p-4 border">
-      <div className="flex items-center gap-4">
-        {/* Avatar oder Users-Icon */}
-        {type === "group" && group?.avatarUrl ? (
-          <img
-            src={group.avatarUrl}
-            alt="Gruppen-Avatar"
-            className="w-12 h-12 rounded-full object-cover border-2 border-[#e60000] bg-white"
-          />
-        ) : (
-          <Users className="w-12 h-12 text-gray-300 bg-gray-100 rounded-full p-2" />
-        )}
-        <div>
-          <div className="font-bold text-gray-900">{title}</div>
-          {description && <div className="text-gray-600 text-sm">{description}</div>}
-          {inviter && (
-            <div className="text-gray-600 text-sm">
-              Eingeladen von: {inviter.firstName} {inviter.lastName}
-            </div>
-          )}
-          <div className="mt-2">
-            <span className="inline-block px-2 py-1 rounded bg-gray-200 text-xs font-semibold text-gray-700">
-              {type === "group" && "Gruppe"}
-              {type === "event" && "Event"}
-              {type === "contact" && "Kontakt"}
-            </span>
+    <li className="group relative overflow-hidden bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-[#e60000]/20 hover:scale-[1.01]">
+      {/* Gradient Accent */}
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#e60000] to-[#c01a1f]"></div>
+      
+      <div className="p-6">
+        {/* Header - Type Badge */}
+        <div className="flex items-center justify-between mb-4">
+          <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold ${config.bgColor} ${config.textColor}`}>
+            <Icon className="w-4 h-4" />
+            {config.label}
+          </div>
+          <div className="flex items-center gap-1 text-xs text-gray-500">
+            <Clock className="w-3 h-3" />
+            <span>vor 2 Std.</span>
+          </div>
+        </div>
+
+        {/* Content Section */}
+        <div className="flex items-start gap-4 mb-6">
+          {/* Avatar */}
+          <div className="relative flex-shrink-0">
+            {type === "group" && group?.avatarUrl ? (
+              <img
+                src={group.avatarUrl}
+                alt="Gruppen-Avatar"
+                className="w-16 h-16 rounded-xl object-cover border-3 border-[#e60000]/20 shadow-lg group-hover:border-[#e60000]/40 transition-colors"
+              />
+            ) : (
+              <div className={`w-16 h-16 rounded-xl bg-gradient-to-br ${config.color} flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow`}>
+                <Icon className="w-8 h-8 text-white" />
+              </div>
+            )}
+            {/* Status Indicator */}
+            <div className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 rounded-full border-2 border-white shadow-sm animate-pulse"></div>
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            <h3 className="font-bold text-xl text-gray-900 mb-2 group-hover:text-[#e60000] transition-colors">
+              {title}
+            </h3>
+            
+            {description && (
+              <p className="text-gray-600 leading-relaxed mb-3">
+                {description}
+              </p>
+            )}
+            
+            {inviter && (
+              <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                  <span className="text-xs font-semibold text-gray-600">
+                    {inviter.firstName?.[0]}{inviter.lastName?.[0]}
+                  </span>
+                </div>
+                <span>
+                  Eingeladen von <span className="font-semibold">{inviter.firstName} {inviter.lastName}</span>
+                </span>
+              </div>
+            )}
+
+            {/* Additional Meta Info */}
+        
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              className="px-6 py-2.5 bg-gradient-to-r from-[#e60000] to-[#c01a1f] text-white rounded-xl font-semibold hover:from-[#c01a1f] hover:to-[#a01216] hover:scale-105 active:scale-95 transition-all duration-200 shadow-md hover:shadow-lg"
+              onClick={onAccept}
+            >
+              Annehmen
+            </button>
+            <button
+              type="button"
+              className="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-all duration-200 shadow-md hover:shadow-lg"
+              onClick={onDecline}
+            >
+              Ablehnen
+            </button>
           </div>
         </div>
       </div>
-      <div className="flex gap-2">
-        <button
-          type="button"
-          className="px-4 py-2 bg-[#e60000] text-white rounded-lg font-semibold hover:bg-red-700 transition-colors"
-          onClick={onAccept}
-        >
-          Annehmen
-        </button>
-        <button
-          type="button"
-          className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
-          onClick={onDecline}
-        >
-          Ablehnen
-        </button>
-      </div>
+
+      {/* Subtle Hover Glow Effect */}
+      <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-[#e60000]/0 via-[#e60000]/0 to-[#e60000]/0 group-hover:from-[#e60000]/5 group-hover:via-transparent group-hover:to-[#e60000]/5 transition-all duration-300 pointer-events-none"></div>
     </li>
   );
 }
-
 // Modern Message Item Component
 function MessageItem({
   name,

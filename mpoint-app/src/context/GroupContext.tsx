@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, createContext, useContext } from "r
 import { Pencil, Users, ThumbsUp, Laugh, Frown, Angry } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import GroupListItem from "./GroupListItem";
 
 export type GroupMemberStatus = "REQUEST" | "INVITED" | "ACTIVE" | "BLOCKED" | "DELETED";
 export type ReactionType = "LIKE" | "LOL" | "SAD" | "ANGRY";
@@ -638,100 +639,3 @@ function PostBlock({ post, group, feed, depth = 1 }: { post: any, group: any, fe
   );
 }
 
-import { useGroups } from "./GroupContext";
-
-function GroupListItem({ group, setActiveGroup }: { group: any, setActiveGroup?: (group: any) => void }) {
-  const DESCRIPTION_MAX_LENGTH = 120;
-  const [open, setOpen] = useState(false);
-  const [requestSent, setRequestSent] = useState(false);
-  const { data: session } = useSession();
-  const { refreshGroups } = useGroups();
-
-  const shortText = group.description?.slice(0, DESCRIPTION_MAX_LENGTH);
-
-  // Prüfen, ob User bereits Mitglied oder Anfrage gestellt hat
-  const isMemberOrRequested = group.members.some(
-    m =>
-      m.userId === session?.user?.id &&
-      (m.status === "ACTIVE" || m.status === "REQUEST")
-  );
-
-  // Anfrage senden
-  const handleRequest = async () => {
-    await fetch(`/api/groups/${group.id}/request`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: session?.user?.id }),
-    });
-    setRequestSent(true);
-    refreshGroups();
-  };
-
-  return (
-    <li className="flex gap-4 bg-white rounded-xl shadow p-4 border items-start">
-      {/* Icon und Name nebeneinander */}
-      <div className="flex items-center gap-2">
-        {group.avatarUrl ? (
-          <img src={group.avatarUrl} alt="Gruppen-Avatar" className="w-12 h-12 rounded-full object-cover border-2 border-[#e60000] bg-white" />
-        ) : (
-          <Users className="w-12 h-12 text-gray-300 bg-gray-100 rounded-full p-2" />
-        )}
-        <button
-          className="text-blue-600 hover:underline font-semibold text-lg text-left"
-          onClick={() => setActiveGroup && setActiveGroup(group)}
-        >
-          {group.name}
-        </button>
-      </div>
-      {/* Beschreibung unterhalb von Name+Icon */}
-      <div className="flex-1">
-        {group.description && (
-          <div className="text-gray-600 text-sm mt-1">
-            {group.description.length > DESCRIPTION_MAX_LENGTH ? (
-              <>
-                {shortText}
-                {!open && (
-                  <>
-                    ...{" "}
-                    <button
-                      className="text-xs text-[#e60000] underline"
-                      onClick={() => setOpen(true)}
-                    >
-                      Mehr anzeigen
-                    </button>
-                  </>
-                )}
-                {open && (
-                  <span>
-                    {group.description.slice(DESCRIPTION_MAX_LENGTH)}
-                    {" "}
-                    <button
-                      className="text-xs text-[#e60000] underline"
-                      onClick={() => setOpen(false)}
-                    >
-                      Weniger anzeigen
-                    </button>
-                  </span>
-                )}
-              </>
-            ) : (
-              group.description
-            )}
-          </div>
-        )}
-        {/* Beitritts-Button */}
-        {!isMemberOrRequested && (
-          <div className="mt-2">
-            <button
-              className="px-3 py-1 bg-[#e60000] text-white rounded text-xs font-semibold hover:bg-red-700"
-              onClick={handleRequest}
-              disabled={requestSent}
-            >
-              {requestSent ? "Anfrage gesendet" : "Beitreten"}
-            </button>
-          </div>
-        )}
-      </div>
-    </li>
-  );
-}
