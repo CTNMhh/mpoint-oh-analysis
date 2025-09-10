@@ -80,14 +80,26 @@ export default function BasicInfoTab({ company, onChange, onArrayAdd, onArrayRem
                   alt="Logo Vorschau"
                   className="h-28 w-28 object-contain bg-white border rounded-xl p-2 shadow-sm"
                 />
+                {/* X ersetzt: öffnet jetzt den Replace-Uploader statt direkt zu löschen */}
                 <button
                   type="button"
-                  onClick={() => onChange("logoUrl", "")}
-                  className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition"
-                  title="Logo entfernen"
+                  onClick={() => setShowLogoReplace(true)}
+                  className="absolute -top-2 -right-2 bg-[rgb(228,25,31)] text-white rounded-full p-1 shadow hover:bg-red-700 transition"
+                  title="Logo ersetzen"
                 >
                   <X className="w-4 h-4" />
                 </button>
+                {/* Optional echtes Entfernen (Papierkorb) – falls gewünscht */}
+                {/* 
+                <button
+                  type="button"
+                  onClick={() => onChange('logoUrl','')}
+                  className="absolute -bottom-2 -right-2 bg-gray-600 text-white rounded-full p-1 shadow hover:bg-gray-700 transition"
+                  title="Logo entfernen"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+                */}
               </div>
             )}
           </div>
@@ -129,26 +141,16 @@ export default function BasicInfoTab({ company, onChange, onArrayAdd, onArrayRem
                   <button
                     type="button"
                     onClick={() => setShowLogoReplace(false)}
-                    className="text-xs text-gray-500 hover:text-gray-700"
+                    className="inline-flex items-center gap-2 mt-2 px-4 py-2 bg-[rgb(228,25,31)] text-white text-xs font-semibold rounded-lg shadow hover:bg-red-700 transition"
                   >
+                    <X className="w-3 h-3" />
                     Abbrechen
                   </button>
                 )}
               </div>
             )}
             {logoError && <p className="mt-2 text-sm text-red-600">{logoError}</p>}
-            {/* Button zum Einblenden des Uploaders wenn bereits Logo existiert */}
-            {company.logoUrl && !showLogoReplace && !logoUploading && (
-              <div className="mt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowLogoReplace(true)}
-                  className="text-sm text-[rgb(228,25,31)] font-medium hover:underline"
-                >
-                  Neues Logo hochladen
-                </button>
-              </div>
-            )}
+            {/* Kein zusätzlicher Text-Button mehr – X Icon übernimmt die Funktion */}
           </div>
         </div>
       </section>
