@@ -127,6 +127,12 @@ export async function GET(request: NextRequest) {
       name: company.name,
       legalForm: company.legalForm || "",
       foundedYear: company.foundedYear,
+      // NEU Kontakt / Darstellung
+      logoUrl: company.logoUrl || "",
+      websiteUrl: company.websiteUrl || "",
+      managingDirector: company.managingDirector || "",
+      contactEmail: company.contactEmail || "",
+      contactPhone: company.contactPhone || "",
       registrationNumber: company.registrationNumber || "",
 
       // Größenklasse
@@ -282,6 +288,12 @@ export async function POST(request: NextRequest) {
           name: body.name,
           legalForm: body.legalForm || null,
           foundedYear: body.foundedYear,
+          // Kontakt / Darstellung (NEU)
+          logoUrl: body.logoUrl || null,
+          websiteUrl: body.websiteUrl || null,
+          managingDirector: body.managingDirector || null,
+          contactEmail: body.contactEmail || null,
+          contactPhone: body.contactPhone || null,
           registrationNumber: body.registrationNumber || null,
 
           // Größenklasse
@@ -371,6 +383,11 @@ export async function POST(request: NextRequest) {
           name: body.name,
           legalForm: body.legalForm || null,
           foundedYear: body.foundedYear,
+          logoUrl: body.logoUrl || null,
+          websiteUrl: body.websiteUrl || null,
+          managingDirector: body.managingDirector || null,
+          contactEmail: body.contactEmail || null,
+          contactPhone: body.contactPhone || null,
           registrationNumber: body.registrationNumber || null,
 
           // Größenklasse

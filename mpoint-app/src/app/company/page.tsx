@@ -78,6 +78,12 @@ interface CompanyData {
   currentChallenges: string[];
   searchingFor: string[];
   offeringTo: string[];
+
+  logoUrl?: string;
+  websiteUrl?: string;
+  managingDirector?: string;
+  contactEmail?: string;
+  contactPhone?: string;
 }
 
 export default function CompanyProfilePage() {
@@ -141,7 +147,13 @@ export default function CompanyProfilePage() {
     painPoints: [],
     currentChallenges: [],
     searchingFor: [],
-    offeringTo: []
+    offeringTo: [],
+
+    logoUrl: "",
+    websiteUrl: "",
+    managingDirector: "",
+    contactEmail: "",
+    contactPhone: "",
   });
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [progressBarKey, setProgressBarKey] = useState(0);
@@ -175,7 +187,8 @@ export default function CompanyProfilePage() {
         if (res.ok) {
           const data = await res.json();
           if (data) {
-            setCompany(prev => ({ ...prev, ...data }));
+                    setCompany(prev => ({ ...prev, ...data }));
+
           }
         }
       } catch (error) {
@@ -302,6 +315,11 @@ export default function CompanyProfilePage() {
     // Relations immer als Array mitschicken
     const safeCompanyData = {
       ...companyData,
+      logoUrl: company.logoUrl || "",
+      websiteUrl: company.websiteUrl || "",
+      managingDirector: company.managingDirector || "",
+      contactEmail: company.contactEmail || "",
+      contactPhone: company.contactPhone || "",
       locationAdvantages: company.locationAdvantages || [],
       industryTags: company.industryTags || [],
       secondaryNaceCodes: company.secondaryNaceCodes || [],

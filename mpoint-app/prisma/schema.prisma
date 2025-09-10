@@ -114,8 +114,8 @@ enum UserRole {
 // ========== COMPANY MODELS ==========
 // ========== COMPANY MODELS ==========
 model Company {
-  id     String @id @default(uuid())
-  userId String
+  id              String   @id @default(uuid())
+  userId          String
 
   // Basis-Informationen
   name               String
@@ -135,7 +135,14 @@ model Company {
   street          String?
   zipCode         String?
   district        HamburgDistrict?
-  primaryNaceCode String? // <--- HINZUFÜGEN!
+  primaryNaceCode String?
+
+  // Kontakt / Darstellung (NEU)
+  logoUrl          String?
+  websiteUrl       String?
+  managingDirector String?
+  contactEmail     String?
+  contactPhone     String?
 
   // Geschäftsmodell
   customerType  CustomerType       @default(B2B)
