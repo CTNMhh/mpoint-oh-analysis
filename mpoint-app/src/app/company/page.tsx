@@ -7,7 +7,6 @@ import BasicInfoTab from "./BasicInfoTab";
 import BusinessModelTab from "./BusinessModelTab";
 import GrowthTab from "./GrowthTab";
 import MatchingTab from "./MatchingTab";
-import ProfileTab from "./ProfileTab";
 import {
   Briefcase, Calendar, CircleUserRound, ChevronRight, Building2,
   Users,
@@ -18,6 +17,8 @@ import {
 } from "lucide-react";
 import ProgressBar from "./ProgressBar";
 import ProfilePage from "../profile/page";
+import ProfileTab from "./ProfileTab";
+
 import BookedEventsTab from "./BookedEventsTab";
 
 interface CompanyData {
@@ -93,6 +94,8 @@ export default function CompanyProfilePage() {
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
   const [activeSubTab, setActiveSubTab] = useState("basic");
+  const allowedTabs = ["profile", "company", "booked-events"];
+  const allowedSubTabs = ["basic", "business", "growth", "matching"];
   const [company, setCompany] = useState<CompanyData>({
     // Basis-Informationen
     name: "",
@@ -236,6 +239,44 @@ export default function CompanyProfilePage() {
 
     fetchUser();
   }, [activeTab]);
+
+  // Beim ersten Render Tab/SubTab aus URL oder localStorage wiederherstellen
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    let storedTab = localStorage.getItem("companyActiveTab") || params.get("tab") || "profile";
+    if (!allowedTabs.includes(storedTab)) storedTab = "profile";
+    setActiveTab(storedTab);
+    if (storedTab === "company") {
+      let storedSub =
+        localStorage.getItem("companyActiveSubTab") ||
+        params.get("sub") ||
+        "basic";
+      if (!allowedSubTabs.includes(storedSub)) storedSub = "basic";
+      setActiveSubTab(storedSub);
+    }
+  }, []);
+
+  // Änderungen persistieren & URL aktualisieren
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!allowedTabs.includes(activeTab)) return;
+    localStorage.setItem("companyActiveTab", activeTab);
+    const params = new URLSearchParams();
+    params.set("tab", activeTab);
+    if (activeTab === "company" && allowedSubTabs.includes(activeSubTab)) {
+      localStorage.setItem("companyActiveSubTab", activeSubTab);
+      params.set("sub", activeSubTab);
+    }
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    window.history.replaceState(null, "", newUrl);
+  }, [activeTab, activeSubTab]);
+
+  const handleMainTabClick = (tabId: string, firstSub?: string) => {
+    setActiveTab(tabId);
+    if (tabId === "company" && firstSub) setActiveSubTab(firstSub);
+  };
+  const handleSubTabClick = (subId: string) => setActiveSubTab(subId);
 
   const handleInputChange = (field: string, value: any) => {
     setCompany(prev => ({
@@ -424,15 +465,10 @@ export default function CompanyProfilePage() {
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 return (
-             <button
+                  <button
                     key={tab.id}
                     type="button"
-                    onClick={() => {
-                      setActiveTab(tab.id);
-                      if (tab.id === "company" && tab.subTabs) {
-                        setActiveSubTab(tab.subTabs[0].id);
-                      }
-                    }}
+                    onClick={() => handleMainTabClick(tab.id, tab.subTabs?.[0]?.id)}
                     className={`flex items-center gap-2 px-6 py-3 font-medium transition-colors whitespace-nowrap rounded-lg focus:outline-none
                       ${
                         activeTab === tab.id
@@ -458,7 +494,7 @@ export default function CompanyProfilePage() {
                     <button
                       key={subTab.id}
                       type="button"
-                      onClick={() => setActiveSubTab(subTab.id)}
+                      onClick={() => handleSubTabClick(subTab.id)}
                       className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-colors text-sm ${activeSubTab === subTab.id
                           ? 'bg-[rgb(228,25,31)] text-white'
                           : 'text-gray-600 hover:bg-gray-100'
@@ -473,7 +509,6 @@ export default function CompanyProfilePage() {
             </div>
           )}
 
-          {/* Tab Content */}
           {/* Tab Content */}
           <div className="bg-white rounded-lg shadow-sm p-8">
             {activeTab === "profile" && (
