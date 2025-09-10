@@ -9,7 +9,7 @@ import GrowthTab from "./GrowthTab";
 import MatchingTab from "./MatchingTab";
 import ProfileTab from "./ProfileTab";
 import {
-  Building2,
+  Briefcase, Calendar, CircleUserRound, ChevronRight, Building2,
   Users,
   TrendingUp,
   Target,
@@ -86,6 +86,7 @@ export default function CompanyProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
+  const [activeSubTab, setActiveSubTab] = useState("basic");
   const [company, setCompany] = useState<CompanyData>({
     // Basis-Informationen
     name: "",
@@ -346,14 +347,28 @@ export default function CompanyProfilePage() {
   if (status === "unauthenticated") {
     return null;
   }
-
   const tabs = [
-    { id: "profile", label: "Profil", icon: Users }, // Du kannst ein anderes Icon wählen
-    { id: "basic", label: "Grunddaten", icon: Building2 },
-    { id: "business", label: "Geschäftsmodell", icon: Target },
-    { id: "growth", label: "Wachstum", icon: TrendingUp },
-    { id: "matching", label: "Matching", icon: Users },
-    { id: "booked-events", label: "Gebuchte Events", icon: Save }, // NEU
+    {
+      id: "profile",
+      label: "Persönliches Profil",
+      icon: CircleUserRound
+    },
+    {
+      id: "company",
+      label: "Unternehmen",
+      icon: Briefcase,
+      subTabs: [
+        { id: "basic", label: "Grunddaten", icon: Building2 },
+        { id: "business", label: "Geschäftsmodell", icon: Target },
+        { id: "growth", label: "Wachstum", icon: TrendingUp },
+        { id: "matching", label: "Matching", icon: Users },
+      ]
+    },
+    {
+      id: "booked-events",
+      label: "Gebuchte Events",
+      icon: Calendar
+    },
   ];
 
   return (
@@ -377,8 +392,8 @@ export default function CompanyProfilePage() {
           {message && (
             <div
               className={`rounded-lg px-4 py-3 mb-4 text-sm font-medium ${message.type === "success"
-                  ? "bg-green-50 text-green-800 border border-green-200"
-                  : "bg-red-50 text-red-800 border border-red-200"
+                ? "bg-green-50 text-green-800 border border-green-200"
+                : "bg-red-50 text-red-800 border border-red-200"
                 }`}
             >
               {message.text}
@@ -391,68 +406,58 @@ export default function CompanyProfilePage() {
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 return (
-                  <button
+             <button
                     key={tab.id}
                     type="button"
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors whitespace-nowrap ${activeTab === tab.id
-                        ? 'text-[rgb(228,25,31)] border-b-2 border-[rgb(228,25,31)]'
-                        : 'text-gray-600 hover:text-gray-900'
+                    onClick={() => {
+                      setActiveTab(tab.id);
+                      if (tab.id === "company" && tab.subTabs) {
+                        setActiveSubTab(tab.subTabs[0].id);
+                      }
+                    }}
+                    className={`flex items-center gap-2 px-6 py-3 font-medium transition-colors whitespace-nowrap rounded-lg focus:outline-none
+                      ${
+                        activeTab === tab.id
+                          ? "bg-[rgb(228,25,31)] text-white shadow-sm"
+                          : "text-gray-600 hover:text-[rgb(228,25,31)]"
                       }`}
                   >
                     <Icon className="w-4 h-4" />
                     {tab.label}
+                    {tab.subTabs && <ChevronRight className="w-3 h-3 ml-1" />}
                   </button>
                 );
               })}
             </div>
           </div>
 
+          {activeTab === 'company' && (
+            <div className="bg-white rounded-lg shadow-sm px-8 py-4 -mt-4">
+              <div className="flex gap-4 pt-4">
+                {tabs.find(t => t.id === 'company')?.subTabs?.map((subTab) => {
+                  const SubIcon = subTab.icon;
+                  return (
+                    <button
+                      key={subTab.id}
+                      type="button"
+                      onClick={() => setActiveSubTab(subTab.id)}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-colors text-sm ${activeSubTab === subTab.id
+                          ? 'bg-[rgb(228,25,31)] text-white'
+                          : 'text-gray-600 hover:bg-gray-100'
+                        }`}
+                    >
+                      <SubIcon className="w-4 h-4" />
+                      {subTab.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Tab Content */}
           {/* Tab Content */}
           <div className="bg-white rounded-lg shadow-sm p-8">
-            {activeTab === "basic" && (
-              <BasicInfoTab
-                company={company}
-                onChange={handleInputChange}
-                onArrayAdd={handleArrayAdd}
-                onArrayRemove={handleArrayRemove}
-              />
-            )}
-
-            {activeTab === "business" && (
-              <BusinessModelTab
-                company={company}
-                onChange={handleInputChange}
-                onArrayAdd={handleArrayAdd}
-                onArrayRemove={handleArrayRemove}
-              />
-            )}
-
-            {activeTab === "growth" && (
-              <GrowthTab
-                company={company}
-                onChange={handleInputChange}
-                onArrayAdd={handleArrayAdd}
-                onArrayRemove={handleArrayRemove}
-              />
-            )}
-
-            {activeTab === "matching" && (
-              <MatchingTab
-                company={company}
-                onChange={handleInputChange}
-                onArrayAdd={handleArrayAdd}
-                onArrayRemove={handleArrayRemove}
-              />
-            )}
-
-            {activeTab === "booked-events" && session?.user?.id && (
-              <BookedEventsTab userId={session.user.id} />
-            )}
-            {activeTab === "booked-events" && !session?.user?.id && (
-              <div className="py-8 text-center text-gray-500">Benutzerdaten werden geladen...</div>
-            )}
-
             {activeTab === "profile" && (
               profileLoading ? (
                 <div className="text-center py-8">Lädt...</div>
@@ -464,6 +469,53 @@ export default function CompanyProfilePage() {
                   successMessage={profileMessage?.type === "success" ? profileMessage.text : undefined}
                 />
               )
+            )}
+
+            {activeTab === "company" && (
+              <>
+                {activeSubTab === "basic" && (
+                  <BasicInfoTab
+                    company={company}
+                    onChange={handleInputChange}
+                    onArrayAdd={handleArrayAdd}
+                    onArrayRemove={handleArrayRemove}
+                  />
+                )}
+
+                {activeSubTab === "business" && (
+                  <BusinessModelTab
+                    company={company}
+                    onChange={handleInputChange}
+                    onArrayAdd={handleArrayAdd}
+                    onArrayRemove={handleArrayRemove}
+                  />
+                )}
+
+                {activeSubTab === "growth" && (
+                  <GrowthTab
+                    company={company}
+                    onChange={handleInputChange}
+                    onArrayAdd={handleArrayAdd}
+                    onArrayRemove={handleArrayRemove}
+                  />
+                )}
+
+                {activeSubTab === "matching" && (
+                  <MatchingTab
+                    company={company}
+                    onChange={handleInputChange}
+                    onArrayAdd={handleArrayAdd}
+                    onArrayRemove={handleArrayRemove}
+                  />
+                )}
+              </>
+            )}
+
+            {activeTab === "booked-events" && session?.user?.id && (
+              <BookedEventsTab userId={session.user.id} />
+            )}
+            {activeTab === "booked-events" && !session?.user?.id && (
+              <div className="py-8 text-center text-gray-500">Benutzerdaten werden geladen...</div>
             )}
           </div>
 
