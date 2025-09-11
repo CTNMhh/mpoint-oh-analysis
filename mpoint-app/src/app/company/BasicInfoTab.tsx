@@ -35,10 +35,8 @@ export default function BasicInfoTab({ company, onChange, onArrayAdd, onArrayRem
       }
       const { url } = await res.json();
       // Route liefert /api/files/xyz – für direkte Auslieferung auch /uploads/ nutzbar:
-      const finalUrl = url.startsWith("/api/files/")
-        ? url.replace("/api/files/", "/uploads/")
-        : url;
-      onChange("logoUrl", finalUrl);
+   
+      onChange("logoUrl", url);
       // Nach erfolgreichem Upload Uploader wieder ausblenden
       setShowLogoReplace(false);
     } catch (e: any) {

@@ -14,6 +14,15 @@ interface CompanyTile {
   updatedAt?: string;
 }
 
+// Hilfsfunktion für ältere Einträge, die evtl. noch /uploads/ speichern
+function normalizeLogo(url?: string | null) {
+  if (!url) return "";
+  if (url.startsWith("/uploads/")) {
+    return url.replace("/uploads/", "/api/files/");
+  }
+  return url;
+}
+
 export default function CompaniesGalleryPage() {
   const [items, setItems] = useState<CompanyTile[]>([]);
   const [loading, setLoading] = useState(false);
@@ -219,7 +228,7 @@ export default function CompaniesGalleryPage() {
               <div className="flex items-start gap-4 mb-4">
                 <div className="w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center overflow-hidden">
                   {c.logoUrl
-                    ? <img src={c.logoUrl} alt="" className="w-full h-full object-contain p-1" />
+                    ? <img src={normalizeLogo(c.logoUrl)} alt={c.name} className="w-full h-full object-contain p-1" />
                     : <Building2 className="w-7 h-7 text-gray-400" />}
                 </div>
                 <div className="flex-1 min-w-0">
