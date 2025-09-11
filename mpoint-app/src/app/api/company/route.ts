@@ -36,6 +36,13 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const search = searchParams.get("search");
   const id = searchParams.get("id");
+  const list = searchParams.get("list");
+  const district = searchParams.get("district");
+  const size = searchParams.get("size");
+  const tag = searchParams.get("tag");
+  const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
+  const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") || "24", 10)));
+  const skip = (page - 1) * limit;
 
   // 1. Suche nach Unternehmen (search-Parameter)
   if (search && search.length >= 2) {
@@ -48,9 +55,10 @@ export async function GET(request: NextRequest) {
         ]
       },
       include: {
-        user: true // <-- Das ist wichtig!
+        user: true, // <-- Das ist wichtig!
+        industryTags: true
       },
-      take: 20
+      take: 30
     });
     return NextResponse.json(companies);
   }
@@ -70,12 +78,56 @@ export async function GET(request: NextRequest) {
         painPoints: true,
         searchingFor: true,
         offeringTo: true,
+        user: true
       }
     });
+    if (!company) return NextResponse.json({ error: "Not found" }, { status: 404 });
     return NextResponse.json(company);
   }
 
-  // 3. Default: eigenes Unternehmen (wie bisher)
+  // 3. Liste aller Unternehmen (Kachelansicht) mit Filtern
+  if (list) {
+    const where: any = {};
+    if (district) where.district = district;
+    if (size) where.employeeRange = size;
+    if (tag) {
+      where.industryTags = {
+        some: { value: { equals: tag, mode: "insensitive" } }
+      };
+    }
+
+    const [total, companies] = await Promise.all([
+      prisma.company.count({ where }),
+      prisma.company.findMany({
+        where,
+        orderBy: { updatedAt: "desc" },
+        skip,
+        take: limit,
+        include: {
+          user: { select: { id: true, firstName: true, lastName: true } },
+          industryTags: true
+        }
+      })
+    ]);
+
+    return NextResponse.json({
+      page,
+      pages: Math.ceil(total / limit),
+      total,
+      items: companies.map(c => ({
+        id: c.id,
+        name: c.name,
+        district: c.district,
+        employeeRange: c.employeeRange,
+        logoUrl: c.logoUrl,
+        websiteUrl: c.websiteUrl,
+        industryTags: c.industryTags?.map(t => t.value),
+        updatedAt: c.updatedAt
+      }))
+    });
+  }
+
+  // 4. Default: eigenes Unternehmen (wie bisher)
   try {
     // Debug: Prisma-Verbindung prüfen
     const isConnected = await checkPrismaConnection();
