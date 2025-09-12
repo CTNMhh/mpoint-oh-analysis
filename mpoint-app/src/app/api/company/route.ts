@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
+import { getServerSession } from "next-auth"; // statt next-auth/next
 import { authOptions } from "../auth/[...nextauth]/route";
 import { PrismaClient } from "@prisma/client";
+
 
 // Singleton Pattern für PrismaClient
 const globalForPrisma = globalThis as unknown as {
@@ -44,16 +45,32 @@ export async function GET(request: NextRequest) {
   const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") || "24", 10)));
   const skip = (page - 1) * limit;
 
+  const excludeMine = searchParams.get("excludeMine");
+  let myCompanyId: string | null = null;
+  if (excludeMine) {
+    const session = await getServerSession(authOptions);
+    if (session?.user?.id) {
+      const mine = await prisma.company.findFirst({
+        where: { userId: session.user.id },
+        select: { id: true }
+      });
+      myCompanyId = mine?.id || null;
+    }
+  }
+
   // 1. Suche nach Unternehmen (search-Parameter)
   if (search && search.length >= 2) {
+    const where: any = {
+      OR: [
+        { name: { contains: search, mode: "insensitive" } },
+        { branchDescription: { contains: search, mode: "insensitive" } },
+      ]
+    };
+    if (myCompanyId) {
+      where.id = { not: myCompanyId };
+    }
     const companies = await prisma.company.findMany({
-      where: {
-        OR: [
-          { name: { contains: search, mode: "insensitive" } },
-          { branchDescription: { contains: search, mode: "insensitive" } },
-
-        ]
-      },
+      where,
       include: {
         user: true, // <-- Das ist wichtig!
         industryTags: true
@@ -94,6 +111,10 @@ export async function GET(request: NextRequest) {
       where.industryTags = {
         some: { value: { equals: tag, mode: "insensitive" } }
       };
+    }
+
+    if (myCompanyId) {
+      where.id = { not: myCompanyId };
     }
 
     const [total, companies] = await Promise.all([

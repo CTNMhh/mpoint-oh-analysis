@@ -52,6 +52,7 @@ export default function CompaniesGalleryPage() {
         const params = new URLSearchParams();
         params.set("list", "1");
         params.set("page", page.toString());
+        params.set("excludeMine","1");
         if (debouncedSearch.length >= 2) params.set("search", debouncedSearch); // optional: live Suche (wenn aktiv, überschreibt list-Query im Backend – alternativ separaten Endpoint)
         if (district) params.set("district", district);
         if (size) params.set("size", size);
