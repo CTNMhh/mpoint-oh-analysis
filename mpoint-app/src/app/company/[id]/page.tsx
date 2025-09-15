@@ -325,40 +325,64 @@ export default async function CompanyDetailPage(props: { params: Promise<{ id: s
                 <p className="text-gray-700 mb-4">{company.branchDescription}</p>
               )}
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 bg-gray-50 rounded-lg">
-                  <div className="text-xs text-gray-500 mb-1">Umsatz</div>
-                  <div className="font-semibold">{revenueRangeLabels[company.revenueRange] || formatRevenue(company.annualRevenue)}</div>
-                </div>
-                <div className="p-3 bg-gray-50 rounded-lg">
-                  <div className="text-xs text-gray-500 mb-1">Mitarbeiter</div>
-                  <div className="font-semibold">{employeeRangeLabels[company.employeeRange]}</div>
-                </div>
-                <div className="p-3 bg-gray-50 rounded-lg">
-                  <div className="text-xs text-gray-500 mb-1">Kundentyp</div>
-                  <div className="font-semibold">{company.customerType}</div>
-                </div>
-                <div className="p-3 bg-gray-50 rounded-lg">
-                  <div className="text-xs text-gray-500 mb-1">Kundenzahl</div>
-                  <div className="font-semibold">{customerCountLabels[company.customerCount]}</div>
-                </div>
-                <div className="p-3 bg-gray-50 rounded-lg">
-                  <div className="text-xs text-gray-500 mb-1">Marktreichweite</div>
-                  <div className="font-semibold">{marketReachLabels[company.marketReach]}</div>
-                </div>
-                <div className="p-3 bg-gray-50 rounded-lg">
-                  <div className="text-xs text-gray-500 mb-1">Wachstumsphase</div>
-                  <div className="font-semibold">{growthPhaseLabels[company.growthPhase]}</div>
-                </div>
-                <div className="p-3 bg-gray-50 rounded-lg">
-                  <div className="text-xs text-gray-500 mb-1">Führung</div>
-                  <div className="font-semibold">{leadershipLabels[company.leadershipStructure]}</div>
-                </div>
-                <div className="p-3 bg-gray-50 rounded-lg">
-                  <div className="text-xs text-gray-500 mb-1">Entscheidung</div>
-                  <div className="font-semibold">{decisionSpeedLabels[company.decisionSpeed]}</div>
-                </div>
-              </div>
+              {(() => {
+                const metrics = [
+                  {
+                    key: 'revenue',
+                    label: 'Umsatz',
+                    value: revenueRangeLabels[company.revenueRange] ||
+                      (company.annualRevenue != null ? formatRevenue(company.annualRevenue) : null)
+                  },
+                  {
+                    key: 'employees',
+                    label: 'Mitarbeiter',
+                    value: employeeRangeLabels[company.employeeRange]
+                  },
+                  {
+                    key: 'customerType',
+                    label: 'Kundentyp',
+                    value: company.customerType || null
+                  },
+                  {
+                    key: 'customerCount',
+                    label: 'Kundenzahl',
+                    value: customerCountLabels[company.customerCount]
+                  },
+                  {
+                    key: 'marketReach',
+                    label: 'Marktreichweite',
+                    value: marketReachLabels[company.marketReach]
+                  },
+                  {
+                    key: 'growthPhase',
+                    label: 'Wachstumsphase',
+                    value: growthPhaseLabels[company.growthPhase]
+                  },
+                  {
+                    key: 'leadership',
+                    label: 'Führung',
+                    value: leadershipLabels[company.leadershipStructure]
+                  },
+                  {
+                    key: 'decisionSpeed',
+                    label: 'Entscheidung',
+                    value: decisionSpeedLabels[company.decisionSpeed]
+                  }
+                ].filter(m => m.value !== null && m.value !== undefined && m.value !== '');
+
+                if (!metrics.length) return null;
+
+                return (
+                  <div className="grid grid-cols-2 gap-3">
+                    {metrics.map(m => (
+                      <div key={m.key} className="p-3 bg-gray-50 rounded-lg">
+                        <div className="text-xs text-gray-500 mb-1">{m.label}</div>
+                        <div className="font-semibold">{m.value}</div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
 
               {/* Industry Tags */}
               {company.industryTags && company.industryTags.length > 0 && (
@@ -395,67 +419,82 @@ export default async function CompanyDetailPage(props: { params: Promise<{ id: s
             </div>
 
             {/* Needs & Offers */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <Target className="w-5 h-5 text-[#e60000]" />
-                Bedarf & Angebot
-              </h2>
+            {(company.painPoints?.length ||
+              company.searchingFor?.length ||
+              company.offeringTo?.length) > 0 && (
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <Target className="w-5 h-5 text-[#e60000]" />
+                  Bedarf & Angebot
+                </h2>
 
-              {/* Pain Points */}
-              {company.painPoints && company.painPoints.length > 0 && (
-                <div className="mb-4">
-                  <h3 className="font-medium text-gray-700 mb-2 flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 text-orange-600" />
-                    Herausforderungen
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {company.painPoints.map((point) => (
-                      <span key={point.id} className={`px-3 py-1 rounded-lg text-sm ${point.priority && point.priority >= 8 ? 'bg-red-100 text-red-700' :
-                          point.priority && point.priority >= 5 ? 'bg-orange-100 text-orange-700' :
-                            'bg-amber-100 text-amber-700'
-                        }`}>
-                        {point.point}
-                        {point.priority && <span className="ml-1 text-xs">(P{point.priority})</span>}
-                      </span>
-                    ))}
+                {company.painPoints?.length > 0 && (
+                  <div className="mb-4">
+                    <h3 className="font-medium text-gray-700 mb-2 flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 text-orange-600" />
+                      Herausforderungen
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {company.painPoints.map(point => (
+                        <span
+                          key={point.id}
+                          className={`px-3 py-1 rounded-lg text-sm ${
+                            point.priority && point.priority >= 8
+                              ? 'bg-red-100 text-red-700'
+                              : point.priority && point.priority >= 5
+                                ? 'bg-orange-100 text-orange-700'
+                                : 'bg-amber-100 text-amber-700'
+                          }`}
+                        >
+                          {point.point}
+                          {point.priority && (
+                            <span className="ml-1 text-xs">(P{point.priority})</span>
+                          )}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* Searching For */}
-              {company.searchingFor && company.searchingFor.length > 0 && (
-                <div className="mb-4">
-                  <h3 className="font-medium text-gray-700 mb-2 flex items-center gap-2">
-                    <Search className="w-4 h-4 text-blue-600" />
-                    Wir suchen
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {company.searchingFor.map((item) => (
-                      <span key={item.id} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm">
-                        {item.item}
-                      </span>
-                    ))}
+                {company.searchingFor?.length > 0 && (
+                  <div className="mb-4">
+                    <h3 className="font-medium text-gray-700 mb-2 flex items-center gap-2">
+                      <Search className="w-4 h-4 text-blue-600" />
+                      Wir suchen
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {company.searchingFor.map(item => (
+                        <span
+                          key={item.id}
+                          className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm"
+                        >
+                          {item.item}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* Offering To */}
-              {company.offeringTo && company.offeringTo.length > 0 && (
-                <div>
-                  <h3 className="font-medium text-gray-700 mb-2 flex items-center gap-2">
-                    <Gift className="w-4 h-4 text-green-600" />
-                    Wir bieten
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {company.offeringTo.map((offer) => (
-                      <span key={offer.id} className="px-3 py-1 bg-green-100 text-green-700 rounded-lg text-sm">
-                        {offer.offer}
-                      </span>
-                    ))}
+                {company.offeringTo?.length > 0 && (
+                  <div>
+                    <h3 className="font-medium text-gray-700 mb-2 flex items-center gap-2">
+                      <Gift className="w-4 h-4 text-green-600" />
+                      Wir bieten
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {company.offeringTo.map(offer => (
+                        <span
+                          key={offer.id}
+                          className="px-3 py-1 bg-green-100 text-green-700 rounded-lg text-sm"
+                        >
+                          {offer.offer}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
 
             {/* Location Advantages */}
             {company.locationAdvantages && company.locationAdvantages.length > 0 && (
