@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { BookOpen, Search, Filter } from "lucide-react";
+import { BookOpen, Search, Filter, ArrowLeft, ArrowRight } from "lucide-react";
 import { MoreLink } from "@/components/MoreLink";
 
 export const dynamic = "force-dynamic";
@@ -196,25 +196,45 @@ export default function NewsPage() {
                 </div>
               )}
               {/* Pagination */}
-              <div className="flex justify-center items-center gap-2 mt-10">
-                <button
-                  className="px-3 py-1 rounded bg-gray-200 text-gray-700 font-medium disabled:opacity-50"
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                >
-                  Zurück
-                </button>
-                <span className="px-3 py-1">
-                  Seite {page} von {totalPages}
-                </span>
-                <button
-                  className="px-3 py-1 rounded bg-gray-200 text-gray-700 font-medium disabled:opacity-50"
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                >
-                  Weiter
-                </button>
-              </div>
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-2 mt-10">
+                  <button
+                    className={`inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-600 rounded-xl font-medium hover:text-gray-900 transition-all ${
+                      page === 1 ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                    }`}
+                    disabled={page === 1}
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  >
+                    <ArrowLeft className="w-4 h-4 text-gray-600 hover:text-gray-900" />
+                    Zurück
+                  </button>
+                  {[...Array(totalPages)].map((_, idx) => (
+                    <button
+                      key={idx + 1}
+                      className={`px-4 py-2 border border-[#e60000] text-[#e60000] hover:text-white rounded-xl font-medium hover:bg-[#e60000] transition-all cursor-pointer ${
+                        page === idx + 1
+                          ? "bg-[#e60000] text-white border-[#e60000]"
+                          : "bg-white text-gray-600 border-gray-600"
+                      }`}
+                      onClick={() => setPage(idx + 1)}
+                    >
+                      {idx + 1}
+                    </button>
+                  ))}
+                  <button
+                    className={`inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-600 font-medium hover:text-gray-900 transition-all ${
+                      page === totalPages
+                        ? "opacity-50 cursor-not-allowed"
+                        : "cursor-pointer"
+                    }`}
+                    disabled={page === totalPages}
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  >
+                    Weiter
+                    <ArrowRight className="w-4 h-4 text-gray-600 hover:text-gray-900" />
+                  </button>
+                </div>
+              )}
             </div>
           </form>
 
