@@ -8,6 +8,7 @@ import {
   generateGoogleCalendarLink,
   generateICSLink,
 } from "@/utils/calendarLinks";
+import { Button, PrimaryButton, GrayButton } from "@/components/Button";
 
 type EventCreateFormProps = {
   onCreated: (event: any) => void;
@@ -599,17 +600,15 @@ export default function EventCreateForm({
 
       {/* Aktions-Buttons */}
       <div className="flex justify-end gap-2 pt-4 border-t">
-        <button
+        <GrayButton
           type="button"
-          className="bg-gray-200 text-gray-600 px-6 py-2 rounded-xl hover:bg-gray-300 transition-all font-semibold"
           onClick={onCancel}
           disabled={creating}
         >
           Abbrechen
-        </button>
-        <button
+        </GrayButton>
+        <PrimaryButton
           type="submit"
-          className="bg-[#e60000] text-white px-6 py-2 rounded-xl hover:bg-red-700 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={creating || !form.maxParticipants}
         >
           {creating
@@ -621,7 +620,7 @@ export default function EventCreateForm({
             : form.isActive
             ? "Event veröffentlichen & aktivieren"
             : "Event veröffentlichen (inaktiv)"}
-        </button>
+        </PrimaryButton>
       </div>
     </form>
   );

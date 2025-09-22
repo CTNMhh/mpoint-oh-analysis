@@ -4,6 +4,7 @@
 
 import { notFound } from "next/navigation";
 import { useEffect, useState, use } from "react";
+import { Button, PrimaryButton } from "@/components/Button";
 import { Calendar, ArrowLeft, Download } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -119,12 +120,13 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
         )}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
           {/* Zurück zu Events */}
-          <Link
+          <Button
             href="/events"
-            className="cursor-pointer gap-2 inline-flex items-center px-4 py-2 rounded-xl bg-[#e60000] text-white hover:bg-red-700 transition-all"
+            icon={ArrowLeft}
+            variant="primary"
           >
-            <ArrowLeft className="w-4 h-4" /> <span>Zurück zu Events</span>
-          </Link>
+            Zurück zu Events
+          </Button>
 
           <div className="flex flex-col md:flex-row gap-6">
             {/* Event-Detail-Block: 2/3 */}
@@ -240,37 +242,40 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                       Anzahl Tickets:
                     </label>
                     <div className="flex items-center gap-3">
-                      <button
+                      <Button
                         type="button"
                         onClick={() => setSpaces(Math.max(1, spaces - 1))}
-                        className="w-10 h-10 rounded-full flex items-center justify-center transition-all bg-[#e60000] text-white hover:bg-red-700 cursor-pointer"
+                        variant="primary"
+                        size="sm"
+                        className="w-10 h-10 rounded-full"
                       >
                         −
-                      </button>
+                      </Button>
                       <span className="w-10 text-center font-bold text-lg">
                         {spaces}
                       </span>
-                      <button
+                      <Button
                         type="button"
                         onClick={() => setSpaces(Math.min(10, spaces + 1))}
-                        className="w-10 h-10 rounded-full flex items-center justify-center transition-all bg-[#e60000] text-white hover:bg-red-700 cursor-pointer"
+                        variant="primary"
+                        size="sm"
+                        className="w-10 h-10 rounded-full"
                       >
                         +
-                      </button>
+                      </Button>
                     </div>
                   </div>
 
                   {/* Nur noch EIN Button für alle Events */}
-                  <button
+                  <PrimaryButton
                     type="button"
-                    className="bg-[#e60000] text-white px-4 py-2 rounded-xl hover:bg-red-700 transition-all font-medium cursor-pointer"
                     onClick={() => handleAddToCart(event.id, spaces)}
                   >
                     In den Warenkorb
                     {event.price > 0
                       ? ` (${(event.price * spaces).toFixed(2)} €)`
                       : ""}
-                  </button>
+                  </PrimaryButton>
                 </div>
               </div>
             </div>

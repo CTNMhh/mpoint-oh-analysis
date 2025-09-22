@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import Link from "next/link";
+import { Button } from "@/components/Button";
 import { ArrowLeft } from "lucide-react";
 
 export default function NewsDetailPage() {
@@ -48,12 +48,13 @@ export default function NewsDetailPage() {
   return (
     <main className="min-h-screen bg-gray-50 pt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-        <button
-          className="cursor-pointer gap-2 inline-flex items-center px-4 py-2 rounded-xl bg-[#e60000] text-white hover:bg-red-700 transition-all cursor-pointer"
+        <Button
           onClick={() => router.back()}
+          icon={ArrowLeft}
+          variant="primary"
         >
-          <ArrowLeft className="w-4 h-4" /> Zurück zu News
-        </button>
+          Zurück zu News
+        </Button>
         <article className="bg-white rounded-xl shadow-sm">
           {news.imageUrl && (
             <img

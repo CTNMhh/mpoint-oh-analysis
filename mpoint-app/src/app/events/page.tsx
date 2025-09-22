@@ -14,14 +14,8 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import EventCreateForm from "./EventCreateForm";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Calendar,
-  Grid3X3,
-  List,
-  Users,
-} from "lucide-react";
+import { Button, PrimaryButton, SecondaryButton, GrayButton } from "@/components/Button";
+import { Calendar, Grid3X3, List, Users, ArrowLeft, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 
 const MONTHS = [
   "Januar",
@@ -421,13 +415,12 @@ export default function EventsPage() {
             </div>
 
             {session?.user?.role === "ENTERPRISE" && (
-              <button
+              <PrimaryButton
                 id="create-event-btn"
-                className="bg-[#e60000] text-white px-4 py-2 rounded-xl hover:bg-red-700 transition-all font-medium cursor-pointer"
                 onClick={() => setShowForm((v) => !v)}
               >
                 {showForm ? "Abbrechen" : "Eigenes Event erstellen"}
-              </button>
+              </PrimaryButton>
             )}
           </div>
         </div>
@@ -448,12 +441,13 @@ export default function EventsPage() {
             <div className="bg-white rounded-xl shadow-sm p-6 max-w-7xl mx-auto">
               {/* Kalender Header */}
               <div className="flex items-center justify-between mb-3">
-                <button
+                <Button
                   onClick={() => navigateMonth("prev")}
-                  className="p-1 hover:bg-gray-100 rounded transition-colors"
+                  variant="gray"
+                  size="sm"
+                  icon={ChevronLeft}
                 >
-                  <ChevronLeft size={16} />
-                </button>
+                </Button>
 
                 <div className="flex items-center gap-2">
                   <span className="text-base font-bold text-gray-900">
@@ -487,12 +481,13 @@ export default function EventsPage() {
                   </div>
                 </div>
 
-                <button
+                <Button
                   onClick={() => navigateMonth("next")}
-                  className="p-1 hover:bg-gray-100 rounded transition-colors"
+                  variant="gray"
+                  size="sm"
+                  icon={ChevronRight}
                 >
-                  <ChevronRight size={16} />
-                </button>
+                </Button>
               </div>
 
               {/* Wochentage */}
@@ -605,12 +600,12 @@ export default function EventsPage() {
                               ))}
                             </div>
                           </div>
-                          <Link
+                          <Button
                             href={`/events/${event.id}`}
-                            className="bg-[#e60000] text-white px-4 py-2 rounded-xl hover:bg-red-700 transition-colors font-medium my-4 me-4"
+                            variant="primary"
                           >
                             Details
-                          </Link>
+                          </Button>
                         </div>
                       </div>
                     );
@@ -706,12 +701,12 @@ export default function EventsPage() {
                               ))}
                             </div>
                           </div>
-                          <Link
+                          <Button
                             href={`/events/${event.id}`}
-                            className="bg-[#e60000] text-white px-4 py-2 rounded-xl hover:bg-red-700 transition-colors font-medium my-4 me-4"
+                            variant="primary"
                           >
-                            Details
-                          </Link>
+                            Details & Anmeldung
+                          </Button>
                         </div>
                       </div>
                     );
@@ -818,18 +813,19 @@ export default function EventsPage() {
                             ))}
                           </div>
                           <div className="flex flex-row flex-wrap mt-8 gap-2 px-4 pb-2 justify-end content-end grow">
-                            <Link
+                            <Button
                               href={`/events/${event.id}`}
-                              className="flex align-center bg-[#e60000] hover:bg-red-700 text-white px-4 rounded-xl transition-all font-medium mb-2 py-2 text-center"
+
+                              variant="primary"
                             >
                               Details & Anmeldung
-                            </Link>
-                            <Link
+                            </Button>
+                            <Button
                               href={`/events/${event.id}/edit`}
-                              className="flex align-center bg-[#e60000] hover:bg-red-700 text-white px-4 rounded-xl transition-all font-medium mb-2 py-2 text-center"
+                              variant="secondary"
                             >
                               Bearbeiten
-                            </Link>
+                            </Button>
                           </div>
                         </div>
                       );
@@ -924,18 +920,15 @@ export default function EventsPage() {
                           ))}
                         </div>
                         <div className="flex flex-row flex-wrap mt-auto gap-2 px-4 pb-2 justify-end content-end grow">
-                          <Link
+                          <Button
                             href={`/events/${event.id}`}
-                            className={`flex align-center text-white px-4 rounded-xl transition-all font-medium mb-2 py-2 text-center ${
-                              enrichedEvent.isFullyBooked
-                                ? "bg-gray-400 cursor-not-allowed"
-                                : "bg-[#e60000] hover:bg-red-700 cursor-pointer"
-                            }`}
+                            variant={enrichedEvent.isFullyBooked ? "gray" : "primary"}
+                            disabled={enrichedEvent.isFullyBooked}
                           >
                             {enrichedEvent.isFullyBooked
                               ? "Ausgebucht"
                               : "Details & Anmeldung"}
-                          </Link>
+                          </Button>
                         </div>
                       </div>
                     );

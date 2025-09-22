@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { Button } from "@/components/Button";
 import { BookOpen, Search, Filter, ArrowLeft, ArrowRight } from "lucide-react";
 import { MoreLink } from "@/components/MoreLink";
 
@@ -198,41 +199,32 @@ export default function NewsPage() {
               {/* Pagination */}
               {totalPages > 1 && (
                 <div className="flex justify-center items-center gap-2 mt-10">
-                  <button
-                    className={`inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-600 rounded-xl font-medium hover:text-gray-900 transition-all ${
-                      page === 1 ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
-                    }`}
+                  <Button
                     disabled={page === 1}
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    variant="secondary"
+                    icon={ArrowLeft}
                   >
-                    <ArrowLeft className="w-4 h-4 text-gray-600 hover:text-gray-900" />
                     Zurück
-                  </button>
+                  </Button>
                   {[...Array(totalPages)].map((_, idx) => (
-                    <button
+                    <Button
                       key={idx + 1}
-                      className={`px-4 py-2 border border-[#e60000] text-[#e60000] hover:text-white rounded-xl font-medium hover:bg-[#e60000] transition-all cursor-pointer ${
-                        page === idx + 1
-                          ? "bg-[#e60000] text-white border-[#e60000]"
-                          : "bg-white text-gray-600 border-gray-600"
-                      }`}
+                      variant={page === idx + 1 ? "primary" : "secondary"}
                       onClick={() => setPage(idx + 1)}
                     >
                       {idx + 1}
-                    </button>
+                    </Button>
                   ))}
-                  <button
-                    className={`inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-600 font-medium hover:text-gray-900 transition-all ${
-                      page === totalPages
-                        ? "opacity-50 cursor-not-allowed"
-                        : "cursor-pointer"
-                    }`}
+                  <Button
                     disabled={page === totalPages}
                     onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    variant="secondary"
+                    icon={ArrowRight}
+                    iconPosition="right"
                   >
                     Weiter
-                    <ArrowRight className="w-4 h-4 text-gray-600 hover:text-gray-900" />
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>
