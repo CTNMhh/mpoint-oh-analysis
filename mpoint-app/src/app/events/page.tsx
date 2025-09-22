@@ -600,12 +600,14 @@ export default function EventsPage() {
                               ))}
                             </div>
                           </div>
-                          <Button
-                            href={`/events/${event.id}`}
-                            variant="primary"
-                          >
-                            Details
-                          </Button>
+                          <div className="flex py-4 pr-4">
+                            <Button
+                              href={`/events/${event.id}`}
+                              variant="primary"
+                            >
+                              Details
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     );
@@ -701,12 +703,14 @@ export default function EventsPage() {
                               ))}
                             </div>
                           </div>
-                          <Button
-                            href={`/events/${event.id}`}
-                            variant="primary"
-                          >
-                            Details & Anmeldung
-                          </Button>
+                          <div className="flex py-4 pr-4">
+                            <Button
+                              href={`/events/${event.id}`}
+                              variant="primary"
+                            >
+                              Details & Anmeldung
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     );
@@ -812,7 +816,7 @@ export default function EventsPage() {
                               </span>
                             ))}
                           </div>
-                          <div className="flex flex-row flex-wrap mt-8 gap-2 px-4 pb-2 justify-end content-end grow">
+                          <div className="flex flex-row flex-wrap mt-8 gap-2 px-4 pb-4 justify-end content-end grow">
                             <Button
                               href={`/events/${event.id}`}
 
@@ -919,7 +923,7 @@ export default function EventsPage() {
                             </span>
                           ))}
                         </div>
-                        <div className="flex flex-row flex-wrap mt-auto gap-2 px-4 pb-2 justify-end content-end grow">
+                        <div className="flex flex-row flex-wrap mt-auto gap-2 px-4 pb-4 justify-end content-end grow">
                           <Button
                             href={`/events/${event.id}`}
                             variant={enrichedEvent.isFullyBooked ? "gray" : "primary"}
