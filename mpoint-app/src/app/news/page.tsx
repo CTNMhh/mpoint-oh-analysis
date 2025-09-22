@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { BookOpen, Search, Filter, ArrowRight } from "lucide-react";
+import { BookOpen, Search, Filter } from "lucide-react";
+import { MoreLink } from "@/components/MoreLink";
 
 export const dynamic = "force-dynamic";
 
@@ -187,12 +188,7 @@ export default function NewsPage() {
                           </p>
                         </div>
                         <div className="mt-6 text-center">
-                          <Link
-                            href={`/news/${n.id}`}
-                            className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all"
-                          >
-                            Mehr erfahren <ArrowRight className="w-4 h-4" />
-                          </Link>
+                          <MoreLink href={`/news/${n.id}`} />
                         </div>
                       </div>
                     </article>
@@ -256,12 +252,9 @@ export default function NewsPage() {
             </div>
 
             <div className="mt-4 text-center">
-              <a
-                href="#articles"
-                className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all"
-              >
-                Alle Artikel anzeigen <ArrowRight className="w-4 h-4" />
-              </a>
+              <MoreLink href="#articles">
+                Alle Artikel anzeigen
+              </MoreLink>
             </div>
           </div>
         </div>
