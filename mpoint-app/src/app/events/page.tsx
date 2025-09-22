@@ -923,7 +923,7 @@ export default function EventsPage() {
                             </span>
                           ))}
                         </div>
-                        <div className="flex flex-row flex-wrap mt-auto gap-2 px-4 pb-4 justify-end content-end grow">
+                        <div className="flex flex-row flex-wrap mt-auto gap-2 px-4 py-4 justify-end content-end grow">
                           <Button
                             href={`/events/${event.id}`}
                             variant={enrichedEvent.isFullyBooked ? "gray" : "primary"}
