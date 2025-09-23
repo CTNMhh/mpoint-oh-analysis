@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { Button } from "@/components/Button";
+import { Button } from "../../components/atoms/Button";
 import { ArrowLeft } from "lucide-react";
 
 export default function NewsDetailPage() {

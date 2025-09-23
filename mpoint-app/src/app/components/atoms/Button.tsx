@@ -98,6 +98,66 @@ export function Button(props: CombinedButtonProps) {
   );
 }
 
+export default function ExamplePage() {
+  const [data, setData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch("/api/data")
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        setData(data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        setError(error.message);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
+  return (
+    <div>
+      <h1 className="text-2xl font-bold mb-4">Example Page</h1>
+      <Button variant="primary" size="md" icon={BookOpen} iconPosition="left">
+        Primary Button
+      </Button>
+      <Button variant="secondary" size="md" className="ml-2">
+        Secondary Button
+      </Button>
+      <Button variant="danger" size="md" className="ml-2" disabled>
+        Danger Button
+      </Button>
+      <Button variant="gray" size="md" className="ml-2">
+        Gray Button
+      </Button>
+      <div className="mt-4">
+        <MoreLink href="/more-info" className="text-lg">
+          Mehr erfahren
+        </MoreLink>
+      </div>
+      <div className="mt-8">
+        <h2 className="text-xl font-semibold mb-2">Fetched Data:</h2>
+        <pre>{JSON.stringify(data, null, 2)}</pre>
+      </div>
+    </div>
+  );
+}
+
 // Convenience components for common use cases
 export const PrimaryButton = (props: Omit<CombinedButtonProps, 'variant'>) => (
   <Button {...props} variant="primary" />

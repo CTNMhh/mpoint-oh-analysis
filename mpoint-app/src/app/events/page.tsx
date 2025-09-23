@@ -14,7 +14,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import EventCreateForm from "./EventCreateForm";
-import { Button, PrimaryButton, SecondaryButton, GrayButton } from "@/components/Button";
+import { Button, PrimaryButton, SecondaryButton, GrayButton } from "../components/atoms/Button";
 import { Calendar, Grid3X3, List, Users, ArrowLeft, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 
 const MONTHS = [

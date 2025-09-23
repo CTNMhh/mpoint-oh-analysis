@@ -8,7 +8,7 @@ import {
   generateGoogleCalendarLink,
   generateICSLink,
 } from "@/utils/calendarLinks";
-import { Button, PrimaryButton, GrayButton } from "@/components/Button";
+import { Button, PrimaryButton, GrayButton } from "../components/atoms/Button";
 
 type EventCreateFormProps = {
   onCreated: (event: any) => void;
