@@ -37,12 +37,12 @@ export function Button(props: CombinedButtonProps) {
   // Base styles
   const baseStyles = "inline-flex items-center justify-center font-medium transition-all cursor-pointer";
 
-  // Variant styles
+  // Variant styles - disabled Buttons ohne Hover-Effekte
   const variantStyles = {
-    primary: "bg-[#e60000] text-white hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed",
-    secondary: "border border-[#e60000] bg-white text-[#e60000] hover:bg-[#e60000] hover:text-white disabled:border-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed",
-    danger: "bg-red-600 text-white hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed",
-    gray: "bg-gray-200 text-gray-600 hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
+    primary: "bg-[#e60000] text-white hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-400",
+    secondary: "border border-[#e60000] bg-white text-[#e60000] hover:bg-[#e60000] hover:text-white disabled:border-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-gray-400 disabled:hover:border-gray-300",
+    danger: "bg-red-600 text-white hover:bg-red-800 border-2 border-red-700 hover:border-red-900 shadow-red-200 hover:shadow-red-300 shadow-lg disabled:bg-gray-400 disabled:border-gray-400 disabled:shadow-none disabled:cursor-not-allowed disabled:hover:bg-gray-400 disabled:hover:border-gray-400 disabled:hover:shadow-none",
+    gray: "bg-gray-200 text-gray-600 hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed disabled:hover:bg-gray-100"
   };
 
   // Size styles - angepasste Border-Radius Werte

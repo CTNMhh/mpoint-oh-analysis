@@ -102,9 +102,9 @@ export default function ExampleButtonsPage() {
 
               <h3 className="text-lg font-semibold text-blue-800 mb-3">Farbvarianten (variant)</h3>
               <ul className="text-blue-700 space-y-2 mb-6">
-                <li><strong>primary:</strong> Rot (#e60000) mit weißem Text - Hauptaktionen</li>
+                <li><strong>primary:</strong> M-Point Rot (#e60000) mit weißem Text - Hauptaktionen</li>
                 <li><strong>secondary:</strong> Weißer Hintergrund mit rotem Rahmen - Sekundäre Aktionen</li>
-                <li><strong>danger:</strong> Dunkelrot (#dc2626) - Destruktive Aktionen</li>
+                <li><strong>danger:</strong> Dunkelrot (#dc2626) mit dunklem Rahmen und rotem Schatten - Destruktive Aktionen (verstärkte visuelle Warnung)</li>
                 <li><strong>gray:</strong> Grauer Hintergrund - Neutrale/Disabled Aktionen</li>
               </ul>
 
@@ -167,7 +167,13 @@ export default function ExampleButtonsPage() {
           {/* Danger Buttons */}
           <section className="mb-8">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Danger Buttons</h2>
-            <p className="text-gray-600 mb-4">Destruktive Aktionen in Dunkelrot. Für Aktionen wie "Löschen", "Entfernen", etc.</p>
+            <p className="text-gray-600 mb-4">Destruktive Aktionen in Dunkelrot mit verstärkter visueller Warnung. Für kritische Aktionen wie "Löschen", "Entfernen", etc.</p>
+            <div className="bg-red-50 p-4 rounded-lg mb-4">
+              <p className="text-sm text-red-800">
+                <strong>Design-Unterschiede zu Primary:</strong> Dunklerer Rotton, zusätzlicher Rahmen,
+                roter Schatten für verstärkte Aufmerksamkeit bei destruktiven Aktionen.
+              </p>
+            </div>
             <div className="flex flex-wrap items-center gap-4">
               <Button variant="danger" size="sm" icon={Trash2}>
                 Delete
