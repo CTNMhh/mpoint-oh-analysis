@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Button, PrimaryButton, SecondaryButton, DangerButton, GrayButton } from "@/app/components/atoms/Button";
+import { Button, PrimaryButton, SecondaryButton, DangerButton, GrayButton, CustomButton } from "@/app/components/atoms/Button";
 import { MoreLink } from "@/app/components/atoms/MoreLink";
 import { BookOpen, Download, Settings, Trash2, Plus } from "lucide-react";
 
@@ -104,8 +104,9 @@ export default function ExampleButtonsPage() {
               <ul className="text-blue-700 space-y-2 mb-6">
                 <li><strong>primary:</strong> M-Point Rot (#e60000) mit weißem Text - Hauptaktionen</li>
                 <li><strong>secondary:</strong> Weißer Hintergrund mit rotem Rahmen - Sekundäre Aktionen</li>
-                <li><strong>danger:</strong> Dunkelrot (#dc2626) mit dunklem Rahmen und rotem Schatten - Destruktive Aktionen (verstärkte visuelle Warnung)</li>
+                <li><strong>danger:</strong> Dunkelrot (#dc2626) mit dunklem Rahmen und rotem Schatten - Destruktive Aktionen</li>
                 <li><strong>gray:</strong> Grauer Hintergrund - Neutrale/Disabled Aktionen</li>
+                <li><strong>custom:</strong> Weißer Hintergrund (konstant), grauer Text, anpassbare Hover-Rahmenfarbe - Börse-Buttons</li>
               </ul>
 
               <h3 className="text-lg font-semibold text-blue-800 mb-3">Convenience-Komponenten</h3>
@@ -253,6 +254,54 @@ export default function ExampleButtonsPage() {
             </div>
           </section>
 
+          {/* Custom Buttons */}
+          <section className="mb-8">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">Custom Buttons</h2>
+            <p className="text-gray-600 mb-4">Anpassbare Buttons mit grauem Rahmen und konfigurierbarer Hover-Rahmenfarbe. Hintergrund bleibt immer weiß.</p>
+            <div className="bg-gray-50 p-4 rounded-lg mb-4">
+              <p className="text-sm text-gray-800">
+                <strong>Design-Eigenschaften:</strong> Grauer Rahmen und Text, weißer Hintergrund bleibt konstant,
+                nur die Rahmenfarbe ändert sich bei Hover via hoverColor-Prop. Textfarbe bleibt grau.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-4">
+              <Button variant="custom" size="sm" hoverColor="blue-600">
+                Anfrage (Blau)
+              </Button>
+              <Button variant="custom" size="md" hoverColor="green-600">
+                Angebot (Grün)
+              </Button>
+              <CustomButton size="lg" hoverColor="purple-600">
+                Custom (Lila)
+              </CustomButton>
+              <CustomButton size="md" disabled>
+                Disabled Custom
+              </CustomButton>
+            </div>
+
+            {/* Weitere Beispiele */}
+            <div className="mt-4">
+              <h3 className="text-lg font-medium text-gray-700 mb-2">Börse-Beispiele:</h3>
+              <div className="flex flex-wrap gap-3">
+                <Button variant="custom" size="md" hoverColor="blue-600">
+                  Anfrage
+                </Button>
+                <Button variant="custom" size="md" hoverColor="green-600">
+                  Angebot
+                </Button>
+                <Button variant="custom" size="md" hoverColor="orange-600">
+                  Kontakt
+                </Button>
+                <Button variant="custom" size="md" hoverColor="red-600">
+                  Dringend
+                </Button>
+                <Button variant="custom" size="md" hoverColor="purple-600">
+                  Premium
+                </Button>
+              </div>
+            </div>
+          </section>
+
           {/* Usage Examples */}
           <section className="mb-8">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Code-Beispiele</h2>
@@ -268,20 +317,23 @@ export default function ExampleButtonsPage() {
   Einstellungen
 </Button>
 
-// Link Button
-<Button href="/events" variant="primary" size="md">
-  Zu Events
+// Custom Button mit Hover-Farbe
+<Button variant="custom" size="md" hoverColor="blue-600">
+  Anfrage
+</Button>
+
+// Börse-Buttons
+<Button variant="custom" size="md" hoverColor="blue-600">
+  Anfrage
+</Button>
+<Button variant="custom" size="md" hoverColor="green-600">
+  Angebot
 </Button>
 
 // Convenience Komponente
-<PrimaryButton size="md" disabled>
-  Gespeichert
-</PrimaryButton>
-
-// More Link
-<MoreLink href="/details">
-  Mehr erfahren
-</MoreLink>`}
+<CustomButton size="md" hoverColor="purple-600">
+  Custom Button
+</CustomButton>`}
               </pre>
             </div>
           </section>
