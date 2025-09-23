@@ -35,7 +35,7 @@ export function Button(props: CombinedButtonProps) {
   } = props;
 
   // Base styles
-  const baseStyles = "inline-flex items-center justify-center font-medium transition-all cursor-pointer rounded-xl";
+  const baseStyles = "inline-flex items-center justify-center font-medium transition-all cursor-pointer";
 
   // Variant styles
   const variantStyles = {
@@ -45,18 +45,18 @@ export function Button(props: CombinedButtonProps) {
     gray: "bg-gray-200 text-gray-600 hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
   };
 
-  // Size styles
+  // Size styles - angepasste Border-Radius Werte
   const sizeStyles = {
-    sm: "px-3 py-1.5 text-sm gap-1.5",
-    md: "px-4 py-2 text-base gap-2",
-    lg: "px-6 py-3 text-lg gap-2.5"
+    sm: "px-3 py-1.5 text-sm gap-1.5 rounded-md",      // Kleiner: rounded-md (6px)
+    md: "px-4 py-2 text-base gap-2 rounded-lg",        // Mittel: rounded-lg (8px)
+    lg: "px-6 py-3 text-lg gap-2.5 rounded-xl"         // Groß: rounded-xl (12px)
   };
 
   // Icon size mapping
   const iconSizes = {
     sm: 16,
     md: 18,
-    lg: 20
+    lg: 22
   };
 
   const combinedClassName = `${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`;
@@ -95,66 +95,6 @@ export function Button(props: CombinedButtonProps) {
       {children}
       {iconPosition === "right" && renderIcon()}
     </button>
-  );
-}
-
-export default function ExamplePage() {
-  const [data, setData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    setLoading(true);
-    fetch("/api/data")
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        return response.json();
-      })
-      .then((data) => {
-        setData(data);
-        setLoading(false);
-      })
-      .catch((error) => {
-        setError(error.message);
-        setLoading(false);
-      });
-  }, []);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
-
-  return (
-    <div>
-      <h1 className="text-2xl font-bold mb-4">Example Page</h1>
-      <Button variant="primary" size="md" icon={BookOpen} iconPosition="left">
-        Primary Button
-      </Button>
-      <Button variant="secondary" size="md" className="ml-2">
-        Secondary Button
-      </Button>
-      <Button variant="danger" size="md" className="ml-2" disabled>
-        Danger Button
-      </Button>
-      <Button variant="gray" size="md" className="ml-2">
-        Gray Button
-      </Button>
-      <div className="mt-4">
-        <MoreLink href="/more-info" className="text-lg">
-          Mehr erfahren
-        </MoreLink>
-      </div>
-      <div className="mt-8">
-        <h2 className="text-xl font-semibold mb-2">Fetched Data:</h2>
-        <pre>{JSON.stringify(data, null, 2)}</pre>
-      </div>
-    </div>
   );
 }
 
