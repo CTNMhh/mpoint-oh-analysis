@@ -10,7 +10,6 @@ import {
   Building2,
   UserPlus,
   MessageSquare,
-  Link2,
   Hash,
   ChevronDown,
   TrendingUp,
@@ -31,6 +30,8 @@ import NetworkSidebar from "../components/network/NetworkSidebar";
 import MatchingList from "../dashboard/MatchingList"
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { Button, PrimaryButton, GrayButton } from "../components/ui/Button";
+import { MoreLink } from "../components/ui/MoreLink";
 
 // Alte export default Funktion in NetzwerkContent umbenennen:
 function NetzwerkContent() {
@@ -78,12 +79,13 @@ function NetzwerkContent() {
           <p className="mb-6 text-gray-600">
             Bitte loggen Sie sich ein, um Ihre Unternehmens-Matches zu sehen.
           </p>
-          <a
+          <Button
             href="/login"
-            className="inline-block px-6 py-3 bg-[rgb(228,25,31)] text-white rounded-lg font-semibold hover:bg-red-700 transition-colors"
+            variant="primary"
+            size="lg"
           >
             Zum Login
-          </a>
+          </Button>
         </div>
       </main>
     );
@@ -108,7 +110,7 @@ function NetzwerkContent() {
 
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 gap-6 pb-8 flex flex-col lg:flex-row">
             {/* Left Sidebar */}
-        <NetworkSidebar />
+            <NetworkSidebar />
 
             {/* Center Content */}
             <div className="flex-1 min-w-0">
@@ -124,7 +126,7 @@ function NetzwerkContent() {
                 </div>
               </div>
 
-              {/* Modern Tab Navigation */}
+              {/* Vereinfachte Tab Navigation - Button-Komponente ersetzt Link2-Icons */}
               <nav className="flex gap-2 mb-6 overflow-x-auto pb-2">
                 <InvitationsTabButton
                   active={activeTab === "invitations"}
@@ -134,7 +136,7 @@ function NetzwerkContent() {
                   active={activeTab === "connections"}
                   onClick={() => setActiveTab("connections")}
                 >
-                  <Link2 className="w-4 h-4" />
+                  <Users className="w-4 h-4" />
                   Verbindungen
                 </TabButton>
                 <TabButton
@@ -152,9 +154,12 @@ function NetzwerkContent() {
               {activeTab === "connections" && (
                 <div className="bg-white/80 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-8 text-center border border-white/50">
                   <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500">
+                  <p className="text-gray-500 mb-6">
                     Verbindungen-Ansicht: Zeigt alle Ihre M-POINT Kontakte.
                   </p>
+                  <MoreLink href="/connections">
+                    Alle Verbindungen anzeigen
+                  </MoreLink>
                 </div>
               )}
               {activeTab === "groups" && (
@@ -170,16 +175,12 @@ function NetzwerkContent() {
                   <Sparkles className="w-6 h-6 text-[#e60000]" />
                 </div>
                 <div className="space-y-4">
-                      <MatchingList layout="netzwerk" limit={3} />
-
+                  <MatchingList layout="netzwerk" limit={3} />
                 </div>
                 <div className="text-center mt-6">
-                  <a
-                    href="/Matches/search"
-                    className="inline-flex items-center gap-2 text-[#e60000] font-medium hover:gap-3 transition-all"
-                  >
-                    Alle Matches <ArrowRight className="w-4 h-4" />
-                  </a>
+                  <MoreLink href="/Matches/search">
+                    Alle Matches anzeigen
+                  </MoreLink>
                 </div>
               </div>
 
@@ -210,6 +211,11 @@ function NetzwerkContent() {
                     value="89%"
                     trend="+3%"
                   />
+                </div>
+                <div className="text-center mt-6">
+                  <MoreLink href="/analytics">
+                    Detaillierte Statistiken
+                  </MoreLink>
                 </div>
               </div>
             </aside>
@@ -246,15 +252,11 @@ function GroupsTabContent({ session }: { session: any }) {
     )
   );
 
-  // Nur Gruppen, in denen der User KEIN Mitglied ist
   const availableGroups = groups.filter(group =>
     !group.members.some(
       member => member.userId === session?.user?.id && member.status === "ACTIVE"
     )
   );
-
-  console.log("groups:", groups);
-  console.log("availableGroups:", availableGroups);
 
   return (
     <div
@@ -263,16 +265,23 @@ function GroupsTabContent({ session }: { session: any }) {
     >
       <Hash className="w-16 h-16 text-gray-300 mx-auto mb-4" />
       {!activeGroup ? (
-        <GroupList
-          session={session}
-          memberGroups={memberGroups}
-          availableGroups={availableGroups}   // <--- jetzt korrekt!
-          showOwnGroups={true}
-          showMemberGroups={true}
-          showAvailableGroups={true}
-          showManageButton={true}
-          setActiveGroup={setActiveGroup}
-        />
+        <>
+          <GroupList
+            session={session}
+            memberGroups={memberGroups}
+            availableGroups={availableGroups}
+            showOwnGroups={true}
+            showMemberGroups={true}
+            showAvailableGroups={true}
+            showManageButton={true}
+            setActiveGroup={setActiveGroup}
+          />
+          <div className="text-center mt-6">
+            <MoreLink href="/gruppen-verwalten">
+              Alle Gruppen verwalten
+            </MoreLink>
+          </div>
+        </>
       ) : (
         <GroupContent group={activeGroup} onBack={() => setActiveGroup(null)} />
       )}
@@ -303,7 +312,7 @@ function SidebarStat({
   );
 }
 
-// Modern Tab Button Component
+// Vereinfachte Tab Button Component - einheitliche Größe, keine Schatten
 function TabButton({
   active,
   children,
@@ -314,20 +323,18 @@ function TabButton({
   onClick: () => void;
 }) {
   return (
-    <button
-      className={`flex items-center gap-2 px-5 py-3 rounded-xl font-medium transition-all whitespace-nowrap cursor-pointer ${
-        active
-          ? "bg-[#e60000] text-white shadow-lg"
-          : "bg-white/80 text-gray-700 hover:bg-gray-100 border border-gray-200"
-      }`}
+    <Button
       onClick={onClick}
+      variant={active ? "primary" : "gray"}
+      size="md"
+      className="whitespace-nowrap"
     >
       {children}
-    </button>
+    </Button>
   );
 }
 
-// Modern Invitations Tab Button Component
+// Vereinfachte Invitations Tab Button - Icons ersetzt durch Button-Komponente
 function InvitationsTabButton({
   active,
   onClick,
@@ -338,24 +345,24 @@ function InvitationsTabButton({
   const { invitations } = useInvitations();
 
   return (
-    <button
-      className={`flex items-center gap-2 px-5 py-3 rounded-xl font-medium transition-all whitespace-nowrap cursor-pointer ${
-        active
-          ? "bg-[#e60000] text-white shadow-lg"
-          : "bg-white/80 text-gray-700 hover:bg-gray-100 border border-gray-200"
-      }`}
+    <Button
       onClick={onClick}
+      variant={active ? "primary" : "gray"}
+      size="md"
+      className="whitespace-nowrap relative"
     >
       <UserPlus className="w-4 h-4" />
       Einladungen
-      <span className="ml-2 bg-[#e60000] text-white text-xs rounded-full px-2 py-0.5 font-bold">
-        {invitations.length}
-      </span>
-    </button>
+      {invitations.length > 0 && (
+        <span className="ml-2 bg-[#e60000] text-white text-xs rounded-full px-2 py-0.5 font-bold">
+          {invitations.length}
+        </span>
+      )}
+    </Button>
   );
 }
 
-// Modern Suggestion Item Component
+// Vereinfachte Suggestion Item Component - MoreLink statt komplexer Buttons
 function SuggestionItem({
   name,
   title,
@@ -367,7 +374,7 @@ function SuggestionItem({
 }) {
   return (
     <div className="group p-4 rounded-lg border border-gray-200 hover:bg-gray-50 hover:shadow-md transition-all cursor-pointer">
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 mb-3">
         <div className="relative">
           <div className="relative bg-gray-300 text-white rounded-full w-12 h-12 flex items-center justify-center font-bold text-lg shadow-lg">
             {name.split(" ")[1]?.[0] || "?"}
@@ -395,9 +402,11 @@ function SuggestionItem({
           <div className="text-gray-500 text-sm truncate">{title}</div>
         </div>
       </div>
-      <button className="mt-3 w-full bg-[#e60000] hover:bg-red-700 text-white px-4 py-2 rounded-xl font-medium transition-all cursor-pointer">
-        Vernetzen
-      </button>
+      <div className="text-center">
+        <MoreLink href={`/profile/${name.toLowerCase().replace(' ', '-')}`}>
+          Profil ansehen
+        </MoreLink>
+      </div>
     </div>
   );
 }
@@ -456,7 +465,10 @@ function InvitationsSection() {
     return (
       <section className="bg-white/80 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-6 border border-white/50 text-center">
         <UserPlus className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-        <div className="text-gray-500">Keine Einladungen vorhanden.</div>
+        <div className="text-gray-500 mb-4">Keine Einladungen vorhanden.</div>
+        <MoreLink href="/networking">
+          Neue Kontakte finden
+        </MoreLink>
       </section>
     );
   }
@@ -468,21 +480,26 @@ function InvitationsSection() {
         {invitations.map(inv => (
           <InvitationItem
             key={inv.id}
-            type={inv.group ? "group" : inv.event ? "event" : inv.contact ? "contact" : "group"} // <--- Typ setzen!
+            type={inv.group ? "group" : inv.event ? "event" : inv.contact ? "contact" : "group"}
             title={inv.group?.name || inv.event?.name || inv.contact?.name || "Einladung"}
             description={inv.group?.description || inv.description}
             inviter={inv.invitedBy}
             group={inv.group}
-            onAccept={() => acceptInvitation(inv)} // POST /api/groups/invitations/[id]/accept
-            onDecline={() => declineInvitation(inv)} // POST /api/groups/invitations/[id]/decline
+            onAccept={() => acceptInvitation(inv)}
+            onDecline={() => declineInvitation(inv)}
           />
         ))}
       </ul>
+      <div className="text-center mt-6">
+        <MoreLink href="/invitations">
+          Alle Einladungen verwalten
+        </MoreLink>
+      </div>
     </section>
   );
 }
 
-// Modern Invitation Item Component
+// Modern Invitation Item Component - vereinfacht
 function InvitationItem({
   type,
   title,
@@ -500,7 +517,7 @@ function InvitationItem({
   onDecline: () => void;
   group?: { avatarUrl?: string };
 }) {
-  
+
   const getTypeConfig = () => {
     switch (type) {
       case "group":
@@ -545,7 +562,7 @@ function InvitationItem({
     <li className="group relative overflow-hidden bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-[#e60000]/20 hover:scale-[1.01]">
       {/* Gradient Accent */}
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#e60000] to-[#c01a1f]"></div>
-      
+
       <div className="p-6">
         {/* Header - Type Badge */}
         <div className="flex items-center justify-between mb-4">
@@ -583,13 +600,13 @@ function InvitationItem({
             <h3 className="font-bold text-xl text-gray-900 mb-2 group-hover:text-[#e60000] transition-colors">
               {title}
             </h3>
-            
+
             {description && (
               <p className="text-gray-600 leading-relaxed mb-3">
                 {description}
               </p>
             )}
-            
+
             {inviter && (
               <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
@@ -602,39 +619,32 @@ function InvitationItem({
                 </span>
               </div>
             )}
-
-            {/* Additional Meta Info */}
-        
           </div>
         </div>
 
-        {/* Action Buttons */}
+        {/* Action Buttons - vereinfacht */}
         <div className="flex items-center justify-between pt-4 border-t border-gray-100">
           <div className="flex items-center gap-3">
-            <button
-              type="button"
-              className="px-6 py-2.5 bg-gradient-to-r from-[#e60000] to-[#c01a1f] text-white rounded-xl font-semibold hover:from-[#c01a1f] hover:to-[#a01216] hover:scale-105 active:scale-95 transition-all duration-200 shadow-md hover:shadow-lg"
+            <PrimaryButton
               onClick={onAccept}
+              size="md"
             >
               Annehmen
-            </button>
-            <button
-              type="button"
-              className="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-all duration-200 shadow-md hover:shadow-lg"
+            </PrimaryButton>
+            <GrayButton
               onClick={onDecline}
+              size="md"
             >
               Ablehnen
-            </button>
+            </GrayButton>
           </div>
         </div>
       </div>
-
-      {/* Subtle Hover Glow Effect */}
-      <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-[#e60000]/0 via-[#e60000]/0 to-[#e60000]/0 group-hover:from-[#e60000]/5 group-hover:via-transparent group-hover:to-[#e60000]/5 transition-all duration-300 pointer-events-none"></div>
     </li>
   );
 }
-// Modern Message Item Component
+
+// Modern Message Item Component - mit MoreLink
 function MessageItem({
   name,
   preview,
@@ -648,12 +658,11 @@ function MessageItem({
 }) {
   return (
     <div
-      className={`group p-4 rounded-xl cursor-pointer transition-all ${
+      className={`group p-4 rounded-xl transition-all ${
         unread ? "bg-[#e60000]/5 hover:bg-[#e60000]/10" : "hover:bg-gray-100"
       }`}
-      onClick={() => alert("Chat-Fenster würde sich öffnen...")}
     >
-      <div className="flex items-start gap-4">
+      <div className="flex items-start gap-4 mb-3">
         <div className="relative flex-shrink-0">
           <div className="relative bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center font-bold text-lg">
             {name.split(" ")[0]?.[0] || "?"}
@@ -670,6 +679,26 @@ function MessageItem({
           <div className="text-gray-600 text-sm mt-1 truncate">{preview}</div>
         </div>
       </div>
+      <div className="text-center">
+        <MoreLink href={`/chat/${name.toLowerCase().replace(' ', '-')}`}>
+          Chat öffnen
+        </MoreLink>
+      </div>
+    </div>
+  );
+}
+
+// Vereinfachte MessagesSection mit MoreLink
+function MessagesSection() {
+  return (
+    <div className="bg-white/80 backdrop-blur rounded-xl shadow-lg shadow-gray-200/50 p-8 text-center border border-white/50">
+      <MessageSquare className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+      <p className="text-gray-500 mb-6">
+        Nachrichten-Ansicht: Zeigt alle Ihre Chats und Nachrichten.
+      </p>
+      <MoreLink href="/messages">
+        Alle Nachrichten anzeigen
+      </MoreLink>
     </div>
   );
 }
