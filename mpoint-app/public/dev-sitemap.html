@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Next.js Development Sitemap</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 1rem;
+            font-size: 2.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .stat-card .number {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        .stat-card .label {
+            opacity: 0.9;
+            margin-top: 0.5rem;
+        }
+        .route-section {
+            margin: 2rem 0;
+        }
+        .route-section h2 {
+            color: #555;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .route-grid {
+            display: grid;
+            gap: 1rem;
+        }
+        .route-card {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1rem;
+            transition: all 0.3s ease;
+        }
+        .route-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+        .route-path {
+            font-weight: 600;
+            color: #333;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            font-family: 'Courier New', monospace;
+        }
+        .route-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .badge-pages { background: #e3f2fd; color: #1976d2; }
+        .badge-app { background: #f3e5f5; color: #7b1fa2; }
+        .badge-dynamic { background: #fff3e0; color: #f57c00; }
+        .badge-static { background: #e8f5e9; color: #388e3c; }
+        .badge-layout { background: #fce4ec; color: #c2185b; }
+        .badge-loading { background: #e0f2f1; color: #00796b; }
+        .badge-error { background: #ffebee; color: #c62828; }
+        .file-path {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            font-family: monospace;
+        }
+        .components {
+            margin-top: 0.5rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .search-box {
+            margin: 2rem 0;
+            position: relative;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 1rem 3rem 1rem 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .timestamp {
+            text-align: center;
+            color: #666;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e0e0e0;
+        }
+        .component-usage {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 2px solid #e0e0e0;
+        }
+        .component-list {
+            display: grid;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .component-item {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        .component-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        .usage-routes {
+            color: #666;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚡ Next.js Development Sitemap</h1>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <div class="number">45</div>
+                <div class="label">Total Routes</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">45</div>
+                <div class="label">Static Routes</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">0</div>
+                <div class="label">Dynamic Routes</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">12</div>
+                <div class="label">Shared Components</div>
+            </div>
+        </div>
+
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="🔍 Suche nach Route oder Komponente..." onkeyup="filterRoutes()">
+        </div>
+
+        <div class="route-section">
+            <h2>📁 Static Routes</h2>
+            <div class="route-grid" id="staticRoutes">
+                
+    <div class="route-card" data-route="/about">
+        <div class="route-path">/about</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/about/page.tsx</div>
+        
+    </div>
+    <div class="route-card" data-route="/admin">
+        <div class="route-path">/admin</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/admin/page.tsx</div>
+        
+    </div>
+    <div class="route-card" data-route="/admin/events">
+        <div class="route-path">/admin/events</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/admin/events/page.tsx</div>
+        
+    </div>
+    <div class="route-card" data-route="/admin/events/:id/edit">
+        <div class="route-path">/admin/events/:id/edit</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/admin/events/[id]/edit/page.tsx</div>
+        
+    </div>
+    <div class="route-card" data-route="/admin/login">
+        <div class="route-path">/admin/login</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/admin/login/page.tsx</div>
+        
+    </div>
+    <div class="route-card" data-route="/admin/news">
+        <div class="route-path">/admin/news</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/admin/news/page.tsx</div>
+        
+    </div>
+    <div class="route-card" data-route="/admin/news/:id/edit">
+        <div class="route-path">/admin/news/:id/edit</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/admin/news/[id]/edit/page.tsx</div>
+        
+    </div>
+    <div class="route-card" data-route="/admin/news/new">
+        <div class="route-path">/admin/news/new</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/admin/news/new/page.tsx</div>
+        
+    </div>
+    <div class="route-card" data-route="/admin/users">
+        <div class="route-path">/admin/users</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/admin/users/page.tsx</div>
+        
+    </div>
+    <div class="route-card" data-route="/admin/users/:id/edit">
+        <div class="route-path">/admin/users/:id/edit</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/admin/users/[id]/edit/page.tsx</div>
+        
+    </div>
+    <div class="route-card" data-route="/api-test">
+        <div class="route-path">/api-test</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/api-test/page.tsx</div>
+        
+    </div>
+    <div class="route-card" data-route="/boerse">
+        <div class="route-path">/boerse</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/boerse/page.tsx</div>
+        
+    </div>
+    <div class="route-card" data-route="/boerse/:id">
+        <div class="route-path">/boerse/:id</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/boerse/[id]/page.tsx</div>
+        
+    </div>
+    <div class="route-card" data-route="/boerse/:id/edit">
+        <div class="route-path">/boerse/:id/edit</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/boerse/[id]/edit/page.tsx</div>
+        
+    </div>
+    <div class="route-card" data-route="/boerse/new">
+        <div class="route-path">/boerse/new</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/boerse/new/page.tsx</div>
+        
+    </div>
+    <div class="route-card" data-route="/cart">
+        <div class="route-path">/cart</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/cart/page.tsx</div>
+        
+    </div>
+    <div class="route-card" data-route="/chat/:userId">
+        <div class="route-path">/chat/:userId</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/chat/[userId]/page.tsx</div>
+        
+    </div>
+    <div class="route-card" data-route="/checkout">
+        <div class="route-path">/checkout</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/checkout/page.tsx</div>
+        
+    </div>
+    <div class="route-card" data-route="/company">
+        <div class="route-path">/company</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/company/page.tsx</div>
+        
+    </div>
+    <div class="route-card" data-route="/company/:id">
+        <div class="route-path">/company/:id</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/company/[id]/page.tsx</div>
+        
+    </div>
+    <div class="route-card" data-route="/companys">
+        <div class="route-path">/companys</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/companys/page.tsx</div>
+        
+    </div>
+    <div class="route-card" data-route="/dashboard">
+        <div class="route-path">/dashboard</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/dashboard/page.tsx</div>
+        
+            <div class="components">Components: ../components/marketplace/MarketplaceSection, ../components/wirtschaftswetter/Wirtschaftswetter</div>
+        
+    </div>
+    <div class="route-card" data-route="/events">
+        <div class="route-path">/events</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/events/page.tsx</div>
+        
+            <div class="components">Components: ../components/ui/Button</div>
+        
+    </div>
+    <div class="route-card" data-route="/events/:id">
+        <div class="route-path">/events/:id</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/events/[id]/page.tsx</div>
+        
+    </div>
+    <div class="route-card" data-route="/events/:id/edit">
+        <div class="route-path">/events/:id/edit</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/events/[id]/edit/page.tsx</div>
+        
+    </div>
+    <div class="route-card" data-route="/example/buttons">
+        <div class="route-path">/example/buttons</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/example/buttons/page.tsx</div>
+        
+    </div>
+    <div class="route-card" data-route="/gruppen-verwalten">
+        <div class="route-path">/gruppen-verwalten</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/gruppen-verwalten/page.tsx</div>
+        
+    </div>
+    <div class="route-card" data-route="/gruppen-verwalten/:id/edit">
+        <div class="route-path">/gruppen-verwalten/:id/edit</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/gruppen-verwalten/[id]/edit/page.tsx</div>
+        
+    </div>
+    <div class="route-card" data-route="/gruppen-verwalten/new">
+        <div class="route-path">/gruppen-verwalten/new</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/gruppen-verwalten/new/page.tsx</div>
+        
+    </div>
+    <div class="route-card" data-route="/login">
+        <div class="route-path">/login</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/login/page.tsx</div>
+        
+    </div>
+    <div class="route-card" data-route="/marketplace">
+        <div class="route-path">/marketplace</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/marketplace/page.tsx</div>
+        
+            <div class="components">Components: ../components/marketplace/MarketplaceUserCard</div>
+        
+    </div>
+    <div class="route-card" data-route="/marketplace/:id">
+        <div class="route-path">/marketplace/:id</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/marketplace/[id]/page.tsx</div>
+        
+    </div>
+    <div class="route-card" data-route="/Matches">
+        <div class="route-path">/Matches</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/Matches/page.tsx</div>
+        
+    </div>
+    <div class="route-card" data-route="/Matches/search">
+        <div class="route-path">/Matches/search</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/Matches/search/page.tsx</div>
+        
+    </div>
+    <div class="route-card" data-route="/netzwerk">
+        <div class="route-path">/netzwerk</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/netzwerk/page.tsx</div>
+        
+            <div class="components">Components: ../components/network/NetworkSidebar, ../components/ui/Button, ../components/ui/MoreLink</div>
+        
+    </div>
+    <div class="route-card" data-route="/news">
+        <div class="route-path">/news</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/news/page.tsx</div>
+        
+            <div class="components">Components: ../components/ui/Button, ../components/ui/MoreLink</div>
+        
+    </div>
+    <div class="route-card" data-route="/news/:id">
+        <div class="route-path">/news/:id</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/news/[id]/page.tsx</div>
+        
+    </div>
+    <div class="route-card" data-route="/notifications">
+        <div class="route-path">/notifications</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/notifications/page.tsx</div>
+        
+    </div>
+    <div class="route-card" data-route="/page">
+        <div class="route-path">/page</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            <span class="badge badge-layout">has layout</span>
+            
+            
+        </div>
+        <div class="file-path">src/app/page.tsx</div>
+        
+            <div class="components">Components: ./components/home/HeroSection, ./components/home/FeaturesSection, ./components/home/HowItWorksSection, ./components/home/StatsSection, ./components/home/TestimonialsSection, ./components/home/CtaSection</div>
+        
+    </div>
+    <div class="route-card" data-route="/pricing">
+        <div class="route-path">/pricing</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/pricing/page.tsx</div>
+        
+    </div>
+    <div class="route-card" data-route="/profile">
+        <div class="route-path">/profile</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/profile/page.tsx</div>
+        
+    </div>
+    <div class="route-card" data-route="/register">
+        <div class="route-path">/register</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/register/page.tsx</div>
+        
+    </div>
+    <div class="route-card" data-route="/settings">
+        <div class="route-path">/settings</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/settings/page.tsx</div>
+        
+    </div>
+    <div class="route-card" data-route="/support">
+        <div class="route-path">/support</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/support/page.tsx</div>
+        
+    </div>
+    <div class="route-card" data-route="/wirtschaftsanalyse">
+        <div class="route-path">/wirtschaftsanalyse</div>
+        <div class="route-meta">
+            <span class="badge badge-app">app</span>
+            <span class="badge badge-static">
+                static
+            </span>
+            
+            
+            
+        </div>
+        <div class="file-path">src/app/wirtschaftsanalyse/page.tsx</div>
+        
+    </div>
+            </div>
+        </div>
+
+        <div class="route-section">
+            <h2>🔄 Dynamic Routes</h2>
+            <div class="route-grid" id="dynamicRoutes">
+                
+            </div>
+        </div>
+
+        
+        <div class="component-usage">
+            <h2>🧩 Component Usage Analysis</h2>
+            <div class="component-list">
+                
+                    <div class="component-item">
+                        <div class="component-name">./components/home/HeroSection</div>
+                        <div class="usage-routes">Used in: /page</div>
+                    </div>
+                
+                    <div class="component-item">
+                        <div class="component-name">./components/home/FeaturesSection</div>
+                        <div class="usage-routes">Used in: /page</div>
+                    </div>
+                
+                    <div class="component-item">
+                        <div class="component-name">./components/home/HowItWorksSection</div>
+                        <div class="usage-routes">Used in: /page</div>
+                    </div>
+                
+                    <div class="component-item">
+                        <div class="component-name">./components/home/StatsSection</div>
+                        <div class="usage-routes">Used in: /page</div>
+                    </div>
+                
+                    <div class="component-item">
+                        <div class="component-name">./components/home/TestimonialsSection</div>
+                        <div class="usage-routes">Used in: /page</div>
+                    </div>
+                
+                    <div class="component-item">
+                        <div class="component-name">./components/home/CtaSection</div>
+                        <div class="usage-routes">Used in: /page</div>
+                    </div>
+                
+                    <div class="component-item">
+                        <div class="component-name">../components/ui/Button</div>
+                        <div class="usage-routes">Used in: /news, /netzwerk, /events</div>
+                    </div>
+                
+                    <div class="component-item">
+                        <div class="component-name">../components/ui/MoreLink</div>
+                        <div class="usage-routes">Used in: /news, /netzwerk</div>
+                    </div>
+                
+                    <div class="component-item">
+                        <div class="component-name">../components/network/NetworkSidebar</div>
+                        <div class="usage-routes">Used in: /netzwerk</div>
+                    </div>
+                
+                    <div class="component-item">
+                        <div class="component-name">../components/marketplace/MarketplaceUserCard</div>
+                        <div class="usage-routes">Used in: /marketplace</div>
+                    </div>
+                
+                    <div class="component-item">
+                        <div class="component-name">../components/marketplace/MarketplaceSection</div>
+                        <div class="usage-routes">Used in: /dashboard</div>
+                    </div>
+                
+                    <div class="component-item">
+                        <div class="component-name">../components/wirtschaftswetter/Wirtschaftswetter</div>
+                        <div class="usage-routes">Used in: /dashboard</div>
+                    </div>
+                
+            </div>
+        </div>
+        
+
+        <div class="timestamp">
+            Generated: 24.9.2025, 14:25:29 | 
+            Next.js Project Analysis
+        </div>
+    </div>
+
+    <script>
+        function filterRoutes() {
+            const input = document.getElementById('searchInput').value.toLowerCase();
+            const cards = document.querySelectorAll('.route-card');
+            
+            cards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                card.style.display = text.includes(input) ? 'block' : 'none';
+            });
+        }
+
+        // Highlight bei Klick
+        document.querySelectorAll('.route-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const path = this.querySelector('.file-path').textContent;
+                navigator.clipboard.writeText(path);
+                
+                // Visual feedback
+                const original = this.style.background;
+                this.style.background = '#e8f5e9';
+                setTimeout(() => {
+                    this.style.background = original;
+                }, 300);
+            });
+        });
+    </script>
+</body>
+</html>
