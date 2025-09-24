@@ -4,7 +4,7 @@
 
 import { notFound } from "next/navigation";
 import { useEffect, useState, use } from "react";
-import { Button, PrimaryButton } from "../../components/atoms/Button";
+import { Button, PrimaryButton } from "../../components/ui/Button";
 import { Calendar, ArrowLeft, Download } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";

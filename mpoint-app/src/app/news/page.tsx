@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { Button } from "../components/atoms/Button";
+import { Button } from "../components/ui/Button";
 import { BookOpen, Search, Filter, ArrowLeft, ArrowRight } from "lucide-react";
-import { MoreLink } from "../components/atoms/MoreLink";
+import { MoreLink } from "../components/ui/MoreLink";
 
 export const dynamic = "force-dynamic";
 

@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import { LucideIcon } from "lucide-react";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -40,7 +41,7 @@ export function Button(props: CombinedButtonProps) {
   // Base styles
   const baseStyles = "inline-flex items-center justify-center font-medium transition-all cursor-pointer";
 
-  // Variant styles - Custom behält weißen Hintergrund, ändert nur Border-Farbe
+  // Variant styles
   const variantStyles = {
     primary: "bg-[#e60000] text-white hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-400",
     secondary: "border border-[#e60000] bg-white text-[#e60000] hover:bg-[#e60000] hover:text-white disabled:border-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-gray-400 disabled:hover:border-gray-300",
@@ -53,7 +54,7 @@ export function Button(props: CombinedButtonProps) {
   const sizeStyles = {
     sm: "px-3 py-1.5 text-sm gap-1.5 rounded-md",
     md: "px-4 py-2 text-base gap-2 rounded-lg",
-    lg: "px-6 py-3 text-lg gap-2.5 rounded-xl"
+    lg: "px-6 py-3 text-lg gap-2.5 rounded-xl font-semibold"
   };
 
   // Icon size mapping
@@ -63,7 +64,7 @@ export function Button(props: CombinedButtonProps) {
     lg: 22
   };
 
-  // Custom hover styles - nur Border-Farbe ändert sich
+  // Custom hover styles
   const getCustomHoverStyle = () => {
     if (variant !== 'custom' || !hoverColor) return {};
 
@@ -89,7 +90,7 @@ export function Button(props: CombinedButtonProps) {
     ? 'hover:border-[var(--hover-border-color)]'
     : '';
 
-  const combinedClassName = `${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${customHoverClass} ${className}`;
+  const combinedClassName = `${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${customHoverClass} ${className}`.trim();
 
   // Render icon helper
   const renderIcon = () => {
@@ -99,30 +100,45 @@ export function Button(props: CombinedButtonProps) {
 
   // Check if it's a link button
   if ('href' in props) {
-    const { href, hoverColor, ...linkProps } = props;
+    // Extrahiere nur die gültigen Link-Props
+    const { href } = props;
+    const validLinkProps: Record<string, any> = {};
+
+    // Nur gültige HTML-Attribute für <a> Tags durchlassen
+    Object.keys(rest).forEach(key => {
+      if (!['variant', 'size', 'icon', 'iconPosition', 'hoverColor', 'disabled'].includes(key)) {
+        validLinkProps[key] = (rest as any)[key];
+      }
+    });
+
     return (
-      <a
+      <Link
         href={href}
-        className={combinedClassName}
+        className={`${combinedClassName} block`}
         style={getCustomHoverStyle()}
-        {...(linkProps as Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, 'href'>)}
+        {...validLinkProps}
       >
         {iconPosition === "left" && renderIcon()}
         {children}
         {iconPosition === "right" && renderIcon()}
-      </a>
+      </Link>
     );
   }
 
-  // Regular button
-  const buttonProps = props as ButtonProps;
-  const { hoverColor: _, ...buttonRest } = buttonProps;
+  // Regular button - extrahiere nur gültige Button-Props
+  const validButtonProps: Record<string, any> = {};
+  Object.keys(rest).forEach(key => {
+    if (!['variant', 'size', 'icon', 'iconPosition', 'hoverColor'].includes(key)) {
+      validButtonProps[key] = (rest as any)[key];
+    }
+  });
+
   return (
     <button
       className={combinedClassName}
       style={getCustomHoverStyle()}
       disabled={disabled}
-      {...buttonRest}
+      {...validButtonProps}
     >
       {iconPosition === "left" && renderIcon()}
       {children}
@@ -150,4 +166,17 @@ export const GrayButton = (props: Omit<CombinedButtonProps, 'variant'>) => (
 
 export const CustomButton = (props: Omit<CombinedButtonProps, 'variant'>) => (
   <Button {...props} variant="custom" />
+);
+
+// Spezielle Link-Button Convenience Components
+export const PrimaryLinkButton = (props: Omit<LinkButtonProps, 'variant'>) => (
+  <Button {...props} variant="primary" />
+);
+
+export const SecondaryLinkButton = (props: Omit<LinkButtonProps, 'variant'>) => (
+  <Button {...props} variant="secondary" />
+);
+
+export const OutlineLinkButton = (props: Omit<LinkButtonProps, 'variant'>) => (
+  <Button {...props} variant="secondary" />
 );

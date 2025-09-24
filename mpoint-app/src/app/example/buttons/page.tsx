@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Button, PrimaryButton, SecondaryButton, DangerButton, GrayButton, CustomButton } from "@/app/components/atoms/Button";
-import { MoreLink } from "@/app/components/atoms/MoreLink";
+import { Button, PrimaryButton, SecondaryButton, DangerButton, GrayButton, CustomButton } from "@/app/components/ui/Button";
+import { MoreLink } from "@/app/components/ui/MoreLink";
 import { BookOpen, Download, Settings, Trash2, Plus } from "lucide-react";
 
 export default function ExampleButtonsPage() {
@@ -52,7 +52,7 @@ export default function ExampleButtonsPage() {
             <div className="prose prose-blue max-w-none">
               <h3 className="text-lg font-semibold text-blue-800 mb-3">Button-Komponente Architektur</h3>
               <ul className="text-blue-700 space-y-2 mb-6">
-                <li><strong>Dateipfad:</strong> <code>/src/app/components/atoms/Button.tsx</code></li>
+                <li><strong>Dateipfad:</strong> <code>/src/app/components/ui/Button.tsx</code></li>
                 <li><strong>TypeScript-Support:</strong> Vollständige Typisierung mit separaten Interfaces für Button- und Link-Varianten</li>
                 <li><strong>Polymorphe Komponente:</strong> Kann sowohl als Button als auch als Link verwendet werden</li>
                 <li><strong>Icon-Integration:</strong> Lucide React Icons mit konfigurierbarer Position (links/rechts)</li>
@@ -67,6 +67,7 @@ export default function ExampleButtonsPage() {
                       <th className="text-left p-2">Padding</th>
                       <th className="text-left p-2">Border-Radius</th>
                       <th className="text-left p-2">Schriftgröße</th>
+                      <th className="text-left p-2">Schriftgewicht</th>
                       <th className="text-left p-2">Icon-Größe</th>
                       <th className="text-left p-2">Gap</th>
                     </tr>
@@ -77,6 +78,7 @@ export default function ExampleButtonsPage() {
                       <td className="p-2"><code>px-3 py-1.5</code> (12px/6px)</td>
                       <td className="p-2"><code>rounded-md</code> (6px)</td>
                       <td className="p-2"><code>text-sm</code> (14px)</td>
+                      <td className="p-2"><code>font-medium</code></td>
                       <td className="p-2">16px</td>
                       <td className="p-2"><code>gap-1.5</code> (6px)</td>
                     </tr>
@@ -85,6 +87,7 @@ export default function ExampleButtonsPage() {
                       <td className="p-2"><code>px-4 py-2</code> (16px/8px)</td>
                       <td className="p-2"><code>rounded-lg</code> (8px)</td>
                       <td className="p-2"><code>text-base</code> (16px)</td>
+                      <td className="p-2"><code>font-medium</code></td>
                       <td className="p-2">18px</td>
                       <td className="p-2"><code>gap-2</code> (8px)</td>
                     </tr>
@@ -93,6 +96,7 @@ export default function ExampleButtonsPage() {
                       <td className="p-2"><code>px-6 py-3</code> (24px/12px)</td>
                       <td className="p-2"><code>rounded-xl</code> (12px)</td>
                       <td className="p-2"><code>text-lg</code> (18px)</td>
+                      <td className="p-2"><code>font-semibold</code></td>
                       <td className="p-2">22px</td>
                       <td className="p-2"><code>gap-2.5</code> (10px)</td>
                     </tr>
@@ -117,7 +121,7 @@ export default function ExampleButtonsPage() {
 
               <h3 className="text-lg font-semibold text-blue-800 mb-3">MoreLink-Komponente</h3>
               <ul className="text-blue-700 space-y-2">
-                <li><strong>Dateipfad:</strong> <code>/src/app/components/atoms/MoreLink.tsx</code></li>
+                <li><strong>Dateipfad:</strong> <code>/src/app/components/ui/MoreLink.tsx</code></li>
                 <li><strong>Design:</strong> Einheitliche Größe ohne Varianten</li>
                 <li><strong>Farbe:</strong> M-Point Rot (#e60000) mit Pfeil-Icon</li>
                 <li><strong>Hover-Effekt:</strong> Vergrößerung des Gaps zwischen Text und Icon</li>
