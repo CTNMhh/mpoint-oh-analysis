@@ -261,48 +261,103 @@ export default function ExampleButtonsPage() {
           {/* Custom Buttons */}
           <section className="mb-8">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Custom Buttons</h2>
-            <p className="text-gray-600 mb-4">Anpassbare Buttons mit grauem Rahmen und konfigurierbarer Hover-Rahmenfarbe. Hintergrund bleibt immer weiß.</p>
+            <p className="text-gray-600 mb-4">Anpassbare Buttons mit konfigurierbarer Farbe für Rahmen und Text. Hintergrund bleibt immer weiß.</p>
             <div className="bg-gray-50 p-4 rounded-lg mb-4">
-              <p className="text-sm text-gray-800">
-                <strong>Design-Eigenschaften:</strong> Grauer Rahmen und Text, weißer Hintergrund bleibt konstant,
-                nur die Rahmenfarbe ändert sich bei Hover via hoverColor-Prop. Textfarbe bleibt grau.
+              <p className="text-sm text-gray-800 mb-2">
+                <strong>Design-Eigenschaften:</strong>
               </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-4">
-              <Button variant="custom" size="sm" hoverColor="blue-600">
-                Anfrage (Blau)
-              </Button>
-              <Button variant="custom" size="md" hoverColor="green-600">
-                Angebot (Grün)
-              </Button>
-              <CustomButton size="lg" hoverColor="purple-600">
-                Custom (Lila)
-              </CustomButton>
-              <CustomButton size="md" disabled>
-                Disabled Custom
-              </CustomButton>
+              <ul className="text-sm text-gray-700 space-y-1 ml-4">
+                <li>• <strong>Standard:</strong> Weißer Hintergrund, Rahmen- und Textfarbe entsprechend hoverColor</li>
+                <li>• <strong>Hover:</strong> Sehr heller Hintergrund in der entsprechenden Farbe</li>
+                <li>• <strong>Active:</strong> Hellerer Hintergrund und dunklere Textfarbe in der entsprechenden Farbe</li>
+                <li>• <strong>Disabled:</strong> Grauer Rahmen und Text, weißer Hintergrund</li>
+              </ul>
             </div>
 
-            {/* Weitere Beispiele */}
-            <div className="mt-4">
-              <h3 className="text-lg font-medium text-gray-700 mb-2">Börse-Beispiele:</h3>
-              <div className="flex flex-wrap gap-3">
-                <Button variant="custom" size="md" hoverColor="blue-600">
-                  Anfrage
+            <div className="mb-6">
+              <h3 className="text-lg font-medium text-gray-700 mb-3">Interaktive Beispiele (klicken für Active-State):</h3>
+              <div className="flex flex-wrap items-center gap-4">
+                <Button variant="custom" size="sm" hoverColor="blue-600">
+                  Anfrage (Blau)
                 </Button>
                 <Button variant="custom" size="md" hoverColor="green-600">
-                  Angebot
+                  Angebot (Grün)
                 </Button>
-                <Button variant="custom" size="md" hoverColor="orange-600">
-                  Kontakt
+                <CustomButton size="lg" hoverColor="purple-600">
+                  Custom (Lila)
+                </CustomButton>
+                <CustomButton size="md" hoverColor="red-600">
+                  Dringend (Rot)
+                </CustomButton>
+                <CustomButton size="md" disabled>
+                  Disabled Custom
+                </CustomButton>
+              </div>
+            </div>
+
+            {/* Farbpalette */}
+            <div className="mb-4">
+              <h3 className="text-lg font-medium text-gray-700 mb-2">Verfügbare Farben:</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <Button variant="custom" size="md" hoverColor="blue-600" className="w-full">
+                  Blue
                 </Button>
-                <Button variant="custom" size="md" hoverColor="red-600">
-                  Dringend
+                <Button variant="custom" size="md" hoverColor="green-600" className="w-full">
+                  Green
                 </Button>
-                <Button variant="custom" size="md" hoverColor="purple-600">
-                  Premium
+                <Button variant="custom" size="md" hoverColor="purple-600" className="w-full">
+                  Purple
+                </Button>
+                <Button variant="custom" size="md" hoverColor="orange-600" className="w-full">
+                  Orange
+                </Button>
+                <Button variant="custom" size="md" hoverColor="red-600" className="w-full">
+                  Red
+                </Button>
+                <Button variant="custom" size="md" hoverColor="yellow-600" className="w-full">
+                  Yellow
+                </Button>
+                <Button variant="custom" size="md" hoverColor="indigo-600" className="w-full">
+                  Indigo
+                </Button>
+                <Button variant="custom" size="md" hoverColor="pink-600" className="w-full">
+                  Pink
                 </Button>
               </div>
+            </div>
+
+            {/* Börse-Beispiele */}
+            <div className="mt-4">
+              <h3 className="text-lg font-medium text-gray-700 mb-2">Börse-Anwendungsbeispiele:</h3>
+              <div className="flex flex-wrap gap-3">
+                <Button variant="custom" size="md" hoverColor="blue-600">
+                  📋 Anfrage
+                </Button>
+                <Button variant="custom" size="md" hoverColor="green-600">
+                  💼 Angebot
+                </Button>
+                <Button variant="custom" size="md" hoverColor="orange-600">
+                  📞 Kontakt
+                </Button>
+                <Button variant="custom" size="md" hoverColor="red-600">
+                  🚨 Dringend
+                </Button>
+                <Button variant="custom" size="md" hoverColor="purple-600">
+                  ⭐ Premium
+                </Button>
+              </div>
+            </div>
+
+            {/* Technische Details */}
+            <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+              <h4 className="font-medium text-blue-900 mb-2">Technische Implementation:</h4>
+              <ul className="text-sm text-blue-800 space-y-1">
+                <li>• CSS Custom Properties für dynamische Farben</li>
+                <li>• Automatische Farbpalette basierend auf hoverColor-Prop</li>
+                <li>• Standard: border-[var(--border-color)] text-[var(--text-color)]</li>
+                <li>• Hover: hover:bg-[var(--hover-bg-color)]</li>
+                <li>• Active: active:bg-[var(--active-bg-color)] active:text-[var(--active-text-color)]</li>
+              </ul>
             </div>
           </section>
 
@@ -321,22 +376,25 @@ export default function ExampleButtonsPage() {
   Einstellungen
 </Button>
 
-// Custom Button mit Hover-Farbe
+// Custom Button mit Hover-Farbe - Neue Features!
 <Button variant="custom" size="md" hoverColor="blue-600">
-  Anfrage
+  Anfrage (Blau mit Active-State)
 </Button>
 
-// Börse-Buttons
+// Börse-Buttons mit verschiedenen Farben
 <Button variant="custom" size="md" hoverColor="blue-600">
-  Anfrage
+  📋 Anfrage
 </Button>
 <Button variant="custom" size="md" hoverColor="green-600">
-  Angebot
+  💼 Angebot
+</Button>
+<Button variant="custom" size="md" hoverColor="red-600">
+  🚨 Dringend
 </Button>
 
 // Convenience Komponente
 <CustomButton size="md" hoverColor="purple-600">
-  Custom Button
+  Custom mit Purple Active-State
 </CustomButton>`}
               </pre>
             </div>

@@ -47,7 +47,7 @@ export function Button(props: CombinedButtonProps) {
     secondary: "border border-[#e60000] bg-white text-[#e60000] hover:bg-[#e60000] hover:text-white disabled:border-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-gray-400 disabled:hover:border-gray-300",
     danger: "bg-red-600 text-white hover:bg-red-800 border-2 border-red-700 hover:border-red-900 shadow-red-200 hover:shadow-red-300 shadow-lg disabled:bg-gray-400 disabled:border-gray-400 disabled:shadow-none disabled:cursor-not-allowed disabled:hover:bg-gray-400 disabled:hover:border-gray-400 disabled:hover:shadow-none",
     gray: "bg-gray-200 text-gray-600 hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed disabled:hover:bg-gray-100",
-    custom: "border border-gray-600 bg-white text-gray-600 disabled:border-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-gray-400 disabled:hover:border-gray-300"
+    custom: "border bg-white disabled:border-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-gray-400 disabled:hover:border-gray-300"
   };
 
   // Size styles
@@ -64,33 +64,85 @@ export function Button(props: CombinedButtonProps) {
     lg: 22
   };
 
-  // Custom hover styles
-  const getCustomHoverStyle = () => {
+  // Custom hover und active styles
+  const getCustomStyles = () => {
     if (variant !== 'custom' || !hoverColor) return {};
 
-    const colorMap: Record<string, string> = {
-      'blue-600': '#2563eb',
-      'green-600': '#16a34a',
-      'purple-600': '#9333ea',
-      'orange-600': '#ea580c',
-      'red-600': '#dc2626',
-      'yellow-600': '#ca8a04',
-      'indigo-600': '#4f46e5',
-      'pink-600': '#db2777'
+    const colorMap: Record<string, { border: string; text: string; hoverBg: string; activeBg: string; activeText: string }> = {
+      'blue-600': {
+        border: '#2563eb',
+        text: '#2563eb',
+        hoverBg: '#eff6ff',
+        activeBg: '#dbeafe',
+        activeText: '#1d4ed8'
+      },
+      'green-600': {
+        border: '#16a34a',
+        text: '#16a34a',
+        hoverBg: '#f0fdf4',
+        activeBg: '#dcfce7',
+        activeText: '#15803d'
+      },
+      'purple-600': {
+        border: '#9333ea',
+        text: '#9333ea',
+        hoverBg: '#faf5ff',
+        activeBg: '#f3e8ff',
+        activeText: '#7c3aed'
+      },
+      'orange-600': {
+        border: '#ea580c',
+        text: '#ea580c',
+        hoverBg: '#fff7ed',
+        activeBg: '#fed7aa',
+        activeText: '#c2410c'
+      },
+      'red-600': {
+        border: '#dc2626',
+        text: '#dc2626',
+        hoverBg: '#fef2f2',
+        activeBg: '#fecaca',
+        activeText: '#b91c1c'
+      },
+      'yellow-600': {
+        border: '#ca8a04',
+        text: '#ca8a04',
+        hoverBg: '#fefce8',
+        activeBg: '#fef3c7',
+        activeText: '#a16207'
+      },
+      'indigo-600': {
+        border: '#4f46e5',
+        text: '#4f46e5',
+        hoverBg: '#f8fafc',
+        activeBg: '#e0e7ff',
+        activeText: '#3730a3'
+      },
+      'pink-600': {
+        border: '#db2777',
+        text: '#db2777',
+        hoverBg: '#fdf2f8',
+        activeBg: '#fce7f3',
+        activeText: '#be185d'
+      }
     };
 
-    const borderColor = colorMap[hoverColor] || '#2563eb';
+    const colors = colorMap[hoverColor] || colorMap['blue-600'];
 
     return {
-      '--hover-border-color': borderColor
+      '--border-color': colors.border,
+      '--text-color': colors.text,
+      '--hover-bg-color': colors.hoverBg,
+      '--active-bg-color': colors.activeBg,
+      '--active-text-color': colors.activeText
     } as React.CSSProperties;
   };
 
-  const customHoverClass = variant === 'custom' && !disabled
-    ? 'hover:border-[var(--hover-border-color)]'
+  const customStyleClass = variant === 'custom' && !disabled
+    ? 'border-[var(--border-color)] text-[var(--text-color)] hover:bg-[var(--hover-bg-color)] active:bg-[var(--active-bg-color)] active:text-[var(--active-text-color)] active:border-[var(--border-color)]'
     : '';
 
-  const combinedClassName = `${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${customHoverClass} ${className}`.trim();
+  const combinedClassName = `${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${customStyleClass} ${className}`.trim();
 
   // Render icon helper
   const renderIcon = () => {
@@ -115,7 +167,7 @@ export function Button(props: CombinedButtonProps) {
       <Link
         href={href}
         className={`${combinedClassName} block`}
-        style={getCustomHoverStyle()}
+        style={getCustomStyles()}
         {...validLinkProps}
       >
         {iconPosition === "left" && renderIcon()}
@@ -136,7 +188,7 @@ export function Button(props: CombinedButtonProps) {
   return (
     <button
       className={combinedClassName}
-      style={getCustomHoverStyle()}
+      style={getCustomStyles()}
       disabled={disabled}
       {...validButtonProps}
     >
